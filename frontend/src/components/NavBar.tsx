@@ -2,7 +2,7 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import Logo from "../assets/awtc-logo.png";
 import User from "../assets/user-solid-full.svg";
-import Hamburger from 'hamburger-react';
+import Hamburger from "hamburger-react";
 
 function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -16,14 +16,18 @@ function NavBar() {
 
         {/* Bloque usuario y hamburger, alineados */}
         <div className="flex items-center space-x-2">
-          <img src={User} alt="User Icon" className="h-10 w-10" />
+          <img
+            src={User}
+            alt="User Icon"
+            className="h-10 w-10 show-user-mobile"
+          />
           <div className="burger-menu flex items-center">
-            <Hamburger 
-              toggled={menuOpen} 
-              toggle={setMenuOpen} 
-              size={32} // puedes poner 40 si quieres igual que el icono
-              direction="right" 
-              color="#222" 
+            <Hamburger
+              toggled={menuOpen}
+              toggle={setMenuOpen}
+              size={32}
+              direction="right"
+              color="#222"
             />
           </div>
         </div>
@@ -31,16 +35,34 @@ function NavBar() {
         {/* Menú horizontal solo visible >=769px */}
         <ul className="desktop-menu space-x-8">
           <li>
-            <NavLink to="/Home" className={({ isActive }) => 
-              `text-black ${isActive ? "font-semibold" : ""}`}>Home</NavLink>
+            <NavLink
+              to="/Home"
+              className={({ isActive }) =>
+                `text-black ${isActive ? "font-semibold" : ""}`
+              }
+            >
+              Home
+            </NavLink>
           </li>
           <li>
-            <NavLink to="/Volunteering" className={({ isActive }) => 
-              `text-black ${isActive ? "font-semibold" : ""}`}>Volunteering</NavLink>
+            <NavLink
+              to="/Volunteering"
+              className={({ isActive }) =>
+                `text-black ${isActive ? "font-semibold" : ""}`
+              }
+            >
+              Volunteering
+            </NavLink>
           </li>
           <li>
-            <NavLink to="/Reviews" className={({ isActive }) => 
-              `text-black ${isActive ? "font-semibold" : ""}`}>Reviews</NavLink>
+            <NavLink
+              to="/Reviews"
+              className={({ isActive }) =>
+                `text-black ${isActive ? "font-semibold" : ""}`
+              }
+            >
+              Reviews
+            </NavLink>
           </li>
         </ul>
       </div>
@@ -64,24 +86,27 @@ function NavBar() {
         </button>
         <NavLink
           to="/Home"
-          className={({ isActive }) => 
-            `mb-6 text-black text-xl ${isActive ? "font-semibold" : ""}`}
+          className={({ isActive }) =>
+            `mb-6 text-black text-xl ${isActive ? "font-semibold" : ""}`
+          }
           onClick={() => setMenuOpen(false)}
         >
           Home
         </NavLink>
         <NavLink
           to="/Volunteering"
-          className={({ isActive }) => 
-            `mb-6 text-black text-xl ${isActive ? "font-semibold" : ""}`}
+          className={({ isActive }) =>
+            `mb-6 text-black text-xl ${isActive ? "font-semibold" : ""}`
+          }
           onClick={() => setMenuOpen(false)}
         >
           Volunteering
         </NavLink>
         <NavLink
           to="/Reviews"
-          className={({ isActive }) => 
-            `mb-6 text-black text-xl ${isActive ? "font-semibold" : ""}`}
+          className={({ isActive }) =>
+            `mb-6 text-black text-xl ${isActive ? "font-semibold" : ""}`
+          }
           onClick={() => setMenuOpen(false)}
         >
           Reviews
