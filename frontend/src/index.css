@@ -68,6 +68,17 @@
   .desktop-menu { display: flex; }
 }
 
+.show-user-mobile {
+  display: inline-block;
+}
+
+@media (min-width: 769px) {
+  .show-user-mobile {
+    display: none;
+  }
+}
+
+
 /* --------- TIPOGRAFÍA Y ESTILOS MÓVIL --------- */
 @media (max-width: 768px) {
   .Display {
