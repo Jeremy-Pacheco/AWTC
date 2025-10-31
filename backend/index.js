@@ -2,6 +2,9 @@ const express = require('express');
 const app = express();
 const projectRoutes = require('./routes/project.routes');
 const reviewRoutes = require('./routes/reviews.routes');
+const categoryRoutes = require('./routes/category.routes');
+
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -18,6 +21,7 @@ db.sequelize.sync({ force: false }).then(() => {
 app.use(express.json());
 app.use('/api/projects', projectRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/categories', categoryRoutes);
 
 const PORT = process.env.PORT || 8080;
 
