@@ -9,20 +9,11 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      id_Reviews: {
-        type: Sequelize.INTEGER
-      },
       content: {
         type: Sequelize.STRING
       },
       date: {
         type: Sequelize.DATE
-      },
-      id_Volunteering: {
-        type: Sequelize.INTEGER
-      },
-      id_Coordinator: {
-        type: Sequelize.INTEGER
       },
       createdAt: {
         allowNull: false,

@@ -14,11 +14,8 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Reviews.init({
-    id_Reviews: DataTypes.INTEGER,
     content: DataTypes.STRING,
     date: DataTypes.DATE,
-    id_Volunteering: DataTypes.INTEGER,
-    id_Coordinator: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Reviews',
