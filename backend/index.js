@@ -1,8 +1,10 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const projectRoutes = require('./routes/project.routes');
 const reviewRoutes = require('./routes/reviews.routes');
 const categoryRoutes = require('./routes/category.routes');
+
 
 
 
