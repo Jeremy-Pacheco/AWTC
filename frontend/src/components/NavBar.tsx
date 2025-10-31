@@ -64,6 +64,16 @@ function NavBar() {
               Reviews
             </NavLink>
           </li>
+          <li>
+            <NavLink
+              to="/MoreInfo"
+              className={({ isActive }) =>
+                `text-black ${isActive ? "font-semibold" : ""}`
+              }
+            >
+              More Info
+            </NavLink>
+          </li>
         </ul>
       </div>
 
@@ -110,6 +120,15 @@ function NavBar() {
           onClick={() => setMenuOpen(false)}
         >
           Reviews
+        </NavLink>
+        <NavLink
+          to="/MoreInfo"
+          className={({ isActive }) =>
+            `mb-6 text-black text-xl ${isActive ? "font-semibold" : ""}`
+          }
+          onClick={() => setMenuOpen(false)}
+        >
+          Info
         </NavLink>
       </div>
     </nav>
