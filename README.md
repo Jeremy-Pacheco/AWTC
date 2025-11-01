@@ -159,7 +159,18 @@ awtc/
 ---
 
 ## 📈 Diagrams
-Pending
+
+Entity-Relationship Diagram
+
+![](https://github.com/Jeremy-Pacheco/AWTC/blob/develop/image.png)
+
+Class diagram
+
+![](https://github.com/Jeremy-Pacheco/AWTC/blob/develop/image%20(1).png)
+
+Usage diagram
+
+![](https://github.com/Jeremy-Pacheco/AWTC/blob/develop/image%20(2).png)
 
 ---
 
@@ -171,4 +182,16 @@ Pending
 
 [Figma](https://www.figma.com/design/vjAlUkbNwIuZIhn4Y4IYlx/AWillToChange?node-id=3-195&t=TTOPEcQyHpJGTaGN-1)
 
-Deploy(In progress)
+---
+
+## Backend deployment
+
+[Deployment of projects](https://awtc-production.up.railway.app/api/projects)
+
+[Deployment of reviews](https://discord.com/channels/@me/1301166395467366511/1434200395839836271)
+
+[Deployment of category](https://discord.com/channels/@me/1301166395467366511/1434200378383012130)
+
+---
+
+## Frontend deployment 
