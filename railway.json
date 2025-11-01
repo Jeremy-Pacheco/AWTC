@@ -1,7 +1,8 @@
 {
   "build": {
-    "builder": "nodejs",
-    "buildDir": "backend",
+    "type": "npm",
+    "path": "backend",
+    "installCommand": "npm install",
     "startCommand": "npm start"
   }
 }
