@@ -26,8 +26,9 @@ app.use('/api/categories', categoryRoutes);
 const frontendPath = path.join(__dirname, '../frontend/dist');
 app.use(express.static(frontendPath));
 
-// Catch-all para SPA
-app.get('/:any(.*)', (req, res) => {
+// Catch-all SPA: cualquier ruta que no empiece con /api
+app.use((req, res, next) => {
+if (req.path.startsWith('/api')) return next(); // ignorar rutas API
 res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
