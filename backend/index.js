@@ -8,29 +8,31 @@ const categoryRoutes = require('./routes/category.routes');
 
 const db = require('./models');
 
-// Middleware para JSON
+// Middleware para parsear JSON y URL-encoded
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Conectar base de datos
 db.sequelize.sync({ force: false })
-  .then(() => console.log('Database updated without dropping data!'))
-  .catch(err => console.log('Error: ' + err.message));
+.then(() => console.log('Database updated without dropping data!'))
+.catch(err => console.log('Error: ' + err.message));
 
 // Rutas API
 app.use('/api/projects', projectRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/categories', categoryRoutes);
 
+// Servir frontend estático
 const frontendPath = path.join(__dirname, '../frontend/dist');
 app.use(express.static(frontendPath));
 
-app.get('/:catchAll(.*)', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'index.html'));
+// Catch-all para SPA
+app.get('*', (req, res) => {
+res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
 // Puerto
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+console.log(`Server running on port ${PORT}`);
 });
