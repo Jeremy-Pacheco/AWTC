@@ -22,12 +22,10 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/categories', categoryRoutes);
 
-// Servir frontend
 const frontendPath = path.join(__dirname, '../frontend/dist');
 app.use(express.static(frontendPath));
 
-// Catch-all para SPA
-app.get('*', (req, res) => {
+app.get('/:catchAll(.*)', (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
