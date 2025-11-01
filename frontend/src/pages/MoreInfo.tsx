@@ -4,7 +4,7 @@ import VolunteerList from "../components/VolunteerList";
 function Volunteering() {
   return (
     <div>
-      <h1>Oportunidades de Voluntariado</h1>
+      <h1>Other volunteer activities</h1>
       <VolunteerList />
     </div>
   );
