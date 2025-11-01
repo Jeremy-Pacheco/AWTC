@@ -159,8 +159,17 @@ awtc/
 ---
 
 ## 📈 Diagrams
-Pending
+Entity relationship diagram E/R
 
+![](https://github.com/Jeremy-Pacheco/AWTC/blob/develop/image.png)
+
+Usage class diagram
+
+![](https://github.com/Jeremy-Pacheco/AWTC/blob/develop/image%20(2).png)
+
+Class diagram
+
+![](https://github.com/Jeremy-Pacheco/AWTC/blob/develop/image%20(1).png)
 ---
 
 ## 🔗 Useful Links
