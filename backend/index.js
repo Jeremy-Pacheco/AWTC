@@ -8,7 +8,7 @@ const categoryRoutes = require('./routes/category.routes');
 
 const db = require('./models');
 
-// Middleware para parsear JSON y URL-encoded
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -27,7 +27,7 @@ const frontendPath = path.join(__dirname, '../frontend/dist');
 app.use(express.static(frontendPath));
 
 // Catch-all para SPA
-app.get('*', (req, res) => {
+app.get('/:any(.*)', (req, res) => {
 res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
