@@ -1,0 +1,5 @@
+
+
+[[edge_functions]]
+function = "set-req-header"
+path = "/test"
