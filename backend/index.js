@@ -22,8 +22,11 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/categories', categoryRoutes);
 
+
+
 // Servir frontend estático
 const frontendPath = path.join(__dirname, '../frontend/dist');
+console.log('Looking for frontend in:', frontendPath);
 app.use(express.static(frontendPath));
 
 // Catch-all SPA: cualquier ruta que no empiece con /api
