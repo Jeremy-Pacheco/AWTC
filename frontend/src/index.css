@@ -5,6 +5,7 @@
   .Display {
     font-size: 4rem; /**64px*/
     font-weight: bold;
+    font-family: 'Poppins';
   }
   h1 {
     color: black;
@@ -16,10 +17,12 @@
     color: black;
     font-size: 3rem;   /**48px*/
     font-weight: bold;
+    font-family: 'Poppins';
   }
   h3 { /**Subtitle 1 */  
     color: black;
     font-size: 2.5rem; /**40px*/
+    font-family: 'Poppins';
     font-weight: bold;
   }
   h4 {
