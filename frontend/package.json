@@ -39,8 +39,9 @@
     "typescript-eslint": "^8.45.0",
     "vite": "^7.1.7"
   },
-  "scripts": {
-    "build": "vite build",
-    "start": "serve -s dist -l $PORT"
-  }
+"scripts": {
+  "build": "vite build",
+  "start": "node index.js"
+}
+
 }
