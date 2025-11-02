@@ -5,15 +5,30 @@ import Router from 'router';
 import finalhandler from 'finalhandler';
 
 const router = Router();
-
-// Carpeta donde está el build de producción
 const publicFolder = path.resolve('./frontend/dist');
 
-// Servir archivos estáticos
-router.get('/:file(*)', (req, res) => {
-let requestedPath = req.params.file || 'index.html';
-const filePath = path.join(publicFolder, requestedPath);
+// Servir archivos estáticos con ruta exacta
+router.get('/index.html', serveFile);
+router.get('/favicon.ico', serveFile);
+router.get('/vite.svg', serveFile);
+// Agrega aquí más archivos estáticos si quieres
 
+// Ruta catch-all para React Router (cualquier otra ruta devuelve index.html)
+router.get('*', (req, res) => {
+const filePath = path.join(publicFolder, 'index.html');
+fs.readFile(filePath, (err, content) => {
+if (err) {
+res.statusCode = 500;
+res.end('Error al cargar index.html');
+} else {
+res.setHeader('Content-Type', 'text/html');
+res.end(content);
+}
+});
+});
+
+function serveFile(req, res) {
+const filePath = path.join(publicFolder, req.url);
 const ext = path.extname(filePath).toLowerCase();
 const mimeTypes = {
 '.html': 'text/html',
@@ -35,7 +50,7 @@ res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
 res.end(content);
 }
 });
-});
+}
 
 const server = http.createServer((req, res) => router(req, res, finalhandler(req, res)));
 server.listen(3000, () => console.log('Servidor corriendo en puerto 3000'));
