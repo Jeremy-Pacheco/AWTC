@@ -41,10 +41,21 @@ app.listen(PORT, () => {
 console.log(`Server running on port ${PORT}`);
 });
 
-
+//!Newly added CORS configuration
 const cors = require('cors');
 app.use(cors({
     origin: 'https://awtc.netlify.app/',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 }));
+
+const cors = require('cors');
+
+app.use(cors({
+  origin: 'https://awtc.netlify.app', // exactamente igual, SIN barra final
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: false // solo true si usas autenticación por cookies
+}));
+
+// Luego tus rutas (ejemplo)
+app.get('/api/reviews', '/api/projects', 'api/categories');
