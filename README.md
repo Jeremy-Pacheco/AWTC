@@ -188,10 +188,12 @@ Usage diagram
 
 [Deployment of projects](https://awtc-production.up.railway.app/api/projects)
 
-[Deployment of reviews](https://discord.com/channels/@me/1301166395467366511/1434200395839836271)
+[Deployment of reviews](https://awtc-production.up.railway.app/api/reviews)
 
-[Deployment of category](https://discord.com/channels/@me/1301166395467366511/1434200378383012130)
+[Deployment of category](https://awtc-production.up.railway.app/api/categories)
 
 ---
 
 ## Frontend deployment 
+
+[Deployment](https://awtc.netlify.app/)
