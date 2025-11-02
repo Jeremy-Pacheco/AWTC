@@ -1,20 +1,28 @@
-import express from 'express';
+import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import Router from 'router';
+import finalhandler from 'finalhandler';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const router = Router();
+const dist = path.join(process.cwd(), 'dist');
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-const frontendPath = path.join(__dirname, 'dist');
-
-app.use(express.static(frontendPath));
-
-app.get('/*', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'index.html'));
+// Archivos estáticos simples
+router.get('/:file(*)', (req, res) => {
+  const filePath = path.join(dist, req.params.file);
+  fs.readFile(filePath, (err, data) => {
+    if (err) {
+      // Si no existe, devolvemos index.html
+      fs.readFile(path.join(dist, 'index.html'), (err, html) => {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(html);
+      });
+    } else {
+      res.writeHead(200);
+      res.end(data);
+    }
+  });
 });
 
-app.listen(PORT, () => {
-  console.log(`Frontend running on port ${PORT}`);
-});
+import http from 'http';
+const server = http.createServer((req, res) => router(req, res, finalhandler(req, res)));
+server.listen(3000, () => console.log('Servidor SPA con router en puerto 3000'));
