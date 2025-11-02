@@ -1,4 +1,3 @@
-// index.js (ESM)
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -12,7 +11,7 @@ const frontendPath = path.join(__dirname, 'dist');
 
 app.use(express.static(frontendPath));
 
-app.get('*', (req, res) => {
+app.get('/:path(.*)', (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
