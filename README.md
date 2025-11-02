@@ -178,7 +178,7 @@ Usage diagram
 
 [GitHub Project](https://github.com/users/Jeremy-Pacheco/projects/2)
 
-[Postman Workspace / Collection](https://yeremip-1556089.postman.co/workspace/AWTC~c8106b04-0b3c-4efa-9e30-1bc4f814c344/collection/49651382-a4c2988a-db45-4161-8274-26d1a958d3bf?action=share&creator=49651382)
+[Postman Workspace / Collection](https://documenter.getpostman.com/view/49651382/2sB3WpQ1PH)
 
 [Figma](https://www.figma.com/design/vjAlUkbNwIuZIhn4Y4IYlx/AWillToChange?node-id=3-195&t=TTOPEcQyHpJGTaGN-1)
 
