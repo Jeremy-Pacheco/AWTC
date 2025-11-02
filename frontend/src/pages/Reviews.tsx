@@ -9,7 +9,7 @@ const Reviews: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
 
   useEffect(() => {
-    fetch('https://tu-backend.up.railway.app/api/reviews')
+    fetch('https://awtc-production.up.railway.app/api/reviews')
       .then(res => res.json())
       .then((data: Review[]) => setReviews(data));
   }, []);
