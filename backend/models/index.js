@@ -10,8 +10,22 @@ const config = require(__dirname + '/../config/config.json')[env];
 const db = {};
 
 let sequelize;
-if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config);
+
+if (env === 'production') {
+  sequelize = new Sequelize(
+    process.env.MYSQLDATABASE,
+    process.env.MYSQLUSER,
+    process.env.MYSQLPASSWORD,
+    {
+      host: process.env.MYSQLHOST,
+      port: process.env.MYSQLPORT,
+      dialect: 'mysql',
+      dialectOptions: {
+        ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false
+      },
+      logging: false
+    }
+  );
 } else {
   sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
