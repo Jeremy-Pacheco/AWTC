@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Categories from "../components/Categories";
 
-// Tipado de proyecto según tu modelo/sequelize
 type Project = {
   name: string;
   description: string;
@@ -12,13 +10,25 @@ type Project = {
   status: string;
 };
 
+type Category = {
+  name: string;
+  description: string;
+};
+
 const Volunteering: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
-    fetch('https://tu-backend.up.railway.app/api/projects')
+    fetch('https://awtc-production.up.railway.app/api/projects')
       .then(res => res.json())
       .then((data: Project[]) => setProjects(data));
+  }, []);
+
+  useEffect(() => {
+    fetch('https://awtc-production.up.railway.app/api/categories')
+      .then(res => res.json())
+      .then((data: Category[]) => setCategories(data));
   }, []);
 
   return (
@@ -46,7 +56,18 @@ const Volunteering: React.FC = () => {
       </section>
       <section>
         <h2 className="text-2xl font-semibold mb-2">Categorías</h2>
-        <Categories />
+        {!categories.length ? (
+          <div>Cargando categorías...</div>
+        ) : (
+          <ul>
+            {categories.map((cat, idx) => (
+              <li key={idx} className="mb-2 p-2 border rounded">
+                <div><strong>Nombre:</strong> {cat.name}</div>
+                <div><strong>Descripción:</strong> {cat.description}</div>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </div>
   );
