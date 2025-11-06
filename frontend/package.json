@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "start": "serve -s dist -l $PORT"
+    "start": "serve -s dist -l $PORT",
+    "dev": "vite"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
     "@fortawesome/free-solid-svg-icons": "^7.1.0",
     "@fortawesome/react-fontawesome": "^3.1.0",
+    "@heroicons/react": "^2.2.0",
     "@tailwindcss/vite": "^4.1.16",
     "express": "^5.1.0",
     "gsap": "^3.13.0",
