@@ -14,13 +14,15 @@ function NavBar() {
           <img src={Logo} alt="Logo AWTC" className="h-12 w-12 mr-2" />
         </NavLink>
 
-        {/* Bloque usuario y hamburger, alineados */}
         <div className="flex items-center space-x-2">
-          <img
-            src={User}
-            alt="User Icon"
-            className="h-10 w-10 show-user-mobile"
-          />
+          {/* Icono usuario envuelto en NavLink para navegar a AuthCard */}
+          <NavLink to="/AuthCard">
+            <img
+              src={User}
+              alt="User Icon"
+              className="h-10 w-10 show-user-mobile cursor-pointer"
+            />
+          </NavLink>
           <div className="burger-menu flex items-center">
             <Hamburger
               toggled={menuOpen}
@@ -72,6 +74,17 @@ function NavBar() {
               }
             >
               More Info
+            </NavLink>
+          </li>
+          {/* AuthCard en menú */}
+          <li>
+            <NavLink
+              to="/AuthCard"
+              className={({ isActive }) =>
+                `text-black ${isActive ? "font-semibold" : ""}`
+              }
+            >
+              Auth
             </NavLink>
           </li>
         </ul>
