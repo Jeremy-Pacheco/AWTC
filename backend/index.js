@@ -29,24 +29,25 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/categories', categoryRoutes);
 
+// Ruta protegida con middleware de auth
+const authMiddleware = require('./middlewares/auth.middlewares');
+app.get('/api/privado', authMiddleware, (req, res) => {
+  res.json({ mensaje: "¡Acceso autenticado!" });
+});
+
 // Servir frontend de React/Vite
 const frontendPath = path.join(__dirname, '../frontend/dist');
 app.use(express.static(frontendPath));
 
 // Catch-all para SPA
 app.use((req, res, next) => {
-  if (req.path.startsWith('/api')) return next();
+  if (req.path.startsWith('/api')) return next(); // no intercepta rutas de API
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
+
 
 // Puerto
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-});
-
-
-const authMiddleware = require('./middlewares/auth.middleware');
-router.get('/privado', authMiddleware, (req, res) => {
-  res.json({ mensaje: "¡Acceso autenticado!" });
 });
