@@ -1,64 +1,83 @@
 import React, { useEffect, useState } from "react";
 
 type Review = {
+  id: number; // ¡Ahora necesitas el id!
   content: string;
   date: string;
 };
 
-// For demo, also manage the index (id) locally if you don't have unique IDs
+const API_URL = "https://awtc-production.up.railway.app/api/reviews";
+
 const Reviews: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [newContent, setNewContent] = useState("");
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editContent, setEditContent] = useState("");
 
+  // Cargar reviews
   useEffect(() => {
-    fetch('https://awtc-production.up.railway.app/api/reviews')
+    fetch(API_URL)
       .then(res => res.json())
       .then((data: Review[]) => setReviews(data));
   }, []);
 
-  // Add new review
-  const handleAddReview = () => {
+  // Añadir review
+  const handleAddReview = async () => {
     const today = new Date().toISOString().slice(0, 10);
-    const newReview = { content: newContent, date: today };
-    setReviews([newReview, ...reviews]);
-    setNewContent("");
-    // Post to your backend here if needed
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: newContent, date: today }),
+    });
+    if (res.ok) {
+      const saved = await res.json();
+      setReviews([saved, ...reviews]);
+      setNewContent("");
+    }
   };
 
-  // Start editing review
+  // Empezar a editar
   const handleEditClick = (idx: number) => {
     setEditingIdx(idx);
     setEditContent(reviews[idx].content);
   };
 
-  // Save edit
-  const handleSaveEdit = (idx: number) => {
-    const updated = reviews.map((review, i) =>
-      i === idx ? { ...review, content: editContent } : review
-    );
-    setReviews(updated);
-    setEditingIdx(null);
-    setEditContent("");
-    // PATCH/PUT to your backend here if needed
+  // Guardar edición
+  const handleSaveEdit = async (idx: number) => {
+    const reviewToEdit = reviews[idx];
+    const res = await fetch(`${API_URL}/${reviewToEdit.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: editContent }),
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      const updatedList = reviews.map((r, i) => (i === idx ? updated : r));
+      setReviews(updatedList);
+      setEditingIdx(null);
+      setEditContent("");
+    }
   };
 
-  // Delete review
-  const handleDelete = (idx: number) => {
-    setReviews(reviews.filter((_, i) => i !== idx));
-    // DELETE from backend here if needed
+  // Eliminar review
+  const handleDelete = async (idx: number) => {
+    const reviewToDelete = reviews[idx];
+    const res = await fetch(`${API_URL}/${reviewToDelete.id}`, {
+      method: "DELETE",
+    });
+    if (res.ok) {
+      setReviews(reviews.filter((_, i) => i !== idx));
+    }
   };
 
   return (
     <div className="p-4">
       <h1 className="text-3xl font-bold mb-4">Reviews</h1>
-      {/* Add review form */}
       <form
         className="mb-4 flex gap-2"
-        onSubmit={e => {
+        onSubmit={async e => {
           e.preventDefault();
-          if (newContent.trim()) handleAddReview();
+          if (newContent.trim()) await handleAddReview();
         }}
       >
         <input
@@ -77,11 +96,12 @@ const Reviews: React.FC = () => {
       ) : (
         <ul>
           {reviews.map((review, idx) => (
-            <li key={idx} className="border rounded p-2 mb-3">
-              <div><strong>Fecha:</strong> {review.date}</div>
+            <li key={review.id} className="border rounded p-2 mb-3">
+              <div>
+                <strong>Fecha:</strong> {review.date}
+              </div>
               <div>
                 <strong>Comentario:</strong>
-                {/* Si estás editando esta review... muestra input de edición */}
                 {editingIdx === idx ? (
                   <>
                     <input
