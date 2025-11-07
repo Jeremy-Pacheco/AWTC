@@ -42,10 +42,9 @@ Currently, the backend is functional with CRUD for projects, categories and revi
 - Database configured with MySQL and Sequelize
 - Seeders with example data
 - RESTful API endpoints:
-
-Projects: GET, POST, PUT /:id, DELETE /:id
-Categories: GET, POST, PUT /:id, DELETE /:id
-Reviews: GET, POST, PUT /:id, DELETE /:id
+    - Projects: GET, POST, PUT /:id, DELETE /:id
+    - Categories: GET, POST, PUT /:id, DELETE /:id
+    - Reviews: GET, POST, PUT /:id, DELETE /:id
 
 - Frontend in React (setup ready, connects to backend APIs)
 
@@ -111,19 +110,21 @@ Make sure the backend server is running so the frontend can fetch data.
 ```bash
 awtc/
 ├── backend/
-│   ├── config/           # DB configuration
-│   ├── controllers/      # CRUD controllers
-│   ├── migrations/       # DB migrations
-│   ├── models/           # Sequelize models
-│   ├── routes/           # Express routes
-│   ├── seeders/          # Seeders
-│   └── index.js          # Server entry point
+│   ├── config/
+│   ├── controllers/
+│   ├── middlewares/
+│   ├── migrations/
+│   ├── models/
+│   ├── routes/
+│   ├── seeders/
+│   └── index.js
 │
 └── frontend/
-    ├── public/           # HTML & static files
-    ├── src/              # React source code
-    │   ├── components/  # React components
-    │   └── pages/       # Pages / views
+    ├── public/
+    ├── dist/
+    ├── src/
+    │   ├── components/
+    │   └── pages/
     └── package.json
 ```
 
@@ -160,17 +161,17 @@ awtc/
 
 ## 📈 Diagrams
 
-Entity-Relationship Diagram
+### E/R Diagram
 
-![](https://github.com/Jeremy-Pacheco/AWTC/blob/develop/image.png)
+![](https://github.com/Jeremy-Pacheco/AWTC/blob/develop/readme-img/ERD.png)
 
-Class diagram
+### Class Diagram
 
-![](https://github.com/Jeremy-Pacheco/AWTC/blob/develop/image%20(1).png)
+![](https://github.com/Jeremy-Pacheco/AWTC/blob/develop/readme-img/class-diagram.png)
 
-Usage diagram
+### Use Case Diagram
 
-![](https://github.com/Jeremy-Pacheco/AWTC/blob/develop/image%20(2).png)
+![](https://github.com/Jeremy-Pacheco/AWTC/blob/develop/readme-img/use-case-diagram.png)
 
 ---
 
