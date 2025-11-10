@@ -20,12 +20,12 @@ export default function Projects() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p>Cargando proyectos...</p>;
+  if (loading) return <p>Loading projects...</p>;
   if (error) return <p>Error: {error}</p>;
 
   return (
     <div>
-      <h2>Proyectos</h2>
+      <h2>Projects</h2>
       <ul>
         {projects.map(p => (
           <li key={p.id}>

@@ -34,15 +34,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, mode, onClose }) => {
 
       const data = await res.json();
       if (!res.ok)
-        throw new Error(data.message || "Usuario o contraseña incorrecta");
+        throw new Error(data.message || "Invalid username or password");
 
-      // Guardamos token para autenticación básica en futuras peticiones a rutas protegidas
       const token = btoa(`${email}:${pass}`);
       localStorage.setItem("basicAuthToken", token);
       localStorage.setItem("userName", data.user.name);
       localStorage.setItem("userRole", data.user.role);
 
-      alert(`Bienvenido ${data.user.name}!`);
+      alert(`Welcome ${data.user.name}!`);
       onClose();
     } catch (err: any) {
       alert(err.message);
@@ -59,17 +58,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, mode, onClose }) => {
           name,
           email,
           password: pass,
-        //   role: "volunteer",
         }),
       });
 
       if (!res.ok) {
         const errData = await res.json();
-        throw new Error(errData.message || "Error al crear usuario");
+        throw new Error(errData.message || "Error creating user");
       }
 
-      alert("Usuario creado correctamente!");
-      setCurrentMode("login"); // Cambia a login automáticamente
+      alert("User created successfully!");
+      setCurrentMode("login");
     } catch (err: any) {
       alert(err.message);
     }
@@ -94,7 +92,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, mode, onClose }) => {
             transition={{ duration: 0.3, type: "spring", stiffness: 120 }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Botón cerrar */}
             <button
               className="absolute top-3 right-4 text-gray-500 text-2xl hover:text-gray-700 transition"
               onClick={onClose}
@@ -102,7 +99,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, mode, onClose }) => {
               ✕
             </button>
 
-            {/* Título */}
             <h2 className="text-2xl font-semibold mb-4 text-center">
               {currentMode === "login" ? "Log In" : "Sign Up"}
             </h2>

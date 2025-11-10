@@ -10,9 +10,9 @@ async function initAdmin() {
         password: 'adminawtc1234',
         role: 'admin'
     });
-    console.log('✅ Cuenta admin creada: admin@awtc.es / adminawtc1234');
+    console.log('Admin account created: admin@awtc.es / adminawtc1234');
   } else {
-    console.log('Admin ya existente');
+    console.log('Admin already exists');
   }
 }
 

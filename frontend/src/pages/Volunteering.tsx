@@ -35,35 +35,35 @@ const Volunteering: React.FC = () => {
     <div className="p-4">
       <h1 className="text-3xl font-bold mb-4">Volunteering</h1>
       <section className="mb-6">
-        <h2 className="text-2xl font-semibold mb-2">Proyectos</h2>
+        <h2 className="text-2xl font-semibold mb-2">Projects</h2>
         {!projects.length ? (
-          <div>Cargando proyectos...</div>
+          <div>Loading projects...</div>
         ) : (
           <ul>
             {projects.map((proj, idx) => (
               <li key={idx} className="mb-4 p-2 border rounded">
-                <div><strong>Nombre:</strong> {proj.name}</div>
-                <div><strong>Descripción:</strong> {proj.description}</div>
-                <div><strong>Fecha de inicio:</strong> {proj.start_date}</div>
-                <div><strong>Fecha de fin:</strong> {proj.end_date}</div>
-                <div><strong>Localización:</strong> {proj.location}</div>
-                <div><strong>Cupo:</strong> {proj.capacity}</div>
-                <div><strong>Estado:</strong> {proj.status}</div>
+                <div><strong>Name:</strong> {proj.name}</div>
+                <div><strong>Description:</strong> {proj.description}</div>
+                <div><strong>Start date:</strong> {proj.start_date}</div>
+                <div><strong>End date:</strong> {proj.end_date}</div>
+                <div><strong>Location:</strong> {proj.location}</div>
+                <div><strong>Capacity:</strong> {proj.capacity}</div>
+                <div><strong>State:</strong> {proj.status}</div>
               </li>
             ))}
           </ul>
         )}
       </section>
       <section>
-        <h2 className="text-2xl font-semibold mb-2">Categorías</h2>
+        <h2 className="text-2xl font-semibold mb-2">Categories</h2>
         {!categories.length ? (
-          <div>Cargando categorías...</div>
+          <div>Loading categories...</div>
         ) : (
           <ul>
             {categories.map((cat, idx) => (
               <li key={idx} className="mb-2 p-2 border rounded">
-                <div><strong>Nombre:</strong> {cat.name}</div>
-                <div><strong>Descripción:</strong> {cat.description}</div>
+                <div><strong>Name:</strong> {cat.name}</div>
+                <div><strong>Description:</strong> {cat.description}</div>
               </li>
             ))}
           </ul>

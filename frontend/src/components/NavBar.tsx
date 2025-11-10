@@ -22,7 +22,7 @@ function NavBar() {
           <img src={Logo} alt="Logo AWTC" className="h-10 w-10 mr-2" />
         </NavLink>
 
-        {/* Versión desktop/tablet */}
+        {/* desktop/tablet */}
         <div className="hidden md:flex items-center space-x-4">
           <NavLink to="/Home" className="text-gray-800 hover:text-blue-500">Home</NavLink>
           <NavLink to="/Volunteering" className="text-gray-800 hover:text-blue-500">Volunteering</NavLink>
@@ -42,7 +42,7 @@ function NavBar() {
           </button>
         </div>
 
-        {/* Versión móvil */}
+        {/* phone */}
         <div className="flex items-center space-x-2 md:hidden">
           <img
             src={User}
@@ -54,7 +54,7 @@ function NavBar() {
         </div>
       </div>
 
-      {/* Drawer móvil */}
+      {/* Drawer phone */}
       <div
         className={`fixed top-0 right-0 h-full w-2/3 max-w-xs bg-white shadow-lg z-30
         transform transition-transform duration-300 ease-in-out
@@ -64,7 +64,7 @@ function NavBar() {
         <button
           className="absolute top-6 right-6 text-2xl"
           onClick={() => setMenuOpen(false)}
-          aria-label="Cerrar menú"
+          aria-label="Close menu"
         >
           ✕
         </button>

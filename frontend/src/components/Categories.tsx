@@ -18,12 +18,12 @@ export default function Categories() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p>Cargando categorías...</p>;
+  if (loading) return <p>Loading categories...</p>;
   if (error) return <p>Error: {error}</p>;
 
   return (
     <div>
-      <h2>Categorías</h2>
+      <h2>Categories</h2>
       <ul>
         {categories.map(c => (
           <li key={c.id}>{c.name}</li>

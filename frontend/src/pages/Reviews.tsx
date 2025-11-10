@@ -5,7 +5,6 @@ type Review = {
   date: string;
 };
 
-// For demo, also manage the index (id) locally if you don't have unique IDs
 const Reviews: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [newContent, setNewContent] = useState("");
@@ -18,22 +17,18 @@ const Reviews: React.FC = () => {
       .then((data: Review[]) => setReviews(data));
   }, []);
 
-  // Add new review
   const handleAddReview = () => {
     const today = new Date().toISOString().slice(0, 10);
     const newReview = { content: newContent, date: today };
     setReviews([newReview, ...reviews]);
     setNewContent("");
-    // Post to your backend here if needed
   };
 
-  // Start editing review
   const handleEditClick = (idx: number) => {
     setEditingIdx(idx);
     setEditContent(reviews[idx].content);
   };
 
-  // Save edit
   const handleSaveEdit = (idx: number) => {
     const updated = reviews.map((review, i) =>
       i === idx ? { ...review, content: editContent } : review
@@ -41,13 +36,10 @@ const Reviews: React.FC = () => {
     setReviews(updated);
     setEditingIdx(null);
     setEditContent("");
-    // PATCH/PUT to your backend here if needed
   };
 
-  // Delete review
   const handleDelete = (idx: number) => {
     setReviews(reviews.filter((_, i) => i !== idx));
-    // DELETE from backend here if needed
   };
 
   return (
@@ -65,23 +57,22 @@ const Reviews: React.FC = () => {
           type="text"
           value={newContent}
           onChange={e => setNewContent(e.target.value)}
-          placeholder="Añade una review..."
+          placeholder="Add a review..."
           className="border p-2 rounded w-full"
         />
         <button type="submit" className="bg-blue-500 text-white px-4 rounded">
-          Añadir Review
+          Add Review
         </button>
       </form>
       {!reviews.length ? (
-        <div>Cargando reviews...</div>
+        <div>Loading reviews...</div>
       ) : (
         <ul>
           {reviews.map((review, idx) => (
             <li key={idx} className="border rounded p-2 mb-3">
-              <div><strong>Fecha:</strong> {review.date}</div>
+              <div><strong>Date:</strong> {review.date}</div>
               <div>
-                <strong>Comentario:</strong>
-                {/* Si estás editando esta review... muestra input de edición */}
+                <strong>Message:</strong>
                 {editingIdx === idx ? (
                   <>
                     <input
@@ -94,13 +85,13 @@ const Reviews: React.FC = () => {
                       onClick={() => handleSaveEdit(idx)}
                       className="ml-2 px-2 bg-green-500 text-white rounded"
                     >
-                      Guardar
+                      Save
                     </button>
                     <button
                       onClick={() => setEditingIdx(null)}
                       className="ml-2 px-2 bg-gray-300 rounded"
                     >
-                      Cancelar
+                      Cancel
                     </button>
                   </>
                 ) : (
@@ -110,13 +101,13 @@ const Reviews: React.FC = () => {
                       onClick={() => handleEditClick(idx)}
                       className="ml-3 px-2 bg-yellow-400 text-black rounded"
                     >
-                      Editar
+                      Edit
                     </button>
                     <button
                       onClick={() => handleDelete(idx)}
                       className="ml-2 px-2 bg-red-500 text-white rounded"
                     >
-                      Eliminar
+                      Delete
                     </button>
                   </>
                 )}
