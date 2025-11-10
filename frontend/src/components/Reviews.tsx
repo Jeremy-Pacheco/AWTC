@@ -20,12 +20,12 @@ export default function Reviews() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p>Cargando reviews...</p>;
+  if (loading) return <p>Loading reviews...</p>;
   if (error) return <p>Error: {error}</p>;
 
   return (
     <div>
-      <h2>Reseñas</h2>
+      <h2>Reviews</h2>
       <ul>
         {reviews.map(r => (
           <li key={r.id}>

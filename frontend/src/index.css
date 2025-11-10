@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/**--------- TIPOGRAFÍA Y ESTILOS BASE (ESCRITORIO) --------- */
+/**--------- TYPOGRAPHY AND BASE STYLES (DESKTOP) --------- */
 @layer base {
   .Display {
     font-size: 4rem; /**64px*/
@@ -53,12 +53,12 @@
   }
 }
 
-/**--------- VISIBILIDAD MENU BURGER Y HORIZONTAL --------- */
-/**Burger visible, menú desktop oculto en ≤768px */
+/**--------- BURGER AND HORIZONTAL MENU VISIBILITY --------- */
+/**Burger visible, desktop menu hidden at ≤768px */
 .burger-menu { display: block; }
 .desktop-menu { display: none; }
 
-/**Menú desktop visible, burger oculto en ≥769px */
+/**Desktop menu visible, burger hidden at ≥769px */
 @media (min-width: 769px) {
   .burger-menu { display: none; }
   .desktop-menu { display: flex; }
@@ -74,7 +74,7 @@
   }
 }
 
-/** --------- TIPOGRAFÍA Y ESTILOS MÓVIL --------- */
+/** --------- MOBILE TYPOGRAPHY AND STYLES --------- */
 @media (max-width: 768px) {
   .Display {
     font-size: 2.25rem; /**36px*/

@@ -4,7 +4,6 @@ import Home from "./pages/Home";
 import Volunteering from "./pages/Volunteering";
 import Reviews from "./pages/Reviews";
 import MoreInfo from "./pages/MoreInfo";
-import AuthCard from "./pages/AuthCard";
 //TODO: Import other pages when you have them
 function App() {
   return (
@@ -16,8 +15,6 @@ function App() {
         <Route path="/Volunteering" element={<Volunteering />} />
         <Route path="/Reviews" element={<Reviews />} />
         <Route path="/MoreInfo" element={<MoreInfo />} />
-        <Route path="/AuthCard" element={<AuthCard />} />
-        //TODO: Add other routes here when you have them
       </Routes>
     </BrowserRouter>
   );
