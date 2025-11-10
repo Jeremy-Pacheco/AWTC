@@ -23,7 +23,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, mode, onClose }) => {
   const [pass, setPass] = useState("");
   const [name, setName] = useState("");
 
-  // Sincroniza modo y limpia formulario al abrir
+
   useEffect(() => {
     if (open) {
       setCurrentMode(mode);
@@ -46,7 +46,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, mode, onClose }) => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Invalid username or password");
 
-      // Guarda JWT exactamente como antes
       localStorage.setItem("jwtToken", data.access_token);
       localStorage.setItem("userName", data.user.name);
       localStorage.setItem("userRole", data.user.role);
@@ -70,12 +69,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, mode, onClose }) => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Error creating user");
 
-      // Guarda JWT exactamente como antes
       localStorage.setItem("jwtToken", data.access_token);
       localStorage.setItem("userName", data.user.name);
       localStorage.setItem("userRole", data.user.role);
 
-      setCurrentMode("login"); // tras registrarse, cambiar a login
+      setCurrentMode("login");
     } catch (err: any) {
       alert(err.message);
     }

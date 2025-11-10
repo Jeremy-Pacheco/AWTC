@@ -28,7 +28,7 @@ function NavBar() {
     localStorage.removeItem("userName");
     localStorage.removeItem("userRole");
     setIsLoggedIn(false);
-    navigate("/"); // redirige a Home u otra página
+    navigate("/");
   };
 
   return (
