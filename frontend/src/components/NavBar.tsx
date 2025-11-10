@@ -3,102 +3,63 @@ import { NavLink } from "react-router-dom";
 import Logo from "../assets/awtc-logo.png";
 import User from "../assets/user-solid-full.svg";
 import Hamburger from "hamburger-react";
+import AuthModal from "./AuthModal";
 
 function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+
+  const openAuth = (mode: "login" | "signup") => {
+    setAuthMode(mode);
+    setAuthOpen(true);
+  };
 
   return (
-    <nav className="bg-white-950 shadow-lg relative z-30">
+    <nav className="bg-white shadow-md relative z-30">
       <div className="mx-auto px-4 flex justify-between items-center h-16">
-        <NavLink to="/Home">
-          <img src={Logo} alt="Logo AWTC" className="h-12 w-12 mr-2" />
+        <NavLink to="/Home" className="flex items-center">
+          <img src={Logo} alt="Logo AWTC" className="h-10 w-10 mr-2" />
         </NavLink>
 
-        <div className="flex items-center space-x-2">
-          {/* Icono usuario envuelto en NavLink para navegar a AuthCard */}
-          <NavLink to="/AuthCard">
-            <img
-              src={User}
-              alt="User Icon"
-              className="h-10 w-10 show-user-mobile cursor-pointer"
-            />
-          </NavLink>
-          <div className="burger-menu flex items-center">
-            <Hamburger
-              toggled={menuOpen}
-              toggle={setMenuOpen}
-              size={32}
-              direction="right"
-              color="#222"
-            />
-          </div>
+        {/* Versión desktop/tablet */}
+        <div className="hidden md:flex items-center space-x-4">
+          <NavLink to="/Home" className="text-gray-800 hover:text-blue-500">Home</NavLink>
+          <NavLink to="/Volunteering" className="text-gray-800 hover:text-blue-500">Volunteering</NavLink>
+          <NavLink to="/Reviews" className="text-gray-800 hover:text-blue-500">Reviews</NavLink>
+          <NavLink to="/MoreInfo" className="text-gray-800 hover:text-blue-500">Info</NavLink>
+          <button
+            onClick={() => openAuth("login")}
+            className="px-4 py-2 rounded-md border border-blue-500 text-blue-500 hover:bg-blue-50 transition"
+          >
+            Log In
+          </button>
+          <button
+            onClick={() => openAuth("signup")}
+            className="px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition"
+          >
+            Sign Up
+          </button>
         </div>
 
-        {/* Menú horizontal solo visible >=769px */}
-        <ul className="desktop-menu space-x-8">
-          <li>
-            <NavLink
-              to="/Home"
-              className={({ isActive }) =>
-                `text-black ${isActive ? "font-semibold" : ""}`
-              }
-            >
-              Home
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/Volunteering"
-              className={({ isActive }) =>
-                `text-black ${isActive ? "font-semibold" : ""}`
-              }
-            >
-              Volunteering
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/Reviews"
-              className={({ isActive }) =>
-                `text-black ${isActive ? "font-semibold" : ""}`
-              }
-            >
-              Reviews
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/MoreInfo"
-              className={({ isActive }) =>
-                `text-black ${isActive ? "font-semibold" : ""}`
-              }
-            >
-              More Info
-            </NavLink>
-          </li>
-          {/* AuthCard en menú */}
-          <li>
-            <NavLink
-              to="/AuthCard"
-              className={({ isActive }) =>
-                `text-black ${isActive ? "font-semibold" : ""}`
-              }
-            >
-              Auth
-            </NavLink>
-          </li>
-        </ul>
+        {/* Versión móvil */}
+        <div className="flex items-center space-x-2 md:hidden">
+          <img
+            src={User}
+            alt="User Icon"
+            className="h-8 w-8 cursor-pointer"
+            onClick={() => openAuth("login")}
+          />
+          <Hamburger toggled={menuOpen} toggle={setMenuOpen} size={26} color="#222" />
+        </div>
       </div>
 
-      {/* Drawer menú móvil */}
+      {/* Drawer móvil */}
       <div
-        className={`
-          fixed top-0 right-0 h-full w-2/3 max-w-xs bg-white shadow-lg z-30
-          transform transition-transform duration-300 ease-in-out
-          ${menuOpen ? "translate-x-0" : "translate-x-full"}
-          flex flex-col p-8 pt-24
-        `}
-        style={{ display: menuOpen ? "flex" : "none" }}
+        className={`fixed top-0 right-0 h-full w-2/3 max-w-xs bg-white shadow-lg z-30
+        transform transition-transform duration-300 ease-in-out
+        ${menuOpen ? "translate-x-0" : "translate-x-full"}
+        flex flex-col p-8 pt-24`}
       >
         <button
           className="absolute top-6 right-6 text-2xl"
@@ -107,43 +68,14 @@ function NavBar() {
         >
           ✕
         </button>
-        <NavLink
-          to="/Home"
-          className={({ isActive }) =>
-            `mb-6 text-black text-xl ${isActive ? "font-semibold" : ""}`
-          }
-          onClick={() => setMenuOpen(false)}
-        >
-          Home
-        </NavLink>
-        <NavLink
-          to="/Volunteering"
-          className={({ isActive }) =>
-            `mb-6 text-black text-xl ${isActive ? "font-semibold" : ""}`
-          }
-          onClick={() => setMenuOpen(false)}
-        >
-          Volunteering
-        </NavLink>
-        <NavLink
-          to="/Reviews"
-          className={({ isActive }) =>
-            `mb-6 text-black text-xl ${isActive ? "font-semibold" : ""}`
-          }
-          onClick={() => setMenuOpen(false)}
-        >
-          Reviews
-        </NavLink>
-        <NavLink
-          to="/MoreInfo"
-          className={({ isActive }) =>
-            `mb-6 text-black text-xl ${isActive ? "font-semibold" : ""}`
-          }
-          onClick={() => setMenuOpen(false)}
-        >
-          Info
-        </NavLink>
+        <NavLink to="/Home" onClick={() => setMenuOpen(false)}>Home</NavLink>
+        <NavLink to="/Volunteering" onClick={() => setMenuOpen(false)}>Volunteering</NavLink>
+        <NavLink to="/Reviews" onClick={() => setMenuOpen(false)}>Reviews</NavLink>
+        <NavLink to="/MoreInfo" onClick={() => setMenuOpen(false)}>Info</NavLink>
       </div>
+
+      {/* Popup Auth */}
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} mode={authMode} />
     </nav>
   );
 }
