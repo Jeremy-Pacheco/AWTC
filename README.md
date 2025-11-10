@@ -166,7 +166,7 @@ Entity-Relationship Diagram
 
 Class diagram
 
-![](https://github.com/Jeremy-Pacheco/AWTC/blob/develop/image%20(1).png)
+![](https://github.com/Jeremy-Pacheco/AWTC/blob/main/image%20(1).png)
 
 Usage diagram
 
