@@ -162,9 +162,10 @@ awtc/
 
 Entity-Relationship Diagram
 
-![](https://github.com/Jeremy-Pacheco/AWTC/blob/develop/image.png)
+![](https://github.com/Jeremy-Pacheco/AWTC/blob/main/image.png)
 
 Class diagram
+
 ![](https://github.com/Jeremy-Pacheco/AWTC/blob/main/image%20(1).png)
 
 Usage diagram
