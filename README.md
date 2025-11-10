@@ -165,12 +165,11 @@ Entity-Relationship Diagram
 ![](https://github.com/Jeremy-Pacheco/AWTC/blob/develop/image.png)
 
 Class diagram
-
 ![](https://github.com/Jeremy-Pacheco/AWTC/blob/main/image%20(1).png)
 
 Usage diagram
 
-![](https://github.com/Jeremy-Pacheco/AWTC/blob/develop/image%20(2).png)
+![](https://github.com/Jeremy-Pacheco/AWTC/blob/main/image%20(2).png)
 
 ---
 
