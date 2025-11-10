@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   AtSymbolIcon,
@@ -23,51 +23,59 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, mode, onClose }) => {
   const [pass, setPass] = useState("");
   const [name, setName] = useState("");
 
+  // Sincroniza modo y limpia formulario al abrir
+  useEffect(() => {
+    if (open) {
+      setCurrentMode(mode);
+      setEmail("");
+      setPass("");
+      setName("");
+    }
+  }, [open, mode]);
+
+  // LOGIN
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const tokenBasic = btoa(`${email}:${pass}`);
       const res = await fetch("http://localhost:8080/api/users/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password: pass }),
+        headers: { Authorization: `Basic ${tokenBasic}` },
       });
 
       const data = await res.json();
-      if (!res.ok)
-        throw new Error(data.message || "Invalid username or password");
+      if (!res.ok) throw new Error(data.message || "Invalid username or password");
 
-      const token = btoa(`${email}:${pass}`);
-      localStorage.setItem("basicAuthToken", token);
+      // Guarda JWT exactamente como antes
+      localStorage.setItem("jwtToken", data.access_token);
       localStorage.setItem("userName", data.user.name);
       localStorage.setItem("userRole", data.user.role);
 
-      alert(`Welcome ${data.user.name}!`);
       onClose();
     } catch (err: any) {
       alert(err.message);
     }
   };
 
+  // SIGNUP
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const res = await fetch("http://localhost:8080/api/users/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          email,
-          password: pass,
-        }),
+        body: JSON.stringify({ name, email, password: pass }),
       });
 
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || "Error creating user");
-      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Error creating user");
 
-      alert("User created successfully!");
-      setCurrentMode("login");
+      // Guarda JWT exactamente como antes
+      localStorage.setItem("jwtToken", data.access_token);
+      localStorage.setItem("userName", data.user.name);
+      localStorage.setItem("userRole", data.user.role);
+
+      setCurrentMode("login"); // tras registrarse, cambiar a login
     } catch (err: any) {
       alert(err.message);
     }
@@ -148,11 +156,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, mode, onClose }) => {
                   onClick={() => setShowPass(!showPass)}
                   className="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600"
                 >
-                  {showPass ? (
-                    <EyeSlashIcon className="h-5 w-5" />
-                  ) : (
-                    <EyeIcon className="h-5 w-5" />
-                  )}
+                  {showPass ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
                 </button>
               </div>
 

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import Logo from "../assets/awtc-logo.png";
 import User from "../assets/user-solid-full.svg";
 import Hamburger from "hamburger-react";
@@ -9,10 +9,26 @@ function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("jwtToken");
+    setIsLoggedIn(!!token);
+  }, []);
 
   const openAuth = (mode: "login" | "signup") => {
     setAuthMode(mode);
     setAuthOpen(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("jwtToken");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userRole");
+    setIsLoggedIn(false);
+    navigate("/"); // redirige a Home u otra página
   };
 
   return (
@@ -24,22 +40,73 @@ function NavBar() {
 
         {/* desktop/tablet */}
         <div className="hidden md:flex items-center space-x-4">
-          <NavLink to="/Home" className="text-gray-800 hover:text-blue-500">Home</NavLink>
-          <NavLink to="/Volunteering" className="text-gray-800 hover:text-blue-500">Volunteering</NavLink>
-          <NavLink to="/Reviews" className="text-gray-800 hover:text-blue-500">Reviews</NavLink>
-          <NavLink to="/MoreInfo" className="text-gray-800 hover:text-blue-500">Info</NavLink>
-          <button
-            onClick={() => openAuth("login")}
-            className="px-4 py-2 rounded-md border border-blue-500 text-blue-500 hover:bg-blue-50 transition"
-          >
-            Log In
-          </button>
-          <button
-            onClick={() => openAuth("signup")}
-            className="px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition"
-          >
-            Sign Up
-          </button>
+          <NavLink
+  to="/Home"
+  className={({ isActive }) =>
+    `text-gray-800 transition-all duration-200 ${isActive ? "font-bold" : ""}`
+  }
+>
+  Home
+</NavLink>
+
+<NavLink
+  to="/Volunteering"
+  className={({ isActive }) =>
+    `text-gray-800 transition-all duration-200 ${isActive ? "font-bold" : ""}`
+  }
+>
+  Volunteering
+</NavLink>
+
+<NavLink
+  to="/Reviews"
+  className={({ isActive }) =>
+    `text-gray-800 transition-all duration-200 ${isActive ? "font-bold" : ""}`
+  }
+>
+  Reviews
+</NavLink>
+
+<NavLink
+  to="/MoreInfo"
+  className={({ isActive }) =>
+    `text-gray-800 transition-all duration-200 ${isActive ? "font-bold" : ""}`
+  }
+>
+  Info
+</NavLink>
+
+          {isLoggedIn ? (
+            <>
+              <button
+                onClick={() => navigate("/dashboard")}
+                className="px-4 py-2 rounded-md border border-[#767676] hover:bg-[#EDEBEB] transition"
+              >
+                Profile
+              </button>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 rounded-md bg-red-500 text-white hover:bg-red-600 transition"
+              >
+                Log Out
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => openAuth("login")}
+                className="px-4 py-2 rounded-md border border-[#767676] hover:bg-[#EDEBEB] transition"
+              >
+                Log In
+              </button>
+              <button
+                onClick={() => openAuth("signup")}
+                className="px-4 py-2 rounded-md bg-[#F0BB00] border border-[#767676] hover:bg-[#C68900] transition"
+              >
+                Sign Up
+              </button>
+            </>
+          )}
         </div>
 
         {/* phone */}
@@ -48,7 +115,7 @@ function NavBar() {
             src={User}
             alt="User Icon"
             className="h-8 w-8 cursor-pointer"
-            onClick={() => openAuth("login")}
+            onClick={() => (isLoggedIn ? navigate("/dashboard") : openAuth("login"))}
           />
           <Hamburger toggled={menuOpen} toggle={setMenuOpen} size={26} color="#222" />
         </div>
@@ -72,10 +139,16 @@ function NavBar() {
         <NavLink to="/Volunteering" onClick={() => setMenuOpen(false)}>Volunteering</NavLink>
         <NavLink to="/Reviews" onClick={() => setMenuOpen(false)}>Reviews</NavLink>
         <NavLink to="/MoreInfo" onClick={() => setMenuOpen(false)}>Info</NavLink>
+        {isLoggedIn && (
+          <>
+            <button onClick={() => {navigate("/dashboard"); setMenuOpen(false)}} className="mt-4 text-left">Profile</button>
+            <button onClick={() => {handleLogout(); setMenuOpen(false)}} className="mt-2 text-left text-red-500">Log Out</button>
+          </>
+        )}
       </div>
 
       {/* Popup Auth */}
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} mode={authMode} />
+      <AuthModal open={authOpen} onClose={() => {setAuthOpen(false); setIsLoggedIn(!!localStorage.getItem("jwtToken"))}} mode={authMode} />
     </nav>
   );
 }
