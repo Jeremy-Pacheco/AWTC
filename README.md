@@ -24,6 +24,9 @@ Currently, the backend is functional with CRUD for projects, categories and revi
 - Add resources
 - Moderate comments
 
+### Admin
+- Complete management
+
 ---
 
 ## Main Functionalities (Planned)
@@ -150,12 +153,17 @@ awtc/
 - PUT /api/reviews/:id – Update a review
 - DELETE /api/reviews/:id – Delete a review
 
+### Users
+- GET /api/users – Get all users
+- POST /api/users/signup – Create a user
+- PUT /api/users/:id/role – Update a user
+- DELETE /api/users/:id – Delete a user
 ---
 
 ## ⚠️ Notes
-- Backend is fully functional for projects, categories and reviews.
+- Backend is fully functional for projects, categories, reviews and users.
 - Frontend is set up to connect with backend APIs.
-- Additional features (user authentication, project enrollments, resources, comments, dashboards) are planned but not implemented yet.
+- Additional features (project enrollments, resources, comments, dashboards) are planned but not implemented yet.
 
 ---
 
@@ -163,15 +171,15 @@ awtc/
 
 ### E/R Diagram
 
-![](https://github.com/Jeremy-Pacheco/AWTC/blob/develop/readme-img/ERD.png)
+![](readme-img/ERD.png)
 
 ### Class Diagram
 
-![](https://github.com/Jeremy-Pacheco/AWTC/blob/develop/readme-img/class-diagram.png)
+![](readme-img/class-diagram.png)
 
 ### Use Case Diagram
 
-![](https://github.com/Jeremy-Pacheco/AWTC/blob/develop/readme-img/use-case-diagram.png)
+![](readme-img/use-case-diagram.png)
 
 ---
 
