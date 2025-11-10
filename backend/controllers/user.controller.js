@@ -1,35 +1,30 @@
 const { User } = require('../models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const utils = require('../utils/utils');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'SecretAWTCKey';
-const JWT_EXPIRES = '24h';
 
-// Create user (signup) – always volunteer
+// Register
 exports.createUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password)
       return res.status(400).json({ message: 'Missing data' });
-    }
 
     const existing = await User.findOne({ where: { email } });
     if (existing) return res.status(400).json({ message: 'Email is already registered' });
 
     const user = await User.create({ name, email, password, role: 'volunteer' });
 
-    // Create JWT token
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES }
-    );
+    const token = utils.generateToken(user);
+    const cleanUser = utils.getCleanUser(user);
 
     res.status(201).json({
-      message: 'User created as volunteer',
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
-      token
+      message: 'User created successfully',
+      user: cleanUser,
+      access_token: token,
     });
   } catch (error) {
     console.error(error);
@@ -37,31 +32,38 @@ exports.createUser = async (req, res) => {
   }
 };
 
-// Login with JWT
+// Sign in
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const authHeader = req.headers['authorization'];
+
+    if (!authHeader || !authHeader.startsWith('Basic '))
+      return res.status(400).json({ message: 'Authorization header required' });
+
+    const base64Credentials = authHeader.split(' ')[1];
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    const [email, password] = credentials.split(':');
+
     const user = await User.findOne({ where: { email } });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(403).json({ message: 'Invalid credentials' });
+    if (!valid) return res.status(401).json({ message: 'Invalid credentials' });
 
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES }
-    );
+    const token = utils.generateToken(user);
+    const cleanUser = utils.getCleanUser(user);
 
     res.json({
       message: 'Login successful',
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
-      token
+      user: cleanUser,
+      access_token: token,
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Error signing in' });
   }
 };
+
 
 
 // Create coordinator (admin only)
