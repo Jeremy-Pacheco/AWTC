@@ -5,6 +5,10 @@ const authMiddleware = require('../middlewares/auth.middlewares');
 
 const { isAdmin, isAdminOrCoordinator } = require('../middlewares/role.middlewares');
 
+const upload = require('../multer/upload');
+
+router.put('/dashboard', authMiddleware, upload.single('file'), userCtrl.updateOwnProfile);
+
 router.post('/signup', userCtrl.createUser);
 router.post('/login', userCtrl.login);
 

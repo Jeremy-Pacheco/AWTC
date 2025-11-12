@@ -2,7 +2,7 @@ const { User } = require('../models');
 const bcrypt = require('bcrypt');
 const utils = require('../utils/utils');
 
-// ✅ Crear usuario (registro)
+// Create user (registration)
 exports.createUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -32,7 +32,7 @@ exports.createUser = async (req, res) => {
   }
 };
 
-// ✅ Iniciar sesión
+// User login
 exports.login = async (req, res) => {
   try {
     const authHeader = req.headers['authorization'];
@@ -64,7 +64,7 @@ exports.login = async (req, res) => {
   }
 };
 
-// ✅ Crear coordinador (solo admin — se valida en middleware)
+// Create coordinator (admin only, validated in middleware)
 exports.createCoordinator = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -83,7 +83,7 @@ exports.createCoordinator = async (req, res) => {
   }
 };
 
-// ✅ Obtener todos los usuarios (solo admin o coordinador — se valida en middleware)
+// Get all users (admin or coordinator only, validated in middleware)
 exports.getUsers = async (req, res) => {
   try {
     const users = await User.findAll({
@@ -96,7 +96,7 @@ exports.getUsers = async (req, res) => {
   }
 };
 
-// ✅ Cambiar rol de usuario (solo admin — se valida en middleware)
+// Update user role (admin only, validated in middleware)
 exports.updateUserRole = async (req, res) => {
   try {
     const { id } = req.params;
@@ -117,7 +117,7 @@ exports.updateUserRole = async (req, res) => {
   }
 };
 
-// ✅ Eliminar usuario (solo admin — se valida en middleware)
+// Delete user (admin only, validated in middleware)
 exports.deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
@@ -130,5 +130,34 @@ exports.deleteUser = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error deleting user' });
+  }
+};
+
+// Update own profile (name and profile image)
+exports.updateOwnProfile = async (req, res) => {
+  try {
+    const user = req.user;
+    const { name } = req.body;
+    let updatedData = {};
+
+    if (name && name.trim() !== '') {
+      updatedData.name = name.trim();
+    }
+
+    if (req.file) {
+      // Save only the filename, not the full path
+      updatedData.profileImage = req.file.filename;
+    }
+
+    await user.update(updatedData);
+
+    const cleanUser = utils.getCleanUser(user);
+    res.json({
+      message: 'Profile updated successfully',
+      user: cleanUser,
+    });
+  } catch (err) {
+    console.error('Error updating own profile:', err);
+    res.status(500).json({ message: 'Error updating profile' });
   }
 };
