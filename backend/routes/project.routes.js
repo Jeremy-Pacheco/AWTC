@@ -5,7 +5,7 @@ const projectController = require('../controllers/project.controller');
 
 router.post('/', upload.single('file'), projectController.createProject);
 router.get('/', projectController.getAllProjects);
-router.put('/:id', projectController.updateProject);
+router.put('/:id', upload.single('file'), projectController.updateProject);
 router.delete('/:id', projectController.deleteProject);
 
 module.exports = router;
