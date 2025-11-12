@@ -21,6 +21,10 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 'volunteer',
       allowNull: false,
     },
+    profileImage: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    }
   }, {
     hooks: {
       beforeCreate: async (user) => {
