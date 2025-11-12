@@ -4,6 +4,9 @@ const cors = require("cors");
 
 const app = express();
 
+// public directory
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(
   cors({
     origin: ["https://awtc.netlify.app", "http://localhost:5173"],
@@ -33,9 +36,6 @@ db.sequelize
     await initAdmin();
   })
   .catch((err) => console.log("Error: " + err.message));
-
-
-
 
 const projectRoutes = require("./routes/project.routes");
 const reviewRoutes = require("./routes/reviews.routes");

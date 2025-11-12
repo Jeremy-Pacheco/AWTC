@@ -3,9 +3,23 @@ const { Project } = require('../models');
 // Create a new project
 exports.createProject = async (req, res) => {
   try {
-    const project = await Project.create(req.body);
+    const { name, description, start_date, end_date, location, capacity, status } = req.body;
+    const filename = req.file ? req.file.filename : null;
+
+    const project = await Project.create({
+      name,
+      description,
+      start_date,
+      end_date,
+      location,
+      capacity,
+      status,
+      filename
+    });
+
     res.status(201).json(project);
   } catch (error) {
+    console.error(error);
     res.status(400).json({ message: 'Error creating project', error });
   }
 };
