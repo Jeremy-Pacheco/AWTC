@@ -1,20 +1,20 @@
 const { User } = require('../models');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const utils = require('../utils/utils');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'SecretAWTCKey';
-
-// Register
+// ✅ Crear usuario (registro)
 exports.createUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    if (!name || !email || !password)
+    if (!name || !email || !password) {
       return res.status(400).json({ message: 'Missing data' });
+    }
 
     const existing = await User.findOne({ where: { email } });
-    if (existing) return res.status(400).json({ message: 'Email is already registered' });
+    if (existing) {
+      return res.status(400).json({ message: 'Email is already registered' });
+    }
 
     const user = await User.create({ name, email, password, role: 'volunteer' });
 
@@ -32,13 +32,13 @@ exports.createUser = async (req, res) => {
   }
 };
 
-// Sign in
+// ✅ Iniciar sesión
 exports.login = async (req, res) => {
   try {
     const authHeader = req.headers['authorization'];
-
-    if (!authHeader || !authHeader.startsWith('Basic '))
+    if (!authHeader || !authHeader.startsWith('Basic ')) {
       return res.status(400).json({ message: 'Authorization header required' });
+    }
 
     const base64Credentials = authHeader.split(' ')[1];
     const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
@@ -64,52 +64,47 @@ exports.login = async (req, res) => {
   }
 };
 
-
-
-// Create coordinator (admin only)
+// ✅ Crear coordinador (solo admin — se valida en middleware)
 exports.createCoordinator = async (req, res) => {
   try {
-    const authUser = req.user;
-    if (authUser.role !== 'admin')
-      return res.status(403).json({ message: 'Only administrators can create coordinators' });
-
     const { name, email, password } = req.body;
+
     const existing = await User.findOne({ where: { email } });
-    if (existing) return res.status(400).json({ message: 'Email is already registered' });
+    if (existing) {
+      return res.status(400).json({ message: 'Email is already registered' });
+    }
 
     const user = await User.create({ name, email, password, role: 'coordinator' });
-    res.status(201).json({ message: 'Coordinator created', user });
+
+    res.status(201).json({ message: 'Coordinator created successfully', user });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Error creating coordinator' });
   }
 };
 
-// Get all users (admin or coordinator only)
+// ✅ Obtener todos los usuarios (solo admin o coordinador — se valida en middleware)
 exports.getUsers = async (req, res) => {
   try {
-    const authUser = req.user;
-    if (!['admin', 'coordinator'].includes(authUser.role))
-      return res.status(403).json({ message: 'Unauthorized' });
-
-    const users = await User.findAll({ attributes: ['id', 'name', 'email', 'role'] });
+    const users = await User.findAll({
+      attributes: ['id', 'name', 'email', 'role'],
+    });
     res.json(users);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Error retrieving users' });
   }
 };
 
-// Change user role (admin only)
+// ✅ Cambiar rol de usuario (solo admin — se valida en middleware)
 exports.updateUserRole = async (req, res) => {
   try {
-    const authUser = req.user;
-    if (authUser.role !== 'admin')
-      return res.status(403).json({ message: 'Only administrators can change roles' });
-
     const { id } = req.params;
     const { role } = req.body;
 
-    if (!['volunteer', 'coordinator', 'admin'].includes(role))
+    if (!['volunteer', 'coordinator', 'admin'].includes(role)) {
       return res.status(400).json({ message: 'Invalid role' });
+    }
 
     const user = await User.findByPk(id);
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -117,23 +112,23 @@ exports.updateUserRole = async (req, res) => {
     await user.update({ role });
     res.json({ message: `User role updated to ${role}`, user });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Error updating role' });
   }
 };
 
-// Delete user (admin only)
+// ✅ Eliminar usuario (solo admin — se valida en middleware)
 exports.deleteUser = async (req, res) => {
   try {
-    const authUser = req.user;
-    if (authUser.role !== 'admin')
-      return res.status(403).json({ message: 'Only administrators can delete users' });
+    const { id } = req.params;
 
-    const user = await User.findByPk(req.params.id);
+    const user = await User.findByPk(id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     await user.destroy();
-    res.json({ message: 'User deleted' });
+    res.json({ message: 'User deleted successfully' });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Error deleting user' });
   }
 };
