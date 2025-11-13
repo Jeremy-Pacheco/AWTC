@@ -48,7 +48,6 @@ const Dashboard: React.FC = () => {
         setUser(data.user);
         setEditName(data.user.name || "");
 
-        // Guardar en localStorage
         localStorage.setItem("userName", data.user.name);
         localStorage.setItem("userRole", data.user.role);
         localStorage.setItem("userEmail", data.user.email || "");
@@ -58,7 +57,6 @@ const Dashboard: React.FC = () => {
       } catch (err) {
         console.error("Error fetching user:", err);
 
-        // Si falla fetch, intentar cargar desde localStorage
         const storedName = localStorage.getItem("userName");
         const storedRole = localStorage.getItem("userRole");
         const storedEmail = localStorage.getItem("userEmail");
@@ -116,19 +114,18 @@ const Dashboard: React.FC = () => {
         profileImage: data.user.profileImage,
       });
 
-      // Guardar en localStorage
       localStorage.setItem("userName", data.user.name);
       if (data.user.profileImage) {
         localStorage.setItem("userProfileImage", data.user.profileImage);
       }
 
       setPreview(null);
-      setImageVersion(Date.now()); // cache-busting
+      setImageVersion(Date.now());
       setShowEditModal(false);
       alert("Profile updated successfully");
 
       setPreview(null);
-      setImageVersion(Date.now()); // cache-busting
+      setImageVersion(Date.now());
       setShowEditModal(false);
       alert("Profile updated successfully");
     } catch (err) {

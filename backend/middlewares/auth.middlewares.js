@@ -3,18 +3,17 @@ const { User } = require("../models");
 
 const JWT_SECRET = process.env.JWT_SECRET || "SecretAWTCKey";
 
-// Middleware opcional: no fuerza login, solo asigna req.user si hay token
 module.exports = async (req, res, next) => {
   try {
     const authHeader = req.headers["authorization"];
 
-    // No hay Authorization -> continuar sin usuario
+    // No Authorization -> continue without user
     if (!authHeader) {
       req.user = null;
       return next();
     }
 
-    // Basic Auth (para login)
+    // Basic Auth
     if (authHeader.startsWith("Basic ")) {
       const base64Credentials = authHeader.split(" ")[1];
       const credentials = Buffer.from(base64Credentials, "base64").toString("ascii");
@@ -30,7 +29,7 @@ module.exports = async (req, res, next) => {
       return next();
     }
 
-    // Bearer Token (para rutas autenticadas)
+    // Bearer Token
     if (authHeader.startsWith("Bearer ")) {
       const token = authHeader.replace("Bearer ", "").trim();
       let payload;
@@ -38,7 +37,7 @@ module.exports = async (req, res, next) => {
       try {
         payload = jwt.verify(token, JWT_SECRET);
       } catch (err) {
-        req.user = null; // token inválido -> continuar sin usuario
+        req.user = null;
         return next();
       }
 
@@ -48,7 +47,6 @@ module.exports = async (req, res, next) => {
       return next();
     }
 
-    // Tipo de auth no soportado -> continuar sin usuario
     req.user = null;
     return next();
   } catch (err) {

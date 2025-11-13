@@ -163,7 +163,6 @@ exports.updateOwnProfile = async (req, res) => {
 
     await user.update(updatedData);
 
-    // Construir user a enviar al frontend
     const userData = {
       id: user.id,
       name: user.name,
@@ -181,11 +180,11 @@ exports.updateOwnProfile = async (req, res) => {
     res.status(500).json({ message: "Error updating profile" });
   }
 };
+
 exports.getOwnProfile = async (req, res) => {
   try {
     const user = req.user;
 
-    // Construir userData que se enviará al frontend
     const userData = {
       id: user.id,
       name: user.name,
