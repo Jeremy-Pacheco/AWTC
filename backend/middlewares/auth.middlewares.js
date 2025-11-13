@@ -1,51 +1,59 @@
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const { User } = require('../models');
+const jwt = require("jsonwebtoken");
+const { User } = require("../models");
 
-const JWT_SECRET = process.env.JWT_SECRET || 'SecretAWTCKey';
+const JWT_SECRET = process.env.JWT_SECRET || "SecretAWTCKey";
 
+// Middleware opcional: no fuerza login, solo asigna req.user si hay token
 module.exports = async (req, res, next) => {
   try {
-    if (!req.body) req.body = {};
+    const authHeader = req.headers["authorization"];
 
-    const authHeader = req.headers['authorization'];
+    // No hay Authorization -> continuar sin usuario
     if (!authHeader) {
+      req.user = null;
       return next();
     }
 
-    if (authHeader.startsWith('Basic ')) {
-      const base64Credentials = authHeader.split(' ')[1];
-      const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
-      const [email, password] = credentials.split(':');
+    // Basic Auth (para login)
+    if (authHeader.startsWith("Basic ")) {
+      const base64Credentials = authHeader.split(" ")[1];
+      const credentials = Buffer.from(base64Credentials, "base64").toString("ascii");
+      const [email, password] = credentials.split(":");
 
-      if (!email || !password) return res.status(400).json({ message: 'Basic auth malformed' });
+      if (!email || !password)
+        return res.status(400).json({ message: "Basic auth malformed" });
 
+      req.body = req.body || {};
       req.body.email = email;
       req.body.password = password;
 
       return next();
     }
 
-    if (authHeader.startsWith('Bearer ')) {
-      const token = authHeader.replace('Bearer ', '').trim();
+    // Bearer Token (para rutas autenticadas)
+    if (authHeader.startsWith("Bearer ")) {
+      const token = authHeader.replace("Bearer ", "").trim();
       let payload;
+
       try {
         payload = jwt.verify(token, JWT_SECRET);
       } catch (err) {
-        return res.status(401).json({ message: 'Invalid or expired token' });
+        req.user = null; // token inválido -> continuar sin usuario
+        return next();
       }
 
       const user = await User.findByPk(payload.id);
-      if (!user) return res.status(401).json({ message: 'User not found' });
-
-      req.user = user;
+      req.user = user || null;
       req.token = token;
       return next();
     }
 
-    return res.status(401).json({ message: 'Unsupported authorization type' });
+    // Tipo de auth no soportado -> continuar sin usuario
+    req.user = null;
+    return next();
   } catch (err) {
-    console.error('Auth middleware error:', err);
-    return res.status(500).json({ message: 'Authentication error' });
+    console.error("Auth middleware error:", err);
+    req.user = null;
+    return next();
   }
 };
