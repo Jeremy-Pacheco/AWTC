@@ -3,39 +3,51 @@ import React, { useEffect, useState } from "react";
 type Review = {
   content: string;
   date: string;
+  image?: string;
 };
 
 const Reviews: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [newContent, setNewContent] = useState("");
+  const [newImage, setNewImage] = useState("");
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [editContent, setEditContent] = useState("");
+  const [editImage, setEditImage] = useState("");
 
   useEffect(() => {
-    fetch('https://awtc-production.up.railway.app/api/reviews')
-      .then(res => res.json())
+    fetch("https://awtc-production.up.railway.app/api/reviews")
+      .then((res) => res.json())
       .then((data: Review[]) => setReviews(data));
   }, []);
 
   const handleAddReview = () => {
     const today = new Date().toISOString().slice(0, 10);
-    const newReview = { content: newContent, date: today };
+    const newReview: Review = {
+      content: newContent,
+      date: today,
+      image: newImage,
+    };
     setReviews([newReview, ...reviews]);
     setNewContent("");
+    setNewImage("");
   };
 
   const handleEditClick = (idx: number) => {
     setEditingIdx(idx);
     setEditContent(reviews[idx].content);
+    setEditImage(reviews[idx].image || "");
   };
 
   const handleSaveEdit = (idx: number) => {
     const updated = reviews.map((review, i) =>
-      i === idx ? { ...review, content: editContent } : review
+      i === idx
+        ? { ...review, content: editContent, image: editImage }
+        : review
     );
     setReviews(updated);
     setEditingIdx(null);
     setEditContent("");
+    setEditImage("");
   };
 
   const handleDelete = (idx: number) => {
@@ -60,6 +72,13 @@ const Reviews: React.FC = () => {
           placeholder="Add a review..."
           className="border p-2 rounded w-full"
         />
+        <input
+          type="text"
+          value={newImage}
+          onChange={e => setNewImage(e.target.value)}
+          placeholder="Image URL (opcional)"
+          className="border p-2 rounded w-full"
+        />
         <button type="submit" className="bg-blue-500 text-white px-4 rounded">
           Add Review
         </button>
@@ -70,7 +89,9 @@ const Reviews: React.FC = () => {
         <ul>
           {reviews.map((review, idx) => (
             <li key={idx} className="border rounded p-2 mb-3">
-              <div><strong>Date:</strong> {review.date}</div>
+              <div>
+                <strong>Date:</strong> {review.date}
+              </div>
               <div>
                 <strong>Message:</strong>
                 {editingIdx === idx ? (
@@ -79,6 +100,13 @@ const Reviews: React.FC = () => {
                       type="text"
                       value={editContent}
                       onChange={e => setEditContent(e.target.value)}
+                      className="border ml-2"
+                    />
+                    <input
+                      type="text"
+                      value={editImage}
+                      onChange={e => setEditImage(e.target.value)}
+                      placeholder="Image URL"
                       className="border ml-2"
                     />
                     <button
@@ -97,6 +125,15 @@ const Reviews: React.FC = () => {
                 ) : (
                   <>
                     <span> {review.content}</span>
+                    {review.image && (
+                      <div className="mt-2">
+                        <img
+                          src={review.image}
+                          alt="Review"
+                          style={{ maxWidth: "200px", borderRadius: "8px" }}
+                        />
+                      </div>
+                    )}
                     <button
                       onClick={() => handleEditClick(idx)}
                       className="ml-3 px-2 bg-yellow-400 text-black rounded"
