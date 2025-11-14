@@ -1,16 +1,17 @@
 const { Reviews } = require('../models');
 
-// Create a new review
+// Crear un nuevo review
 exports.createReview = async (req, res) => {
   try {
-    const review = await Reviews.create(req.body);
+    const { content, date, image } = req.body;
+    const review = await Reviews.create({ content, date, image });
     res.status(201).json(review);
   } catch (error) {
     res.status(400).json({ message: 'Error creating review', error });
   }
 };
 
-// Get all reviews
+// Obtener todos los reviews
 exports.getAllReviews = async (req, res) => {
   try {
     const reviews = await Reviews.findAll();
@@ -20,20 +21,21 @@ exports.getAllReviews = async (req, res) => {
   }
 };
 
-// Update a review
+// Actualizar un review
 exports.updateReview = async (req, res) => {
   try {
     const review = await Reviews.findByPk(req.params.id);
     if (!review) return res.status(404).json({ message: 'Review not found' });
 
-    await review.update(req.body);
+    const { content, date, image } = req.body;
+    await review.update({ content, date, image });
     res.status(200).json(review);
   } catch (error) {
     res.status(400).json({ message: 'Error updating review', error });
   }
 };
 
-// Delete a review
+// Eliminar un review
 exports.deleteReview = async (req, res) => {
   try {
     const review = await Reviews.findByPk(req.params.id);
