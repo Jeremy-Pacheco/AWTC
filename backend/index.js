@@ -6,7 +6,7 @@ const app = express();
 
 // CORS primero
 app.use(cors({
-  origin: 'https://awtc.netlify.app',
+  origin: ["https://awtc.netlify.app", "http://localhost:5173", "http://167.172.58.2:5173"],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: false
 }));
