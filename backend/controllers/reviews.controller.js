@@ -1,6 +1,5 @@
 const { Reviews } = require('../models');
 
-// Crear un nuevo review
 exports.createReview = async (req, res) => {
   try {
     const { content, date, image } = req.body;
@@ -11,7 +10,6 @@ exports.createReview = async (req, res) => {
   }
 };
 
-// Obtener todos los reviews
 exports.getAllReviews = async (req, res) => {
   try {
     const reviews = await Reviews.findAll();
@@ -21,7 +19,6 @@ exports.getAllReviews = async (req, res) => {
   }
 };
 
-// Actualizar un review
 exports.updateReview = async (req, res) => {
   try {
     const review = await Reviews.findByPk(req.params.id);
@@ -35,7 +32,6 @@ exports.updateReview = async (req, res) => {
   }
 };
 
-// Eliminar un review
 exports.deleteReview = async (req, res) => {
   try {
     const review = await Reviews.findByPk(req.params.id);
