@@ -14,11 +14,11 @@
     "dialect": "mysql"
   },
   "production": {
-    "username": "${DB_USER}",
-    "password": "${DB_PASS}",
-    "database": "${DB_NAME}",
-    "host": "${DB_HOST}",
-    "port": "${DB_PORT}",
+    "username": "doadmin",
+    "password": "AVNS__RottyziO4cDJ2cI45x",
+    "database": "defaultdb",
+    "host": "dbaas-db-10768446-do-user-28730045-0.k.db.ondigitalocean.com",
+    "port": 25060,
     "dialect": "mysql",
     "dialectOptions": {
       "ssl": {
