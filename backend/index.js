@@ -4,16 +4,11 @@ const cors = require("cors");
 
 const app = express();
 
-// public directory
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.use(
-  cors({
-    origin: ["https://awtc.netlify.app", "http://localhost:5173", "http://167.172.58.2:5173"],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: false,
-  })
-);
+app.use(cors({
+  origin: ["https://awtc.netlify.app", "http://localhost:5173", "http://167.172.58.2:5173"],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: false
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

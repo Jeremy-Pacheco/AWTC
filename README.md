@@ -171,15 +171,15 @@ awtc/
 
 ### E/R Diagram
 
-![](readme-img/ERD.png)
+![ ](readme-img/ERD.png)
 
 ### Class Diagram
 
-![](readme-img/class-diagram.png)
+![ ](readme-img/class-diagram.png)
 
 ### Use Case Diagram
 
-![](readme-img/use-case-diagram.png)
+![ ](readme-img/use-case-diagram.png)
 
 ---
 
@@ -203,6 +203,6 @@ awtc/
 
 ---
 
-## Frontend deployment 
+## Frontend deployment
 
 [Deployment](https://awtc.netlify.app/)
