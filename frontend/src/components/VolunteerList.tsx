@@ -58,7 +58,7 @@ function VolunteerList() {
         >
           <h2 style={{ margin: 0 }}>{item.title}</h2>
           <p>
-            <b>Organización:</b>{" "}
+            <b>Organization:</b>{" "}
             <a
               href={item.organization.url}
               target="_blank"
@@ -70,7 +70,7 @@ function VolunteerList() {
           <p>{item.description}</p>
           {item.dates && (
             <p>
-              <b>Fechas:</b> {item.dates}
+              <b>Dates:</b> {item.dates}
             </p>
           )}
           <a
@@ -79,7 +79,7 @@ function VolunteerList() {
             rel="noopener noreferrer"
             style={{ color: "#1867c0" }}
           >
-            Detalle &gt;
+            Details &gt;
           </a>
         </div>
       ))}

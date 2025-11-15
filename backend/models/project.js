@@ -2,6 +2,7 @@
 const {
   Model
 } = require('sequelize');
+const { Sequelize } = require('.');
 module.exports = (sequelize, DataTypes) => {
   class Project extends Model {
     /**
@@ -20,7 +21,8 @@ module.exports = (sequelize, DataTypes) => {
     end_date: DataTypes.DATE,
     location: DataTypes.STRING,
     capacity: DataTypes.INTEGER,
-    status: DataTypes.STRING
+    status: DataTypes.STRING,
+    filename: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Project',

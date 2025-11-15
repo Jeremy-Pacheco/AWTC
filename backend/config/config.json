@@ -14,11 +14,17 @@
     "dialect": "mysql"
   },
   "production": {
-    "username": "${MYSQLUSER}",
-    "password": "${MYSQLPASSWORD}",
-    "database": "${MYSQLDATABASE}",
-    "host": "${MYSQLHOST}",
-    "port": "${MYSQLPORT}",
-    "dialect": "mysql"
+    "username": "doadmin",
+    "password": "AVNS__RottyziO4cDJ2cI45x",
+    "database": "defaultdb",
+    "host": "dbaas-db-10768446-do-user-28730045-0.k.db.ondigitalocean.com",
+    "port": 25060,
+    "dialect": "mysql",
+    "dialectOptions": {
+      "ssl": {
+        "require": true,
+        "rejectUnauthorized": false
+      }
+    }
   }
 }

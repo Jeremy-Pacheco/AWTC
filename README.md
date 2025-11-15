@@ -24,6 +24,9 @@ Currently, the backend is functional with CRUD for projects, categories and revi
 - Add resources
 - Moderate comments
 
+### Admin
+- Complete management
+
 ---
 
 ## Main Functionalities (Planned)
@@ -42,10 +45,9 @@ Currently, the backend is functional with CRUD for projects, categories and revi
 - Database configured with MySQL and Sequelize
 - Seeders with example data
 - RESTful API endpoints:
-
-Projects: GET, POST, PUT /:id, DELETE /:id
-Categories: GET, POST, PUT /:id, DELETE /:id
-Reviews: GET, POST, PUT /:id, DELETE /:id
+    - Projects: GET, POST, PUT /:id, DELETE /:id
+    - Categories: GET, POST, PUT /:id, DELETE /:id
+    - Reviews: GET, POST, PUT /:id, DELETE /:id
 
 - Frontend in React (setup ready, connects to backend APIs)
 
@@ -111,19 +113,21 @@ Make sure the backend server is running so the frontend can fetch data.
 ```bash
 awtc/
 ├── backend/
-│   ├── config/           # DB configuration
-│   ├── controllers/      # CRUD controllers
-│   ├── migrations/       # DB migrations
-│   ├── models/           # Sequelize models
-│   ├── routes/           # Express routes
-│   ├── seeders/          # Seeders
-│   └── index.js          # Server entry point
+│   ├── config/
+│   ├── controllers/
+│   ├── middlewares/
+│   ├── migrations/
+│   ├── models/
+│   ├── routes/
+│   ├── seeders/
+│   └── index.js
 │
 └── frontend/
-    ├── public/           # HTML & static files
-    ├── src/              # React source code
-    │   ├── components/  # React components
-    │   └── pages/       # Pages / views
+    ├── public/
+    ├── dist/
+    ├── src/
+    │   ├── components/
+    │   └── pages/
     └── package.json
 ```
 
@@ -149,26 +153,31 @@ awtc/
 - PUT /api/reviews/:id – Update a review
 - DELETE /api/reviews/:id – Delete a review
 
+### Users
+- GET /api/users – Get all users
+- POST /api/users/signup – Create a user
+- PUT /api/users/:id/role – Update a user
+- DELETE /api/users/:id – Delete a user
 ---
 
 ## ⚠️ Notes
-- Backend is fully functional for projects, categories and reviews.
+- Backend is fully functional for projects, categories, reviews and users.
 - Frontend is set up to connect with backend APIs.
-- Additional features (user authentication, project enrollments, resources, comments, dashboards) are planned but not implemented yet.
+- Additional features (project enrollments, resources, comments, dashboards) are planned but not implemented yet.
 
 ---
 
 ## 📈 Diagrams
 
-Entity-Relationship Diagram
+### E/R Diagram
 
 ![](https://github.com/Jeremy-Pacheco/AWTC/blob/main/image.png)
 
-Class diagram
+### Class Diagram
 
 ![](https://github.com/Jeremy-Pacheco/AWTC/blob/main/image%20(1).png)
 
-Usage diagram
+### Use Case Diagram
 
 ![](https://github.com/Jeremy-Pacheco/AWTC/blob/main/image%20(2).png)
 
@@ -194,6 +203,6 @@ Usage diagram
 
 ---
 
-## Frontend deployment 
+## Frontend deployment
 
 [Deployment](https://awtc.netlify.app/)
