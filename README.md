@@ -171,15 +171,15 @@ awtc/
 
 ### E/R Diagram
 
-![ ](readme-img/ERD.png)
+![](https://github.com/Jeremy-Pacheco/AWTC/blob/main/image.png)
 
 ### Class Diagram
 
-![ ](readme-img/class-diagram.png)
+![](https://github.com/Jeremy-Pacheco/AWTC/blob/main/image%20(1).png)
 
 ### Use Case Diagram
 
-![ ](readme-img/use-case-diagram.png)
+![](https://github.com/Jeremy-Pacheco/AWTC/blob/main/image%20(2).png)
 
 ---
 
