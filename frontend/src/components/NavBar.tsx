@@ -18,6 +18,18 @@ function NavBar() {
     setIsLoggedIn(!!token);
   }, []);
 
+  // listen for global requests to open the auth modal (from other pages/components)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const custom = e as CustomEvent;
+      const detail = custom.detail as { mode?: "login" | "signup" } | undefined;
+      const mode = detail?.mode || "signup";
+      openAuth(mode);
+    };
+    window.addEventListener("openAuthModal", handler as EventListener);
+    return () => window.removeEventListener("openAuthModal", handler as EventListener);
+  }, []);
+
   const openAuth = (mode: "login" | "signup") => {
     setAuthMode(mode);
     setAuthOpen(true);
@@ -74,6 +86,15 @@ function NavBar() {
   }
 >
   Info
+</NavLink>
+
+<NavLink
+  to="/AboutUs"
+  className={({ isActive }) =>
+    `text-gray-800 transition-all duration-200 ${isActive ? "font-bold" : ""}`
+  }
+>
+  About
 </NavLink>
 
           {isLoggedIn ? (
@@ -138,7 +159,8 @@ function NavBar() {
         <NavLink to="/Home" onClick={() => setMenuOpen(false)}>Home</NavLink>
         <NavLink to="/Volunteering" onClick={() => setMenuOpen(false)}>Volunteering</NavLink>
         <NavLink to="/Reviews" onClick={() => setMenuOpen(false)}>Reviews</NavLink>
-        <NavLink to="/MoreInfo" onClick={() => setMenuOpen(false)}>Info</NavLink>
+  <NavLink to="/MoreInfo" onClick={() => setMenuOpen(false)}>Info</NavLink>
+  <NavLink to="/About" onClick={() => setMenuOpen(false)}>About</NavLink>
         {isLoggedIn && (
           <>
             <button onClick={() => {navigate("/dashboard"); setMenuOpen(false)}} className="mt-4 text-left">Profile</button>
