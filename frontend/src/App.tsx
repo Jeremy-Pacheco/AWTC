@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import NavBar from "./components/NavBar";
+import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Volunteering from "./pages/Volunteering";
 import Reviews from "./pages/Reviews";
@@ -18,6 +19,7 @@ function App() {
         <Route path="/MoreInfo" element={<MoreInfo />} />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
+      <Footer />
     </BrowserRouter>
   );
 }
