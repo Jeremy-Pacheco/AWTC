@@ -7,6 +7,7 @@ import Reviews from "./pages/Reviews";
 import MoreInfo from "./pages/MoreInfo";
 import Dashboard from "./pages/Dashboard";
 import AboutUs from "./pages/AboutUs";
+import Privacy from "./pages/Privacy";
 
 //TODO: Import other pages when you have them
 function App() {
@@ -20,6 +21,7 @@ function App() {
         <Route path="/Volunteering" element={<Volunteering />} />
         <Route path="/Reviews" element={<Reviews />} />
         <Route path="/MoreInfo" element={<MoreInfo />} />
+        <Route path="/privacy" element={<Privacy />} />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
       <Footer />
