@@ -1,21 +1,11 @@
 import React from "react";
-import HeaderImg from "../assets/awtc-logo.png";
 import PolicySection from "../components/PolicySection";
+import HeroImage from "../components/HeroImage";
 
 const Terms: React.FC = () => {
   return (
     <div className="min-h-[80vh]">
-      <header className="relative h-40 md:h-56 w-full overflow-hidden">
-        <img
-          src={HeaderImg}
-          alt="Terms and Conditions"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ opacity: 0.12 }}
-        />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <h1 className="text-gray-900 text-2xl md:text-4xl font-bold">Terms & Conditions</h1>
-        </div>
-      </header>
+      <HeroImage title={<h1 className="Display">Terms &amp; Conditions</h1>} imgSrc="/hero-img.jpg" heightClass="h-64 md:h-96" />
 
       <main className="max-w-4xl mx-auto px-6 py-12 space-y-10">
         <PolicySection title="Acceptance of Terms">

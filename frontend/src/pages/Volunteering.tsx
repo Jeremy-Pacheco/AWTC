@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import HeroImage from "../components/HeroImage";
 
 type Project = {
   id: number;
@@ -151,22 +152,16 @@ const Volunteering: React.FC = () => {
   };
 
   return (
-    <div className="p-4">
+    <>
       {/* Hero */}
-      <div className="relative h-64 md:h-96">
-        <img
-          src="/images/hero-volunteering.jpg"
-          alt="Volunteering Hero"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <h1 className="text-white text-4xl md:text-6xl font-bold text-center">
-            Join Our Volunteering Projects
-          </h1>
-        </div>
-      </div>
+      <HeroImage
+        title={<h1 className="Display">A Will To Change</h1>}
+        imgSrc="/hero-img.jpg"
+        heightClass="h-64 md:h-96"
+      />
 
-      <div className="flex flex-col md:flex-row justify-between items-center mt-8 mb-6 px-4 md:px-16">
+      <div className="p-4">
+        <div className="flex flex-col md:flex-row justify-between items-center mt-8 mb-6 px-4 md:px-16">
         <div>
           <h2 className="text-3xl font-bold">Active Projects</h2>
           <p className="text-lg text-gray-600">Small actions, big impact.</p>
@@ -297,7 +292,8 @@ const Volunteering: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 
