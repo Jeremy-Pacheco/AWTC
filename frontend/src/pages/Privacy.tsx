@@ -1,21 +1,11 @@
 import React from "react";
-import HeaderImg from "../assets/awtc-logo.png";
 import PolicySection from "../components/PolicySection";
+import HeroImage from "../components/HeroImage";
 
 const Privacy: React.FC = () => {
   return (
     <div className="min-h-[80vh]">
-      <header className="relative h-40 md:h-56 w-full overflow-hidden">
-        <img
-          src={HeaderImg}
-          alt="Privacy"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ opacity: 0.12 }}
-        />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <h1 className="text-gray-900 text-2xl md:text-4xl font-bold">Privacy Policy</h1>
-        </div>
-      </header>
+      <HeroImage title={<h1 className="Display">Privacy Policy</h1>} imgSrc="/hero-img.jpg" heightClass="h-64 md:h-96" />
 
       <main className="max-w-4xl mx-auto px-6 py-12 space-y-10">
         <PolicySection title="Introduction">
@@ -79,7 +69,7 @@ const Privacy: React.FC = () => {
 
         <PolicySection title="Contact">
           <p>
-            If you have questions about this Privacy Policy, contact us at <a href="mailto:info@awtc.example">info@awtc.es</a>.
+            If you have questions about this Privacy Policy, contact us at <a href="mailto:info@awtc.es">info@awtc.es</a>.
           </p>
         </PolicySection>
       </main>

@@ -1,5 +1,6 @@
 import React from "react";
-import HeaderImg from "../assets/awtc-logo.png";
+import HeroImage from "../components/HeroImage";
+import Logo from "../assets/awtc-logo.png";
 
 const AboutUs: React.FC = () => {
   const openSignup = () => {
@@ -8,18 +9,7 @@ const AboutUs: React.FC = () => {
 
   return (
     <div className="min-h-[80vh]">
-      {/* Header */}
-      <header className="relative h-64 md:h-96 w-full overflow-hidden">
-        <img
-          src={HeaderImg}
-          alt="A Will To Change"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ opacity: 0.35 }}
-        />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <h1 className="text-white text-3xl md:text-5xl font-bold">A Will To Change</h1>
-        </div>
-      </header>
+      <HeroImage title={<h1 className="Display">A Will To Change</h1>} imgSrc="/hero-img.jpg" heightClass="h-64 md:h-96" />
 
       <main className="max-w-6xl mx-auto px-6 py-12 space-y-16">
         {/* About Us */}
@@ -28,7 +18,7 @@ const AboutUs: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <img
-              src={HeaderImg}
+              src={Logo}
               alt="About AWTC"
               className="w-full h-64 md:h-80 object-cover rounded-lg order-1 md:order-2"
             />
@@ -52,7 +42,7 @@ const AboutUs: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <img
-              src={HeaderImg}
+              src={Logo}
               alt="Our mission"
               className="w-full h-64 md:h-80 object-cover rounded-lg"
             />
