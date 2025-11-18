@@ -56,23 +56,78 @@ const AboutUs: React.FC = () => {
               </p>
             </div>
           </div>
-        </section>
+  </section>
+      </main>
 
-        {/* Wanna join our team */}
-        <section className="bg-gray-50 p-8 rounded-lg text-center">
+      {/* Wanna join our team (styled same as Contact us) */}
+      <div className="max-w-6xl mx-auto px-6 py-12">
+        <section className="bg-white p-8 rounded-lg text-center">
           <h2 className="text-2xl md:text-3xl font-bold mb-4">Wanna join our team?</h2>
-          <p className="mb-6">
-            Become part of AWTC and contribute to projects that create real, measurable impact.
-            Your time matters — and change begins when you decide to take action.
+          <p className="mb-6 text-gray-700">
+            Become part of AWTC and contribute to projects that create real, measurable
+            impact. Your time matters — and change begins when you decide to take action.
           </p>
           <button
             onClick={openSignup}
-            className="inline-block bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition"
+            className="inline-block bg-[#F0BB00] text-black px-6 py-2 rounded-md hover:bg-[#C68900] transition font-semibold"
           >
             Become a volunteer today
           </button>
         </section>
-      </main>
+
+        {/* Contact us */}
+        <section className="bg-[#F5F1E3] p-8 rounded-lg mt-8">
+          <h2 className="text-2xl md:text-3xl font-bold mb-6">Contact us</h2>
+
+          <div className="w-full">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                // CRUD not implemented yet
+                alert("Contact form submission is not implemented yet.");
+              }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full"
+            >
+              <input
+                name="name"
+                placeholder="Name"
+                className="w-full pl-3 pr-3 py-2 bg-white border border-[#767676] rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                required
+              />
+
+              <input
+                name="email"
+                type="email"
+                placeholder="Email"
+                className="w-full pl-3 pr-3 py-2 bg-white border border-[#767676] rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                required
+              />
+
+              <input
+                name="subject"
+                placeholder="Subject"
+                className="w-full md:col-span-2 pl-3 pr-3 py-2 bg-white border border-[#767676] rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+              />
+
+              <textarea
+                name="message"
+                placeholder="Message"
+                className="w-full md:col-span-2 pl-3 pr-3 py-2 bg-white border border-[#767676] rounded-lg focus:ring-2 focus:ring-blue-400 outline-none h-40 resize-y"
+                required
+              />
+
+              <div className="md:col-span-2 text-right">
+                <button
+                  type="submit"
+                  className="inline-block bg-[#F0BB00] text-black px-6 py-2 rounded-md hover:bg-[#C68900] transition"
+                >
+                  Send message
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
     </div>
   );
 };

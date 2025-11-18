@@ -94,7 +94,7 @@ function NavBar() {
     `text-gray-800 transition-all duration-200 ${isActive ? "font-bold" : ""}`
   }
 >
-  About
+  About Us
 </NavLink>
 
           {isLoggedIn ? (
@@ -159,8 +159,8 @@ function NavBar() {
         <NavLink to="/Home" onClick={() => setMenuOpen(false)}>Home</NavLink>
         <NavLink to="/Volunteering" onClick={() => setMenuOpen(false)}>Volunteering</NavLink>
         <NavLink to="/Reviews" onClick={() => setMenuOpen(false)}>Reviews</NavLink>
-  <NavLink to="/MoreInfo" onClick={() => setMenuOpen(false)}>Info</NavLink>
-  <NavLink to="/About" onClick={() => setMenuOpen(false)}>About</NavLink>
+        <NavLink to="/MoreInfo" onClick={() => setMenuOpen(false)}>Info</NavLink>
+        <NavLink to="/AboutUs" onClick={() => setMenuOpen(false)}>About Us</NavLink>
         {isLoggedIn && (
           <>
             <button onClick={() => {navigate("/dashboard"); setMenuOpen(false)}} className="mt-4 text-left">Profile</button>
