@@ -1,0 +1,76 @@
+<%- include('header', { shopName: shopName }) %>
+
+<main style="max-width:1100px; margin: 16px auto; padding: 0 24px 80px;">
+  <section>
+    <h2>Overview</h2>
+    <p>Welcome to the <strong><%= shopName %></strong> admin dashboard for volunteering projects.</p>
+    <ul>
+      <li>Available projects: <strong><%= projectsNumber %></strong></li>
+      <li>Registered users: <strong><%= usersNumber %></strong></li>
+      <li>Categories: <strong><%= categoriesNumber %></strong></li>
+      <li>Reviews: <strong><%= reviewsNumber %></strong></li>
+    </ul>
+  </section>
+
+  <section style="margin-top:20px">
+    <h3>Projects</h3>
+    <% if (projects && projects.length) { %>
+      <ul>
+        <% projects.forEach(function(p){ %>
+          <li>
+            <strong><%= p.name %></strong>
+            <% if (p.description) { %> — <%= p.description %><% } %>
+            <% if (p.status) { %> <span style="color:#666">(status: <%= p.status %>)</span><% } %>
+          </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p>No projects available (sample data)</p>
+    <% } %>
+  </section>
+
+  <section style="margin-top:20px">
+    <h3>Users</h3>
+    <% if (users && users.length) { %>
+      <ul>
+        <% users.forEach(function(u){ %>
+          <li><strong><%= u.name %></strong> — <%= u.email || 'no-email' %> <span style="color:#666">(<%= u.role %>)</span></li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p>No users available (sample data)</p>
+    <% } %>
+  </section>
+
+  <section style="margin-top:20px">
+    <h3>Categories</h3>
+    <% if (categories && categories.length) { %>
+      <ul>
+        <% categories.forEach(function(c){ %>
+          <li><strong><%= c.name %></strong> <% if (c.description) { %> — <%= c.description %><% } %></li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p>No categories available (sample data)</p>
+    <% } %>
+  </section>
+
+  <section style="margin-top:20px">
+    <h3>Reviews</h3>
+    <% if (reviews && reviews.length) { %>
+      <ul>
+        <% reviews.forEach(function(r){ %>
+          <li>
+            <%= r.content || ('Review #' + r.id) %>
+            <% if (r.date) { %> <span style="color:#666">— <%= new Date(r.date).toLocaleDateString() %></span><% } %>
+          </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p>No reviews available (sample data)</p>
+    <% } %>
+  </section>
+</main>
+
+</body>
+</html>
