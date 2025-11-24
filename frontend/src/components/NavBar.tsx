@@ -116,13 +116,13 @@ function NavBar() {
             <>
               <button
                 onClick={() => openAuth("login")}
-                className="px-4 py-2 rounded-md border border-[#767676] hover:bg-[#EDEBEB] transition"
+                className="px-4 py-2 rounded-md border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
                 Log In
               </button>
               <button
                 onClick={() => openAuth("signup")}
-                className="px-4 py-2 rounded-md bg-[#F0BB00] border border-[#767676] hover:bg-[#C68900] transition"
+                className="px-4 py-2 rounded-md bg-[#F0BB00] text-black border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
                 Sign Up
               </button>

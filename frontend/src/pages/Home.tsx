@@ -34,7 +34,7 @@ function AboutSection() {
           Our mission is to make joining social and environmental projects simple, safe, and meaningful, connecting volunteers with opportunities that create real impact and strengthen communities. We provide support, guidance, and a network where everyone can contribute, learn, and grow, fostering collaboration, compassion, and lasting positive change. By bringing together people from all walks of life, we aim to empower individuals to take meaningful action, build stronger communities, and protect the planet for future generations.
         </p>
         <NavLink to="/AboutUs">
-          <button className="bg-yellow-400 hover:bg-yellow-500 px-5 py-2 rounded-3xl font-semibold shadow">
+          <button className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-5 py-2 rounded-3xl font-semibold shadow">
             Read more
           </button>
         </NavLink>
@@ -117,15 +117,15 @@ function ReviewsSection() {
     <section className="py-8">
       <div className="flex flex-col md:flex-row md:flex-wrap gap-6 justify-center items-stretch mb-8">
         {reviews.map((review, idx) => (
-          <div key={idx} className="bg-gray-100 rounded-lg shadow flex flex-col mx-auto w-full max-w-[350px] min-w-[240px]">
+            <div key={idx} className="bg-white rounded-lg shadow-lg flex flex-col mx-auto w-full max-w-[350px] min-w-[240px]">
+            {/* Title bar: full-width block aligned with card edges */}
+            <div className="w-full">
+              <span className="block w-full text-left text-black text-sm font-semibold px-4 py-2 border-b border-gray-200">{review.label}</span>
+            </div>
             <div className="flex flex-col flex-1 p-4">
               <span className="block text-xs text-gray-500 mb-1">
                 {formatDate(review.date)}
               </span>
-              <span className="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded mb-2">
-                {review.label}
-              </span>
-              {/* IMAGEN después del LABEL */}
               {review.image && (
                 <img src={review.image} alt="review" className="w-full h-40 object-cover rounded mb-2" />
               )}
@@ -175,7 +175,7 @@ function ReviewsSection() {
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="bg-yellow-400 hover:bg-yellow-500 px-4 py-2 rounded-2xl font-semibold shadow"
+                className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-2xl font-semibold shadow"
               >
                 Save review
               </button>
@@ -190,7 +190,7 @@ function ReviewsSection() {
           </form>
         ) : (
           <button
-            className="bg-yellow-400 hover:bg-yellow-500 px-7 py-2 rounded-2xl font-semibold shadow text-black"
+            className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-7 py-2 rounded-2xl font-semibold shadow"
             onClick={() => setShowForm(true)}
           >
             Add a review

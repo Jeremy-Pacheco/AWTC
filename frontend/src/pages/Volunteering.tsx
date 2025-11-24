@@ -176,7 +176,7 @@ const Volunteering: React.FC = () => {
 
       <div className="px-4 md:px-16 mb-4 flex justify-end">
         <button
-          className="bg-[#F0BB00] text-black px-4 py-2 rounded"
+          className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-2xl font-semibold shadow"
           onClick={openAddModal}
         >
           Add Project
@@ -187,7 +187,7 @@ const Volunteering: React.FC = () => {
         {projects.map(proj => (
           <div
             key={proj.id}
-            className="flex flex-col md:flex-row bg-[#EDEBEB] rounded p-4 md:p-6 gap-4"
+            className="flex flex-col md:flex-row bg-white rounded p-4 md:p-6 gap-4 shadow-lg"
           >
             {proj.filename && (
               <img
