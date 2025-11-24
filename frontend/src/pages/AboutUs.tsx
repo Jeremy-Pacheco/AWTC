@@ -81,11 +81,30 @@ const AboutUs: React.FC = () => {
 
           <div className="w-full">
             <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                // CRUD not implemented yet
-                alert("Contact form submission is not implemented yet.");
-              }}
+              onSubmit={async (e) => {
+                  e.preventDefault();
+                  const form = e.target as HTMLFormElement;
+                  const formData = new FormData(form);
+                  const body = Object.fromEntries(formData as any);
+
+                  try {
+                    const apiBase = (window as any).API_BASE || 'http://localhost:8080';
+                    const res = await fetch(`${apiBase}/api/contacts`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(body),
+                    });
+
+                    if (!res.ok) {
+                      const text = await res.text();
+                      throw new Error(text || res.statusText || 'Network error');
+                    }
+                    alert('Message sent — thank you!');
+                    form.reset();
+                  } catch (err: any) {
+                    alert('Failed to send message: ' + (err.message || err));
+                  }
+                }}
               className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full"
             >
               <input
