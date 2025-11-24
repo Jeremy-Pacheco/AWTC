@@ -16,19 +16,19 @@
   h2 {
     color: black;
     font-size: 3rem;   /**48px*/
-    font-weight: bold;
+    font-weight: 600;
     font-family: "Arial";
   }
-  h3 {  
+  h3 {
     color: black;
     font-size: 2.5rem; /**40px*/
-    font-weight: bold;
+    font-weight: 600;
     font-family: "Arial";
   }
-  h4 {/**Subtitle 1 */ 
+  h4 {/**Subtitle 1 */
     color: black;
     font-size: 1.75rem; /**28px*/
-    font-weight: bold;
+    font-weight: medium;
     font-family: "Arial";
   }
   p {
@@ -41,7 +41,7 @@
     font-size: 1rem; /**16px*/
     font-weight: 400;
     font-family: "Arial";
-  } 
+  }
   .text-small-light {
     font-size: 0.875rem; /**14px*/
     font-weight: 300;
