@@ -21,10 +21,28 @@ app.set('view engine', 'ejs');
 
 
 
-const authMiddleware = require("./middlewares/auth.middlewares");
-app.use(authMiddleware);
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
+
+// Parse cookies first so we can access session cookie
+app.use(cookieParser());
+
+// Session middleware for EJS/admin area (uses cookies)
+app.use(session({
+  name: process.env.SESSION_NAME || 'awtc.sid',
+  secret: process.env.SESSION_SECRET || 'awtc_session_secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000 // 1 day
+  }
+}));
 
 const db = require("./models");
+
+
 db.sequelize
   .sync({ force: false })
   .then(() => console.log("Database synced without dropping data!"))
@@ -70,6 +88,24 @@ app.get('/debug-models', async (req, res) => {
 
 const initAdmin = require("./config/initAdmin");
 
+// Auth middleware that supports Bearer/Basic headers (keeps API auth intact)
+const authMiddleware = require("./middlewares/auth.middlewares");
+app.use(authMiddleware);
+
+// If a session exists, attach the user to req.user so EJS routes can use it.
+app.use(async (req, res, next) => {
+  try {
+    if (!req.user && req.session && req.session.userId) {
+      const user = await db.User.findByPk(req.session.userId);
+      req.user = user || null;
+    }
+  } catch (err) {
+    console.error('Session attach error:', err.message);
+    req.user = null;
+  }
+  next();
+});
+
 db.sequelize
   .sync({ force: false })
   .then(async () => {
@@ -83,15 +119,23 @@ const reviewRoutes = require("./routes/reviews.routes");
 const categoryRoutes = require("./routes/category.routes");
 const userRoutes = require("./routes/user.routes");
 const contactRoutes = require("./routes/contact.routes");
+const sessionRoutes = require("./routes/session.routes");
 
 app.use("/api/projects", projectRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/contacts", contactRoutes);
+// Session/login routes for EJS admin area
+app.use('/', sessionRoutes);
 
 // Simple EJS dashboard routes (demo)
 app.get('/', async (req, res) => {
+  // Require session / cookie login for admin dashboard
+  if (!req.user) {
+    return res.redirect('/login');
+  }
+
   try {
     const projects = (await safeFindAll(db.Project)) || [];
     const users = (await safeFindAll(db.User)) || [];
