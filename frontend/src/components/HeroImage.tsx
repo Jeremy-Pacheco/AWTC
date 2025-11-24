@@ -3,7 +3,7 @@ import React from "react";
 interface HeroImageProps {
   title?: React.ReactNode;
   imgSrc?: string;
-  heightClass?: string; // tailwind height classes like 'h-40 md:h-56'
+  heightClass?: string;
   titleClass?: string;
 }
 
@@ -22,7 +22,13 @@ const HeroImage: React.FC<React.PropsWithChildren<HeroImageProps>> = ({
         className="absolute inset-0 w-full h-full object-cover"
         style={{ opacity: 0.12 }}
       />
-      <div className="absolute inset-0 flex items-center justify-center">
+
+      <div
+        className="absolute inset-0"
+        style={{ backgroundColor: 'rgba(0,0,0,0.08)', zIndex: 10 }}
+      />
+
+      <div className="absolute inset-0 flex items-center justify-center z-20 px-4">
         {title ? (
           typeof title === "string" ? (
             <h1 className={titleClass}>{title}</h1>
