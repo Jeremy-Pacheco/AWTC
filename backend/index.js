@@ -82,11 +82,13 @@ const projectRoutes = require("./routes/project.routes");
 const reviewRoutes = require("./routes/reviews.routes");
 const categoryRoutes = require("./routes/category.routes");
 const userRoutes = require("./routes/user.routes");
+const contactRoutes = require("./routes/contact.routes");
 
 app.use("/api/projects", projectRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/contacts", contactRoutes);
 
 // Simple EJS dashboard routes (demo)
 app.get('/', async (req, res) => {
@@ -95,6 +97,7 @@ app.get('/', async (req, res) => {
     const users = (await safeFindAll(db.User)) || [];
     const categories = (await safeFindAll(db.Category)) || [];
     const reviews = (await safeFindAll(db.Reviews)) || [];
+    const contacts = db.Contact ? (await safeFindAll(db.Contact)) : [];
 
     console.log(`Dashboard counts -> projects: ${projects.length}, users: ${users.length}, categories: ${categories.length}, reviews: ${reviews.length}`);
 
@@ -108,6 +111,8 @@ app.get('/', async (req, res) => {
       categoriesNumber: categories.length,
       reviews: reviews,
       reviewsNumber: reviews.length,
+      contacts: contacts,
+      contactsNumber: contacts.length,
     });
   } catch (err) {
     console.error('Error fetching data for dashboard:', err.message);

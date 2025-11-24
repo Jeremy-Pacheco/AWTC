@@ -70,6 +70,21 @@
       <p>No reviews available (sample data)</p>
     <% } %>
   </section>
+
+  <section style="margin-top:20px">
+    <h3>Contact messages</h3>
+    <% if (typeof contacts !== 'undefined' && contacts && contacts.length) { %>
+      <ul>
+        <% contacts.forEach(function(c){ %>
+          <li><strong><%= c.name %></strong> — <%= c.email %> <% if (c.subject) { %> — <%= c.subject %><% } %>
+            <div style="color:#333; margin-top:4px"><%= c.message %></div>
+          </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p>No contact messages yet</p>
+    <% } %>
+  </section>
 </main>
 
 </body>

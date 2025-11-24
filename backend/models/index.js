@@ -45,6 +45,14 @@ fs
     db[model.name] = model;
   });
 
+// Ensure Contact model is loaded if present
+try {
+  const contactModel = require(path.join(__dirname, 'contact.js'))(sequelize, Sequelize.DataTypes);
+  db[contactModel.name] = contactModel;
+} catch (err) {
+  // ignore if contact model already loaded or missing
+}
+
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
