@@ -69,15 +69,15 @@ const AboutUs: React.FC = () => {
           </p>
           <button
             onClick={openSignup}
-            className="inline-block bg-[#F0BB00] text-black px-6 py-2 rounded-md hover:bg-[#C68900] transition font-semibold"
+            className="inline-block bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-6 py-2 rounded-2xl font-semibold shadow transition"
           >
             Become a volunteer today
           </button>
         </section>
 
         {/* Contact us */}
-        <section className="bg-[#F5F1E3] p-8 rounded-lg mt-8">
-          <h2 className="text-2xl md:text-3xl font-bold mb-6">Contact us</h2>
+        <section className="bg-white p-8 rounded-lg mt-8 shadow-lg">
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 text-black">Contact us</h2>
 
           <div className="w-full">
             <form
@@ -110,7 +110,7 @@ const AboutUs: React.FC = () => {
               <input
                 name="name"
                 placeholder="Name"
-                className="w-full pl-3 pr-3 py-2 bg-white border border-[#767676] rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                className="w-full pl-3 pr-3 py-2 bg-white border border-[#767676] rounded-lg focus:ring-2 focus:ring-blue-400 outline-none text-black"
                 required
               />
 
@@ -118,27 +118,27 @@ const AboutUs: React.FC = () => {
                 name="email"
                 type="email"
                 placeholder="Email"
-                className="w-full pl-3 pr-3 py-2 bg-white border border-[#767676] rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                className="w-full pl-3 pr-3 py-2 bg-white border border-[#767676] rounded-lg focus:ring-2 focus:ring-blue-400 outline-none text-black"
                 required
               />
 
               <input
                 name="subject"
                 placeholder="Subject"
-                className="w-full md:col-span-2 pl-3 pr-3 py-2 bg-white border border-[#767676] rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                className="w-full md:col-span-2 pl-3 pr-3 py-2 bg-white border border-[#767676] rounded-lg focus:ring-2 focus:ring-blue-400 outline-none text-black"
               />
 
               <textarea
                 name="message"
                 placeholder="Message"
-                className="w-full md:col-span-2 pl-3 pr-3 py-2 bg-white border border-[#767676] rounded-lg focus:ring-2 focus:ring-blue-400 outline-none h-40 resize-y"
+                className="w-full md:col-span-2 pl-3 pr-3 py-2 bg-white border border-[#767676] rounded-lg focus:ring-2 focus:ring-blue-400 outline-none h-40 resize-y text-black"
                 required
               />
 
               <div className="md:col-span-2 text-right">
                 <button
                   type="submit"
-                  className="inline-block bg-[#F0BB00] text-black px-6 py-2 rounded-md hover:bg-[#C68900] transition"
+                  className="inline-block bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-6 py-2 rounded-2xl font-semibold shadow transition"
                 >
                   Send message
                 </button>

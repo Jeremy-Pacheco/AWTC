@@ -3,7 +3,7 @@ import Logo from "../assets/awtc-logo.png";
 
 function Footer() {
   return (
-    <footer className="bg-[#F5F1E3] text-gray-800">
+    <footer className="bg-[#fcfcfc] text-gray-800" style={{ boxShadow: '0 -8px 24px rgba(0,0,0,0.06)' }}>
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Column 1: Logo, tagline, social icons */}
