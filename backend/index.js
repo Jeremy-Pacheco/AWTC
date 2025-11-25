@@ -130,50 +130,76 @@ app.use("/api/contacts", contactRoutes);
 app.use('/', sessionRoutes);
 
 // Simple EJS dashboard routes (demo)
-app.get('/', async (req, res) => {
-  // Require session / cookie login for admin dashboard
-  if (!req.user) {
-    return res.redirect('/login');
-  }
+// Helper to gather dashboard data used by multiple routes
+async function getDashboardData() {
+  const projects = (await safeFindAll(db.Project)) || [];
+  const users = (await safeFindAll(db.User)) || [];
+  const categories = (await safeFindAll(db.Category)) || [];
+  const reviews = (await safeFindAll(db.Reviews)) || [];
+  const contacts = db.Contact ? (await safeFindAll(db.Contact)) : [];
 
-  try {
-    const projects = (await safeFindAll(db.Project)) || [];
-    const users = (await safeFindAll(db.User)) || [];
-    const categories = (await safeFindAll(db.Category)) || [];
-    const reviews = (await safeFindAll(db.Reviews)) || [];
-    const contacts = db.Contact ? (await safeFindAll(db.Contact)) : [];
-
-    console.log(`Dashboard counts -> projects: ${projects.length}, users: ${users.length}, categories: ${categories.length}, reviews: ${reviews.length}`);
-
-    res.render('index', {
-      shopName: 'A Will To Change',
-      projects: projects,
-      projectsNumber: projects.length,
-      users: users,
-      usersNumber: users.length,
-      categories: categories,
-      categoriesNumber: categories.length,
-      reviews: reviews,
-      reviewsNumber: reviews.length,
-      contacts: contacts,
-      contactsNumber: contacts.length,
+  const recent = (arr, n = 5) => {
+    if (!Array.isArray(arr)) return [];
+    const copy = arr.slice();
+    copy.sort((a,b) => {
+      const aDate = a && (a.createdAt || a.created_at || a.date) ? new Date(a.createdAt || a.created_at || a.date) : null;
+      const bDate = b && (b.createdAt || b.created_at || b.date) ? new Date(b.createdAt || b.created_at || b.date) : null;
+      if (aDate && bDate) return bDate - aDate;
+      if (aDate) return -1;
+      if (bDate) return 1;
+      return (b.id || 0) - (a.id || 0);
     });
+    return copy.slice(0, n);
+  };
+
+  return {
+    projects,
+    users,
+    categories,
+    reviews,
+    contacts,
+    latestUsers: recent(users,6),
+    latestProjects: recent(projects,6),
+    latestReviews: recent(reviews,10)
+  };
+}
+
+// Render dashboard with specified section
+async function renderDashboard(req, res, section = 'overview') {
+  if (!req.user) return res.redirect('/login');
+  try {
+    const data = await getDashboardData();
+    console.log(`Dashboard counts -> projects: ${data.projects.length}, users: ${data.users.length}, categories: ${data.categories.length}, reviews: ${data.reviews.length}`);
+    res.render('index', Object.assign({
+      shopName: 'A Will To Change',
+      currentUser: req.user || null,
+      currentSection: section,
+      projectsNumber: Array.isArray(data.projects) ? data.projects.length : 0,
+      usersNumber: Array.isArray(data.users) ? data.users.length : 0,
+      categoriesNumber: Array.isArray(data.categories) ? data.categories.length : 0,
+      reviewsNumber: Array.isArray(data.reviews) ? data.reviews.length : 0,
+      contactsNumber: Array.isArray(data.contacts) ? data.contacts.length : 0
+    }, data));
   } catch (err) {
     console.error('Error fetching data for dashboard:', err.message);
-    // On error, render dashboard with empty lists so page still loads
     res.render('index', {
       shopName: 'A Will To Change',
-      projects: [],
-      projectsNumber: 0,
-      users: [],
-      usersNumber: 0,
-      categories: [],
-      categoriesNumber: 0,
-      reviews: [],
-      reviewsNumber: 0,
+      projects: [], projectsNumber: 0,
+      users: [], usersNumber: 0,
+      categories: [], categoriesNumber: 0,
+      reviews: [], reviewsNumber: 0,
+      contacts: [], contactsNumber: 0,
+      currentUser: req.user || null,
+      currentSection: section
     });
   }
-});
+}
+
+app.get('/', (req, res) => renderDashboard(req, res, 'overview'));
+app.get('/projects', (req, res) => renderDashboard(req, res, 'projects'));
+app.get('/users', (req, res) => renderDashboard(req, res, 'users'));
+app.get('/reviews', (req, res) => renderDashboard(req, res, 'reviews'));
+app.get('/contacts', (req, res) => renderDashboard(req, res, 'contacts'));
 
 
 const frontendPath = path.join(__dirname, "../frontend/dist");
