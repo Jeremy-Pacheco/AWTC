@@ -3,7 +3,6 @@ import NavBar from "./components/NavBar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Volunteering from "./pages/Volunteering";
-import Reviews from "./pages/Reviews";
 import MoreInfo from "./pages/MoreInfo";
 import Dashboard from "./pages/Dashboard";
 import AboutUs from "./pages/AboutUs";
@@ -20,7 +19,6 @@ function App() {
         <Route path="/Home" element={<Home />} />
         <Route path="/AboutUs" element={<AboutUs />} />
         <Route path="/Volunteering" element={<Volunteering />} />
-        <Route path="/Reviews" element={<Reviews />} />
         <Route path="/MoreInfo" element={<MoreInfo />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />

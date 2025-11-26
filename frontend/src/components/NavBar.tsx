@@ -71,15 +71,6 @@ function NavBar() {
 </NavLink>
 
 <NavLink
-  to="/Reviews"
-  className={({ isActive }) =>
-    `text-gray-800 transition-all duration-200 ${isActive ? "font-bold" : ""}`
-  }
->
-  Reviews
-</NavLink>
-
-<NavLink
   to="/MoreInfo"
   className={({ isActive }) =>
     `text-gray-800 transition-all duration-200 ${isActive ? "font-bold" : ""}`
