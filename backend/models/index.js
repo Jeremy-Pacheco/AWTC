@@ -86,6 +86,12 @@ if (db.User && db.Project && db.UserProject && db.UserProjectBan) {
   db.UserProjectBan.belongsTo(db.Project, { foreignKey: 'projectId' });
 }
 
+// Define relationship between Category and Project
+if (db.Category && db.Project) {
+  db.Category.hasMany(db.Project, { foreignKey: 'categoryId', as: 'projects' });
+  db.Project.belongsTo(db.Category, { foreignKey: 'categoryId', as: 'category' });
+}
+
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 

@@ -11,6 +11,8 @@ type Project = {
   capacity: number;
   status: string;
   filename?: string;
+  categoryId?: number | null;
+  category?: { id: number; name: string } | null;
 };
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -30,13 +32,22 @@ const Volunteering: React.FC = () => {
     capacity: 0,
     status: "active",
     file: null as File | null,
+    categoryId: '' as number | ''
   });
+
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
 
   useEffect(() => {
     fetch(`${API_URL}/api/projects`)
       .then(res => res.json())
       .then((data: Project[]) => setProjects(data))
       .catch(err => console.error("Error fetching projects:", err));
+
+    // fetch categories for filter and form
+    fetch(`${API_URL}/api/categories`)
+      .then(res => res.json())
+      .then((cats: any[]) => setCategories(cats || []))
+      .catch(err => console.error('Error fetching categories:', err));
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -63,7 +74,8 @@ const Volunteering: React.FC = () => {
       location: "",
       capacity: 0,
       status: "active",
-      file: null
+      file: null,
+      categoryId: ''
     });
     setShowModal(true);
   };
@@ -78,7 +90,8 @@ const Volunteering: React.FC = () => {
       location: project.location || "",
       capacity: project.capacity || 0,
       status: project.status || "active",
-      file: null
+      file: null,
+      categoryId: project.categoryId ?? ''
     });
     setShowModal(true);
   };
@@ -94,6 +107,7 @@ const Volunteering: React.FC = () => {
     data.append("location", formData.location);
     data.append("capacity", formData.capacity.toString());
     data.append("status", formData.status);
+    if (formData.categoryId !== '') data.append('categoryId', String(formData.categoryId));
     if (formData.file) data.append("file", formData.file);
 
     try {
@@ -130,7 +144,8 @@ const Volunteering: React.FC = () => {
         location: "",
         capacity: 0,
         status: "active",
-        file: null
+        file: null,
+        categoryId: ''
       });
     } catch (err) {
       console.error(err);
@@ -280,6 +295,17 @@ const Volunteering: React.FC = () => {
                 onChange={handleFileChange}
                 className="border p-2 rounded"
               />
+              <select
+                name="categoryId"
+                value={formData.categoryId}
+                onChange={e => setFormData(prev => ({ ...prev, categoryId: e.target.value === '' ? '' : Number(e.target.value) }))}
+                className="border p-2 rounded"
+              >
+                <option value="">-- No category --</option>
+                {categories.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
               <div className="flex justify-end gap-2 mt-2">
                 <button type="button" className="bg-gray-300 px-4 py-2 rounded" onClick={() => setShowModal(false)}>
                   Cancel

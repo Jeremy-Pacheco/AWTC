@@ -5,7 +5,7 @@ const { User } = db;
 // Create a new project
 exports.createProject = async (req, res) => {
   try {
-    const { name, description, start_date, end_date, location, capacity, status } = req.body;
+    const { name, description, start_date, end_date, location, capacity, status, categoryId } = req.body;
     const filename = req.file ? req.file.filename : null;
 
     const project = await Project.create({
@@ -16,10 +16,13 @@ exports.createProject = async (req, res) => {
       location,
       capacity,
       status,
-      filename
+      filename,
+      categoryId
     });
 
-    res.status(201).json(project);
+    // Return the created project including its category
+    const created = await Project.findByPk(project.id, { include: [{ model: db.Category, as: 'category' }] });
+    res.status(201).json(created);
   } catch (error) {
     console.error(error);
     res.status(400).json({ message: 'Error creating project', error });
@@ -29,7 +32,7 @@ exports.createProject = async (req, res) => {
 // Get all projects
 exports.getAllProjects = async (req, res) => {
   try {
-    const projects = await Project.findAll();
+    const projects = await Project.findAll({ include: [{ model: db.Category, as: 'category' }] });
     res.status(200).json(projects);
   } catch (error) {
     res.status(500).json({ message: 'Error retrieving projects', error });
@@ -42,7 +45,7 @@ exports.updateProject = async (req, res) => {
     const project = await Project.findByPk(req.params.id);
     if (!project) return res.status(404).json({ message: 'Project not found' });
 
-    const { name, description, start_date, end_date, location, capacity, status } = req.body;
+    const { name, description, start_date, end_date, location, capacity, status, categoryId } = req.body;
 
     const updateData = {
       name,
@@ -54,13 +57,19 @@ exports.updateProject = async (req, res) => {
       status
     };
 
+    // allow updating category
+    if (typeof categoryId !== 'undefined') {
+      updateData.categoryId = categoryId;
+    }
+
     if (req.file && req.file.filename) {
       updateData.filename = req.file.filename;
     }
 
     await project.update(updateData);
-
-    res.status(200).json(project);
+    // Return updated project with category
+    const updated = await Project.findByPk(project.id, { include: [{ model: db.Category, as: 'category' }] });
+    res.status(200).json(updated);
   } catch (error) {
     console.error(error);
     res.status(400).json({ message: 'Error updating project', error });
