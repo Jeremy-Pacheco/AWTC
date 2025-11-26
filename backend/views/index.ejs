@@ -23,8 +23,21 @@
     <% if (latestProjects && latestProjects.length) { %>
       <ul>
         <% latestProjects.forEach(function(p){ %>
-          <li><strong><%= p.name %></strong> <% if (p.status) { %><span style="color:#666">(status: <%= p.status %>)</span><% } %>
+          <li id="proj-<%= p.id %>">
+            <strong><%= p.name %></strong> <% if (p.status) { %><span style="color:#666">(status: <%= p.status %>)</span><% } %>
             <% if (p.description) { %> — <%= p.description %><% } %>
+            
+            <% if (currentUser) { %>
+              <% if (userBannedProjectIds && userBannedProjectIds.indexOf(p.id) !== -1) { %>
+                <button disabled style="margin-left:12px">Banned</button>
+              <% } else if (userRegisteredProjectIds && userRegisteredProjectIds.indexOf(p.id) !== -1) { %>
+                <button class="unregister-btn" data-project-id="<%= p.id %>" style="margin-left:12px">Unregister</button>
+              <% } else { %>
+                <button class="register-btn" data-project-id="<%= p.id %>" style="margin-left:12px">Register</button>
+              <% } %>
+            <% } else { %>
+              <a href="/login" style="margin-left:12px">Sign in to register</a>
+            <% } %>
           </li>
         <% }) %>
       </ul>
@@ -105,3 +118,33 @@
 
 </body>
 </html>
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('.register-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = btn.getAttribute('data-project-id');
+        try {
+          const resp = await fetch(`/api/projects/${id}/register`, { method: 'POST', credentials: 'same-origin' });
+          if (!resp.ok) {
+            const err = await resp.json();
+            alert(err.message || 'Error registering');
+            return;
+          }
+          alert('Registered successfully');
+          location.reload();
+        } catch (err) { alert('Network error'); }
+      });
+    });
+    document.querySelectorAll('.unregister-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = btn.getAttribute('data-project-id');
+        try {
+          const resp = await fetch(`/api/projects/${id}/unregister`, { method: 'POST', credentials: 'same-origin' });
+          if (!resp.ok) { const err = await resp.json(); alert(err.message || 'Error unregistering'); return; }
+          alert('Unregistered successfully');
+          location.reload();
+        } catch (err) { alert('Network error'); }
+      });
+    });
+  });
+</script>

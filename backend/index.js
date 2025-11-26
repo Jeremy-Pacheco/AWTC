@@ -152,7 +152,7 @@ async function getDashboardData() {
     return copy.slice(0, n);
   };
 
-  return {
+  const result = {
     projects,
     users,
     categories,
@@ -162,6 +162,36 @@ async function getDashboardData() {
     latestProjects: recent(projects,6),
     latestReviews: recent(reviews,10)
   };
+
+  // Compute volunteers per project and projects with volunteer list if join model is defined
+  try {
+    if (db.UserProject && db.Project && db.User) {
+      // counts per project
+      const [userCounts] = await db.sequelize.query(
+        `SELECT p.id as projectId, p.name as projectName, COUNT(up.userId) as volunteersCount
+         FROM \`Projects\` p
+         LEFT JOIN \`UserProjects\` up ON up.projectId = p.id
+         GROUP BY p.id, p.name`
+      );
+      result.usersPerProject = userCounts;
+
+      // Additionally, load the projects with users (when many-to-many is supported)
+      try {
+        const projectsWithVolunteers = await db.Project.findAll({
+          include: [{ model: db.User, through: { attributes: ['status','role'] } }]
+        });
+        result.projectsWithVolunteers = projectsWithVolunteers;
+      } catch (err) {
+        result.projectsWithVolunteers = null;
+      }
+    }
+  } catch (err) {
+    console.warn('Could not compute usersPerProject or projectsWithVolunteers:', err.message);
+    result.usersPerProject = null;
+    result.projectsWithVolunteers = null;
+  }
+
+  return result;
 }
 
 // Render dashboard with specified section
@@ -170,10 +200,16 @@ async function renderDashboard(req, res, section = 'overview') {
   try {
     const data = await getDashboardData();
     console.log(`Dashboard counts -> projects: ${data.projects.length}, users: ${data.users.length}, categories: ${data.categories.length}, reviews: ${data.reviews.length}`);
+    // compute current user's registrations and bans if any
+    const userRegisteredProjectIds = req.user ? (await db.UserProject.findAll({ where: { userId: req.user.id } })).map(r => r.projectId) : [];
+    const userBannedProjectIds = req.user ? (await db.UserProjectBan.findAll({ where: { userId: req.user.id } })).map(b => b.projectId) : [];
+
     res.render('index', Object.assign({
       shopName: 'A Will To Change',
       currentUser: req.user || null,
       currentSection: section,
+      userRegisteredProjectIds: userRegisteredProjectIds,
+      userBannedProjectIds: userBannedProjectIds,
       projectsNumber: Array.isArray(data.projects) ? data.projects.length : 0,
       usersNumber: Array.isArray(data.users) ? data.users.length : 0,
       categoriesNumber: Array.isArray(data.categories) ? data.categories.length : 0,
@@ -197,6 +233,26 @@ async function renderDashboard(req, res, section = 'overview') {
 
 app.get('/', (req, res) => renderDashboard(req, res, 'overview'));
 app.get('/projects', (req, res) => renderDashboard(req, res, 'projects'));
+app.get('/projects/:id/volunteers', async (req, res) => {
+  if (!req.user) return res.redirect('/login');
+  try {
+    const projectId = parseInt(req.params.id, 10);
+    const data = await getDashboardData();
+    const project = await db.Project.findByPk(projectId, { include: [{ model: db.User, through: { attributes: ['status','role'] } }] });
+    if (!project) return res.redirect('/projects');
+    const volunteers = project.Users || [];
+    res.render('index', Object.assign({
+      shopName: 'A Will To Change',
+      currentUser: req.user || null,
+      currentSection: 'projects',
+      projectVolunteers: volunteers,
+      projectName: project.name
+    }, data));
+  } catch (err) {
+    console.error('Error loading project volunteers:', err.message);
+    res.redirect('/projects');
+  }
+});
 app.get('/users', (req, res) => renderDashboard(req, res, 'users'));
 app.get('/reviews', (req, res) => renderDashboard(req, res, 'reviews'));
 app.get('/contacts', (req, res) => renderDashboard(req, res, 'contacts'));
