@@ -35,9 +35,6 @@ function Footer() {
                   <NavLink to="/Volunteering" className="body-small hover:underline">Volunteering</NavLink>
                 </li>
                 <li>
-                  <NavLink to="/Reviews" className="body-small hover:underline">Reviews</NavLink>
-                </li>
-                <li>
                   <NavLink to="/MoreInfo" className="body-small hover:underline">Info</NavLink>
                 </li>
               </ul>
