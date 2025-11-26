@@ -22,7 +22,8 @@ module.exports = (sequelize, DataTypes) => {
     location: DataTypes.STRING,
     capacity: DataTypes.INTEGER,
     status: DataTypes.STRING,
-    filename: DataTypes.STRING
+    filename: DataTypes.STRING,
+    categoryId: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Project',
