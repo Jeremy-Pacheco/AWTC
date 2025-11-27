@@ -2,6 +2,8 @@ const express = require("express");
 const path = require("path");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const swaggerUI = require("swagger-ui-express");
+const swaggerSpecs = require("./swagger");
 
 const env = process.env.NODE_ENV || 'development';
 const envPath = path.resolve(__dirname, `.env.${env}`);
@@ -21,8 +23,7 @@ app.use(cors({
       "http://209.97.187.131:5173",
       "http://209.97.187.131:8080"
     ];
-    
-    // Allow requests with no origin (like mobile apps or curl requests)
+
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -38,19 +39,21 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-//Setting the view engine to ejs
+// Swagger UI Configuration
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerSpecs));
+app.get('/api-docs/swagger.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpecs);
+});
 
+//Setting the view to ejs
 app.set('view engine', 'ejs');
-
-
 
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 
-// Parse cookies first so we can access session cookie
 app.use(cookieParser());
 
-// Session middleware for EJS/admin area (uses cookies)
 app.use(session({
   name: process.env.SESSION_NAME || 'awtc.sid',
   secret: process.env.SESSION_SECRET || 'awtc_session_secret',
@@ -59,19 +62,18 @@ app.use(session({
   cookie: {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000 // 1 day
+    maxAge: 24 * 60 * 60 * 1000 //1 day
   }
 }));
 
 const db = require("./models");
-
 
 db.sequelize
   .sync({ force: false })
   .then(() => console.log("Database synced without dropping data!"))
   .catch((err) => console.error("DB Error:", err.message));
 
-// Log available models to help debug dashboard data loading
+  //Log available models to help debug dashboard data loading
 console.log('Available models in db:', Object.keys(db));
 
 // Helper: try model.findAll(), if it errors (e.g. unknown column) fallback to raw SELECT * from table
@@ -138,6 +140,7 @@ db.sequelize
   })
   .catch((err) => console.error("DB Error: " + err.message));
 
+// Load API Routes
 const projectRoutes = require("./routes/project.routes");
 const reviewRoutes = require("./routes/reviews.routes");
 const categoryRoutes = require("./routes/category.routes");
@@ -150,7 +153,6 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/contacts", contactRoutes);
-// Session/login routes for EJS admin area
 app.use('/', sessionRoutes);
 
 // Simple EJS dashboard routes (demo)
@@ -167,7 +169,7 @@ async function getDashboardData() {
     const copy = arr.slice();
     copy.sort((a,b) => {
       const aDate = a && (a.createdAt || a.created_at || a.date) ? new Date(a.createdAt || a.created_at || a.date) : null;
-      const bDate = b && (b.createdAt || b.created_at || b.date) ? new Date(b.createdAt || b.created_at || b.date) : null;
+      const bDate = b && (b.createdAt || b.created_at || b.date) ? new Date(b.CreatedAt || b.created_at || b.date) : null;
       if (aDate && bDate) return bDate - aDate;
       if (aDate) return -1;
       if (bDate) return 1;
@@ -293,4 +295,5 @@ app.use((req, res, next) => {
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
 });
