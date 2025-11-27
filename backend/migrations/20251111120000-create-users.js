@@ -27,10 +27,6 @@ module.exports = {
         defaultValue: 'volunteer',
         allowNull: false
       },
-      profileImage: {
-        type: Sequelize.STRING,
-        allowNull: true
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -43,8 +39,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    // Drop Users, and ENUM types are usually dropped with the table on MySQL,
-    // on Postgres we may need to drop the enum separately; to be safe, just drop table.
     await queryInterface.dropTable('Users');
   }
 };
