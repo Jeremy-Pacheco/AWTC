@@ -7,7 +7,14 @@ const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(cors({
-  origin: ["https://awtc.netlify.app", "http://localhost:5173", "http://167.172.58.2:5173"],
+  origin: [
+    "https://awtc.netlify.app", 
+    "http://localhost:5173", 
+    "http://167.172.58.2:5173",
+    "http://209.97.187.131:5173",
+    process.env.NODE_ENV === 'production' ? process.env.DO_DOMAIN : null,
+    "http://localhost:8080"
+  ].filter(Boolean),
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: false
 }));
