@@ -57,12 +57,12 @@ Object.keys(db).forEach(modelName => {
 
 // Define many-to-many association between User and Project via UserProject join table
 if (db.User && db.Project && db.UserProject) {
-  db.User.belongsToMany(db.Project, { through: db.UserProject, foreignKey: 'userId', otherKey: 'projectId' });
-  db.Project.belongsToMany(db.User, { through: db.UserProject, foreignKey: 'projectId', otherKey: 'userId' });
+  db.User.belongsToMany(db.Project, { through: db.UserProject, foreignKey: 'userId', otherKey: 'projectId', onDelete: 'CASCADE' });
+  db.Project.belongsToMany(db.User, { through: db.UserProject, foreignKey: 'projectId', otherKey: 'userId', onDelete: 'CASCADE' });
 
   // Also expose direct hasMany/hasOne relationships to the join model
-  db.User.hasMany(db.UserProject, { foreignKey: 'userId' });
-  db.Project.hasMany(db.UserProject, { foreignKey: 'projectId' });
+  db.User.hasMany(db.UserProject, { foreignKey: 'userId', onDelete: 'CASCADE' });
+  db.Project.hasMany(db.UserProject, { foreignKey: 'projectId', onDelete: 'CASCADE' });
 }
 
 // Optional: expose bans relationship
