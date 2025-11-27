@@ -14,8 +14,8 @@ module.exports = (sequelize, DataTypes) => {
 
   UserProject.associate = function(models) {
     // A join table connecting User and Project
-    UserProject.belongsTo(models.User, { foreignKey: 'userId' });
-    UserProject.belongsTo(models.Project, { foreignKey: 'projectId' });
+    UserProject.belongsTo(models.User, { foreignKey: 'userId', onDelete: 'CASCADE' });
+    UserProject.belongsTo(models.Project, { foreignKey: 'projectId', onDelete: 'CASCADE' });
   };
 
   return UserProject;
