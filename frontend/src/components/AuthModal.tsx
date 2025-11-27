@@ -8,6 +8,8 @@ import {
   EyeSlashIcon,
 } from "@heroicons/react/24/outline";
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 interface AuthModalProps {
   open: boolean;
   mode: "login" | "signup";
@@ -38,7 +40,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, mode, onClose }) => {
     e.preventDefault();
     try {
       const tokenBasic = btoa(`${email}:${pass}`);
-      const res = await fetch("http://localhost:8080/api/users/login", {
+      const res = await fetch(`${API_URL}/api/users/login`, {
         method: "POST",
         headers: { Authorization: `Basic ${tokenBasic}` },
       });
@@ -60,7 +62,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, mode, onClose }) => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:8080/api/users/signup", {
+      const res = await fetch(`${API_URL}/api/users/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password: pass }),

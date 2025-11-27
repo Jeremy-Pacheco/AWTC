@@ -88,7 +88,7 @@ const AboutUs: React.FC = () => {
                   const body = Object.fromEntries(formData as any);
 
                   try {
-                    const apiBase = (window as any).API_BASE || 'http://localhost:8080';
+                    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8080';
                     const res = await fetch(`${apiBase}/api/contacts`, {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
