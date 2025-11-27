@@ -6,26 +6,14 @@ const Sequelize = require('sequelize');
 const process = require('process');
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
-const config = require(__dirname + '/../config/config.json')[env];
+// Use the new JS config which loads env vars
+const config = require(__dirname + '/../config/sequelize.config.js')[env];
 const db = {};
 
 let sequelize;
 
-if (env === 'production') {
-  sequelize = new Sequelize(
-    process.env.MYSQLDATABASE,
-    process.env.MYSQLUSER,
-    process.env.MYSQLPASSWORD,
-    {
-      host: process.env.MYSQLHOST,
-      port: process.env.MYSQLPORT,
-      dialect: 'mysql',
-      dialectOptions: {
-        ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false
-      },
-      logging: false
-    }
-  );
+if (config.use_env_variable) {
+  sequelize = new Sequelize(process.env[config.use_env_variable], config);
 } else {
   sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
