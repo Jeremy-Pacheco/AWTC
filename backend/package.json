@@ -4,6 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "migrate": "npx sequelize-cli db:migrate",
+    "seed": "npx sequelize-cli db:seed:all",
+    "migrate:prod": "cross-env NODE_ENV=production npx sequelize-cli db:migrate",
+    "seed:prod": "cross-env NODE_ENV=production npx sequelize-cli db:seed:all",
     "start": "node index.js",
     "start:prod": "cross-env NODE_ENV=production node index.js",
     "dev": "nodemon index.js"
