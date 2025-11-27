@@ -7,16 +7,27 @@ const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(cors({
-  origin: [
-    "https://awtc.netlify.app", 
-    "http://localhost:5173", 
-    "http://167.172.58.2:5173",
-    "http://209.97.187.131:5173",
-    process.env.NODE_ENV === 'production' ? process.env.DO_DOMAIN : null,
-    "http://localhost:8080"
-  ].filter(Boolean),
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      "https://awtc.netlify.app",
+      "http://localhost:5173",
+      "http://localhost:8080",
+      "http://167.172.58.2:5173",
+      "http://209.97.187.131:5173",
+      "http://209.97.187.131:8080"
+    ];
+    
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: false
+  credentials: false,
+  optionsSuccessStatus: 200
 }));
 
 app.use(express.json());
@@ -116,10 +127,11 @@ app.use(async (req, res, next) => {
 db.sequelize
   .sync({ force: false })
   .then(async () => {
-    console.log("Database updated without dropping data!");
+    console.log("Database synced!");
+    console.log("Initializing admin user...");
     await initAdmin();
   })
-  .catch((err) => console.log("Error: " + err.message));
+  .catch((err) => console.error("DB Error: " + err.message));
 
 const projectRoutes = require("./routes/project.routes");
 const reviewRoutes = require("./routes/reviews.routes");
