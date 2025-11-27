@@ -3,17 +3,25 @@ const { User } = require('../models');
 
 async function initAdmin() {
   try {
-    const existingAdmin = await User.findOne({ where: { role: 'admin' } });
+    const adminEmail = 'admin@awtc.es';
+    const adminPass = 'adminawtc1234';
+
+    const existingAdmin = await User.findOne({ where: { email: adminEmail } });
+    
     if (!existingAdmin) {
       await User.create({
           name: 'Admin',
-          email: 'admin@awtc.es',
-          password: 'adminawtc1234',
+          email: adminEmail,
+          password: adminPass,
           role: 'admin'
       });
-      console.log('Admin account created: admin@awtc.es / adminawtc1234');
+      console.log(`Admin account created: ${adminEmail}`);
     } else {
-      console.log('Admin already exists');
+      // Update password to ensure it is correct (hooks will hash it)
+      existingAdmin.password = adminPass;
+      existingAdmin.role = 'admin';
+      await existingAdmin.save();
+      console.log(`Admin account updated: ${adminEmail}`);
     }
   } catch (error) {
     console.error('Error creating admin:', error.message);
