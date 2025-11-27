@@ -15,9 +15,9 @@
   },
   "production": {
     "username": "doadmin",
-    "password": "AVNS__RottyziO4cDJ2cI45x",
+    "password": "PASSWORD_PLACEHOLDER",
     "database": "defaultdb",
-    "host": "dbaas-db-10768446-do-user-28730045-0.k.db.ondigitalocean.com",
+    "host": "db-mysql-lon1-73311-do-user-29593823-0.f.db.ondigitalocean.com",
     "port": 25060,
     "dialect": "mysql",
     "dialectOptions": {
