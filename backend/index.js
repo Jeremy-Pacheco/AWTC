@@ -1,6 +1,11 @@
 const express = require("express");
 const path = require("path");
 const cors = require("cors");
+const dotenv = require("dotenv");
+
+const env = process.env.NODE_ENV || 'development';
+const envPath = path.resolve(__dirname, `.env.${env}`);
+dotenv.config({ path: envPath });
 
 const app = express();
 
