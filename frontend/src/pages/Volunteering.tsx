@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import HeroImage from "../components/HeroImage";
 
 type Project = {
   id: number;
@@ -10,6 +11,8 @@ type Project = {
   capacity: number;
   status: string;
   filename?: string;
+  categoryId?: number | null;
+  category?: { id: number; name: string } | null;
 };
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -29,13 +32,22 @@ const Volunteering: React.FC = () => {
     capacity: 0,
     status: "active",
     file: null as File | null,
+    categoryId: '' as number | ''
   });
+
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
 
   useEffect(() => {
     fetch(`${API_URL}/api/projects`)
       .then(res => res.json())
       .then((data: Project[]) => setProjects(data))
       .catch(err => console.error("Error fetching projects:", err));
+
+    // fetch categories for filter and form
+    fetch(`${API_URL}/api/categories`)
+      .then(res => res.json())
+      .then((cats: any[]) => setCategories(cats || []))
+      .catch(err => console.error('Error fetching categories:', err));
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -62,7 +74,8 @@ const Volunteering: React.FC = () => {
       location: "",
       capacity: 0,
       status: "active",
-      file: null
+      file: null,
+      categoryId: ''
     });
     setShowModal(true);
   };
@@ -77,7 +90,8 @@ const Volunteering: React.FC = () => {
       location: project.location || "",
       capacity: project.capacity || 0,
       status: project.status || "active",
-      file: null
+      file: null,
+      categoryId: project.categoryId ?? ''
     });
     setShowModal(true);
   };
@@ -93,6 +107,7 @@ const Volunteering: React.FC = () => {
     data.append("location", formData.location);
     data.append("capacity", formData.capacity.toString());
     data.append("status", formData.status);
+    if (formData.categoryId !== '') data.append('categoryId', String(formData.categoryId));
     if (formData.file) data.append("file", formData.file);
 
     try {
@@ -129,7 +144,8 @@ const Volunteering: React.FC = () => {
         location: "",
         capacity: 0,
         status: "active",
-        file: null
+        file: null,
+        categoryId: ''
       });
     } catch (err) {
       console.error(err);
@@ -151,22 +167,16 @@ const Volunteering: React.FC = () => {
   };
 
   return (
-    <div className="p-4">
+    <>
       {/* Hero */}
-      <div className="relative h-64 md:h-96">
-        <img
-          src="/images/hero-volunteering.jpg"
-          alt="Volunteering Hero"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <h1 className="text-white text-4xl md:text-6xl font-bold text-center">
-            Join Our Volunteering Projects
-          </h1>
-        </div>
-      </div>
+      <HeroImage
+        title={<h1 className="Display">A Will To Change</h1>}
+        imgSrc="/hero-img.jpg"
+        heightClass="h-64 md:h-96"
+      />
 
-      <div className="flex flex-col md:flex-row justify-between items-center mt-8 mb-6 px-4 md:px-16">
+      <div className="p-4">
+        <div className="flex flex-col md:flex-row justify-between items-center mt-8 mb-6 px-4 md:px-16">
         <div>
           <h2 className="text-3xl font-bold">Active Projects</h2>
           <p className="text-lg text-gray-600">Small actions, big impact.</p>
@@ -181,7 +191,7 @@ const Volunteering: React.FC = () => {
 
       <div className="px-4 md:px-16 mb-4 flex justify-end">
         <button
-          className="bg-[#F0BB00] text-black px-4 py-2 rounded"
+          className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-2xl font-semibold shadow"
           onClick={openAddModal}
         >
           Add Project
@@ -192,7 +202,7 @@ const Volunteering: React.FC = () => {
         {projects.map(proj => (
           <div
             key={proj.id}
-            className="flex flex-col md:flex-row bg-[#EDEBEB] rounded p-4 md:p-6 gap-4"
+            className="flex flex-col md:flex-row bg-white rounded p-4 md:p-6 gap-4 shadow-lg"
           >
             {proj.filename && (
               <img
@@ -285,6 +295,17 @@ const Volunteering: React.FC = () => {
                 onChange={handleFileChange}
                 className="border p-2 rounded"
               />
+              <select
+                name="categoryId"
+                value={formData.categoryId}
+                onChange={e => setFormData(prev => ({ ...prev, categoryId: e.target.value === '' ? '' : Number(e.target.value) }))}
+                className="border p-2 rounded"
+              >
+                <option value="">-- No category --</option>
+                {categories.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
               <div className="flex justify-end gap-2 mt-2">
                 <button type="button" className="bg-gray-300 px-4 py-2 rounded" onClick={() => setShowModal(false)}>
                   Cancel
@@ -297,7 +318,8 @@ const Volunteering: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 

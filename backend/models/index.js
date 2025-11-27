@@ -45,11 +45,52 @@ fs
     db[model.name] = model;
   });
 
+// Ensure Contact model is loaded if present
+try {
+  const contactModel = require(path.join(__dirname, 'contact.js'))(sequelize, Sequelize.DataTypes);
+  db[contactModel.name] = contactModel;
+} catch (err) {
+  // ignore if contact model already loaded or missing
+}
+
+// Ensure UserProjectBan model is loaded if present
+try {
+  const banModel = require(path.join(__dirname, 'userprojectban.js'))(sequelize, Sequelize.DataTypes);
+  db[banModel.name] = banModel;
+} catch (err) {
+  // ignore if userprojectban model already loaded or missing
+}
+
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
   }
 });
+
+// Define many-to-many association between User and Project via UserProject join table
+if (db.User && db.Project && db.UserProject) {
+  db.User.belongsToMany(db.Project, { through: db.UserProject, foreignKey: 'userId', otherKey: 'projectId' });
+  db.Project.belongsToMany(db.User, { through: db.UserProject, foreignKey: 'projectId', otherKey: 'userId' });
+
+  // Also expose direct hasMany/hasOne relationships to the join model
+  db.User.hasMany(db.UserProject, { foreignKey: 'userId' });
+  db.Project.hasMany(db.UserProject, { foreignKey: 'projectId' });
+}
+
+// Optional: expose bans relationship
+if (db.User && db.Project && db.UserProject && db.UserProjectBan) {
+  // A user can have many bans
+  db.User.hasMany(db.UserProjectBan, { foreignKey: 'userId' });
+  db.Project.hasMany(db.UserProjectBan, { foreignKey: 'projectId' });
+  db.UserProjectBan.belongsTo(db.User, { foreignKey: 'userId' });
+  db.UserProjectBan.belongsTo(db.Project, { foreignKey: 'projectId' });
+}
+
+// Define relationship between Category and Project
+if (db.Category && db.Project) {
+  db.Category.hasMany(db.Project, { foreignKey: 'categoryId', as: 'projects' });
+  db.Project.belongsTo(db.Category, { foreignKey: 'categoryId', as: 'category' });
+}
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;

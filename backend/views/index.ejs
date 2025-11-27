@@ -1,0 +1,150 @@
+<%- include('header', { shopName: shopName, currentUser: currentUser, currentSection: (typeof currentSection !== 'undefined' ? currentSection : 'overview') }) %>
+
+<main style="max-width:1100px; margin: 16px auto; padding: 0 24px 80px;">
+
+  <% if (!currentSection || currentSection === 'overview') { %>
+  <section>
+    <h2>Overview</h2>
+    <p>Welcome to the <strong><%= shopName %></strong> admin dashboard for volunteering projects.</p>
+    <ul>
+      <li>Available projects: <strong><%= projectsNumber %></strong></li>
+      <li>Registered users: <strong><%= usersNumber %></strong></li>
+      <li>Categories: <strong><%= categoriesNumber %></strong></li>
+      <li>Reviews: <strong><%= reviewsNumber %></strong></li>
+    </ul>
+  </section>
+  <% } %>
+
+  <% if (currentSection === 'projects') { %>
+  <section style="margin-top:20px">
+    <h3>Projects</h3>
+    <p>Total projects: <strong><%= projectsNumber %></strong></p>
+    <h4>Latest projects</h4>
+    <% if (latestProjects && latestProjects.length) { %>
+      <ul>
+        <% latestProjects.forEach(function(p){ %>
+          <li id="proj-<%= p.id %>">
+            <strong><%= p.name %></strong> <% if (p.status) { %><span style="color:#666">(status: <%= p.status %>)</span><% } %>
+            <% if (p.description) { %> — <%= p.description %><% } %>
+            
+            <% if (currentUser) { %>
+              <% if (userBannedProjectIds && userBannedProjectIds.indexOf(p.id) !== -1) { %>
+                <button disabled style="margin-left:12px">Banned</button>
+              <% } else if (userRegisteredProjectIds && userRegisteredProjectIds.indexOf(p.id) !== -1) { %>
+                <button class="unregister-btn" data-project-id="<%= p.id %>" style="margin-left:12px">Unregister</button>
+              <% } else { %>
+                <button class="register-btn" data-project-id="<%= p.id %>" style="margin-left:12px">Register</button>
+              <% } %>
+            <% } else { %>
+              <a href="/login" style="margin-left:12px">Sign in to register</a>
+            <% } %>
+          </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p>No recent projects to display.</p>
+    <% } %>
+  </section>
+  <% } %>
+
+  <% if (currentSection === 'users') { %>
+  <section style="margin-top:20px">
+    <h3>Users</h3>
+    <p>Total users: <strong><%= usersNumber %></strong></p>
+    <h4>Latest users</h4>
+    <% if (latestUsers && latestUsers.length) { %>
+      <ul>
+        <% latestUsers.forEach(function(u){ %>
+          <li><strong><%= u.name %></strong> — <%= u.email || 'no-email' %> <span style="color:#666">(<%= u.role %>)</span></li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p>No recent users to display.</p>
+    <% } %>
+  </section>
+  <% } %>
+
+  <% if (currentSection === 'categories') { %>
+  <section style="margin-top:20px">
+    <h3>Categories</h3>
+    <% if (categories && categories.length) { %>
+      <ul>
+        <% categories.forEach(function(c){ %>
+          <li><strong><%= c.name %></strong> <% if (c.description) { %> — <%= c.description %><% } %></li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p>No categories available (sample data)</p>
+    <% } %>
+  </section>
+  <% } %>
+
+  <% if (currentSection === 'reviews') { %>
+  <section style="margin-top:20px">
+    <h3>Reviews</h3>
+    <% if (reviews && reviews.length) { %>
+      <ul>
+        <% reviews.forEach(function(r){ %>
+          <li>
+            <%= r.content || ('Review #' + r.id) %>
+            <% if (r.date) { %> <span style="color:#666">— <%= new Date(r.date).toLocaleDateString() %></span><% } %>
+          </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p>No reviews available (sample data)</p>
+    <% } %>
+  </section>
+  <% } %>
+
+  <% if (currentSection === 'contacts') { %>
+  <section style="margin-top:20px">
+    <h3>Contact messages</h3>
+    <% if (typeof contacts !== 'undefined' && contacts && contacts.length) { %>
+      <ul>
+        <% contacts.forEach(function(c){ %>
+          <li><strong><%= c.name %></strong> — <%= c.email %> <% if (c.subject) { %> — <%= c.subject %><% } %>
+            <div style="color:#333; margin-top:4px"><%= c.message %></div>
+          </li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p>No contact messages yet</p>
+    <% } %>
+  </section>
+  <% } %>
+
+</main>
+
+</body>
+</html>
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('.register-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = btn.getAttribute('data-project-id');
+        try {
+          const resp = await fetch(`/api/projects/${id}/register`, { method: 'POST', credentials: 'same-origin' });
+          if (!resp.ok) {
+            const err = await resp.json();
+            alert(err.message || 'Error registering');
+            return;
+          }
+          alert('Registered successfully');
+          location.reload();
+        } catch (err) { alert('Network error'); }
+      });
+    });
+    document.querySelectorAll('.unregister-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = btn.getAttribute('data-project-id');
+        try {
+          const resp = await fetch(`/api/projects/${id}/unregister`, { method: 'POST', credentials: 'same-origin' });
+          if (!resp.ok) { const err = await resp.json(); alert(err.message || 'Error unregistering'); return; }
+          alert('Unregistered successfully');
+          location.reload();
+        } catch (err) { alert('Network error'); }
+      });
+    });
+  });
+</script>

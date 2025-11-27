@@ -71,15 +71,6 @@ function NavBar() {
 </NavLink>
 
 <NavLink
-  to="/Reviews"
-  className={({ isActive }) =>
-    `text-gray-800 transition-all duration-200 ${isActive ? "font-bold" : ""}`
-  }
->
-  Reviews
-</NavLink>
-
-<NavLink
   to="/MoreInfo"
   className={({ isActive }) =>
     `text-gray-800 transition-all duration-200 ${isActive ? "font-bold" : ""}`
@@ -94,7 +85,7 @@ function NavBar() {
     `text-gray-800 transition-all duration-200 ${isActive ? "font-bold" : ""}`
   }
 >
-  About
+  About Us
 </NavLink>
 
           {isLoggedIn ? (
@@ -116,13 +107,13 @@ function NavBar() {
             <>
               <button
                 onClick={() => openAuth("login")}
-                className="px-4 py-2 rounded-md border border-[#767676] hover:bg-[#EDEBEB] transition"
+                className="px-4 py-2 rounded-md border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
                 Log In
               </button>
               <button
                 onClick={() => openAuth("signup")}
-                className="px-4 py-2 rounded-md bg-[#F0BB00] border border-[#767676] hover:bg-[#C68900] transition"
+                className="px-4 py-2 rounded-md bg-[#F0BB00] text-black border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
                 Sign Up
               </button>
@@ -159,8 +150,8 @@ function NavBar() {
         <NavLink to="/Home" onClick={() => setMenuOpen(false)}>Home</NavLink>
         <NavLink to="/Volunteering" onClick={() => setMenuOpen(false)}>Volunteering</NavLink>
         <NavLink to="/Reviews" onClick={() => setMenuOpen(false)}>Reviews</NavLink>
-  <NavLink to="/MoreInfo" onClick={() => setMenuOpen(false)}>Info</NavLink>
-  <NavLink to="/About" onClick={() => setMenuOpen(false)}>About</NavLink>
+        <NavLink to="/MoreInfo" onClick={() => setMenuOpen(false)}>Info</NavLink>
+        <NavLink to="/AboutUs" onClick={() => setMenuOpen(false)}>About Us</NavLink>
         {isLoggedIn && (
           <>
             <button onClick={() => {navigate("/dashboard"); setMenuOpen(false)}} className="mt-4 text-left">Profile</button>
