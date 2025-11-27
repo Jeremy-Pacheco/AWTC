@@ -49,6 +49,8 @@ const MOCK_USERS = [
   { user: "Fernando", role: "Admin", label: "Community tree planting", avatar: "https://randomuser.me/api/portraits/men/56.jpg" }
 ];
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 function ReviewsSection() {
   const [reviews, setReviews] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -56,15 +58,21 @@ function ReviewsSection() {
   const [newImage, setNewImage] = useState("");
 
   useEffect(() => {
-    fetch("https://awtc-production.up.railway.app/api/reviews")
+    fetch(`${API_URL}/api/reviews`)
       .then(res => res.json())
       .then(data => {
+        if (!Array.isArray(data)) {
+          console.error("Expected array of reviews, got:", data);
+          setReviews([]);
+          return;
+        }
         const filled = data.map((review, i) => ({
           ...review,
           ...MOCK_USERS[i % MOCK_USERS.length]
         }));
         setReviews(filled.reverse());
-      });
+      })
+      .catch(err => console.error("Error fetching reviews:", err));
   }, []);
 
   const handleAddReview = async () => {
@@ -75,21 +83,28 @@ function ReviewsSection() {
       date: iso,
       image: newImage,
     };
-    await fetch("https://awtc-production.up.railway.app/api/reviews", {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    setReviews([
-      {
-        ...payload,
-        ...MOCK_USERS[reviews.length % MOCK_USERS.length],
-      },
-      ...reviews
-    ]);
-    setNewContent("");
-    setNewImage("");
-    setShowForm(false);
+    try {
+      const res = await fetch(`${API_URL}/api/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Failed to save review");
+      
+      setReviews([
+        {
+          ...payload,
+          ...MOCK_USERS[reviews.length % MOCK_USERS.length],
+        },
+        ...reviews
+      ]);
+      setNewContent("");
+      setNewImage("");
+      setShowForm(false);
+    } catch (err) {
+      console.error(err);
+      alert("Error saving review");
+    }
   };
 
   const handleFileChange = e => {

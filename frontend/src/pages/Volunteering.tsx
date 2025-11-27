@@ -15,8 +15,8 @@ type Project = {
   category?: { id: number; name: string } | null;
 };
 
-const API_URL = import.meta.env.VITE_API_URL;
-const IMAGE_URL = import.meta.env.VITE_IMAGE_URL;
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const IMAGE_URL = import.meta.env.VITE_IMAGE_URL || 'http://localhost:8080/images';
 
 const Volunteering: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
