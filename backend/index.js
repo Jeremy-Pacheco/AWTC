@@ -12,7 +12,7 @@ dotenv.config({ path: envPath });
 const app = express();
 
 app.use(express.static(path.join(__dirname, 'public')));
-
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
 app.use(cors({
   origin: (origin, callback) => {
     const allowedOrigins = [
