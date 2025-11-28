@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import HeroImage from "../components/HeroImage";
-import logo from "../assets/awtc-logo.png";
+import logo1 from "../img/medioambiente.png";
+import logo2 from "../img/rd.png";
+import logo3 from "../img/salud.png";
 import { NavLink } from "react-router-dom";
 
 // Carousel
-const images = [logo, logo, logo, logo];
+const images = [logo1, logo2, logo3];
 function Carousel() {
   const [current, setCurrent] = useState(0);
   const prev = () => setCurrent(c => (c === 0 ? images.length - 1 : c - 1));
@@ -24,17 +26,18 @@ function Carousel() {
 
 function AboutSection() {
   return (
-    <section className="flex flex-col md:flex-row items-center justify-between gap-6 my-12 bg-white">
+    <section className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6 my-8 md:my-12 bg-white px-4 md:px-0">
       <img
-        src={logo}
+        src={logo1}
         alt="Volunteers by river"
+        className="w-full md:w-auto md:max-w-sm h-auto rounded"
       />
-      <div className="flex-1 pl-0 md:pl-8 mt-6 md:mt-0">
-        <p className="text-gray-700 text-sm mb-6">
+      <div className="flex-1 pl-0 md:pl-8 mt-4 md:mt-0">
+        <p className="text-gray-700 text-xs sm:text-sm md:text-base mb-4 md:mb-6 leading-relaxed">
           Our mission is to make joining social and environmental projects simple, safe, and meaningful, connecting volunteers with opportunities that create real impact and strengthen communities. We provide support, guidance, and a network where everyone can contribute, learn, and grow, fostering collaboration, compassion, and lasting positive change. By bringing together people from all walks of life, we aim to empower individuals to take meaningful action, build stronger communities, and protect the planet for future generations.
         </p>
         <NavLink to="/AboutUs">
-          <button className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-5 py-2 rounded-3xl font-semibold shadow">
+          <button className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-5 py-2 rounded-3xl font-semibold shadow text-sm md:text-base w-full md:w-auto text-center">
             Read more
           </button>
         </NavLink>
