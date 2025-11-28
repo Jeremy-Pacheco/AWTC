@@ -12,14 +12,14 @@ function Carousel() {
   const prev = () => setCurrent(c => (c === 0 ? images.length - 1 : c - 1));
   const next = () => setCurrent(c => (c === images.length - 1 ? 0 : c + 1));
   return (
-    <div className="flex justify-center items-center my-8 space-x-4">
-      <button onClick={prev} className="text-2xl px-2 text-gray-600">&lt;</button>
-      <div className="flex space-x-4 items-center">
-        <img src={images[(current - 1 + images.length) % images.length]} className="w-24 h-32 object-cover rounded" alt="" />
-        <img src={images[current]} className="w-64 h-48 object-cover rounded shadow-lg" alt="" />
-        <img src={images[(current + 1) % images.length]} className="w-24 h-32 object-cover rounded" alt="" />
+    <div className="flex justify-center items-center my-4 md:my-8 space-x-2 md:space-x-4 px-2">
+      <button onClick={prev} className="text-2xl md:text-3xl px-2 md:px-3 text-gray-600 flex-shrink-0">&lt;</button>
+      <div className="flex space-x-3 md:space-x-6 items-center justify-center overflow-hidden">
+        <img src={images[(current - 1 + images.length) % images.length]} className="hidden sm:block w-20 md:w-32 h-28 md:h-44 object-cover rounded" alt="" />
+        <img src={images[current]} className="w-48 md:w-80 h-36 md:h-64 object-cover rounded shadow-lg flex-shrink-0" alt="" />
+        <img src={images[(current + 1) % images.length]} className="hidden sm:block w-20 md:w-32 h-28 md:h-44 object-cover rounded" alt="" />
       </div>
-      <button onClick={next} className="text-2xl px-2 text-gray-600">&gt;</button>
+      <button onClick={next} className="text-2xl md:text-3xl px-2 md:px-3 text-gray-600 flex-shrink-0">&gt;</button>
     </div>
   );
 }
@@ -132,41 +132,41 @@ function ReviewsSection() {
   }
 
   return (
-    <section className="py-8">
-      <div className="flex flex-col md:flex-row md:flex-wrap gap-6 justify-center items-stretch mb-8">
+    <section className="py-6 md:py-8 px-4 md:px-0">
+      <div className="flex flex-col gap-4 md:gap-6 justify-center items-stretch mb-6 md:mb-8">
         {reviews.map((review, idx) => (
-            <div key={idx} className="bg-white rounded-lg shadow-lg flex flex-col mx-auto w-full max-w-[350px] min-w-[240px]">
+            <div key={idx} className="bg-white rounded-lg shadow-lg flex flex-col mx-auto w-full max-w-[350px] md:max-w-[350px]">
             {/* Title bar: full-width block aligned with card edges */}
             <div className="w-full">
-              <span className="block w-full text-left text-black text-sm font-semibold px-4 py-2 border-b border-gray-200">{review.label}</span>
+              <span className="block w-full text-left text-black text-xs md:text-sm font-semibold px-3 md:px-4 py-2 border-b border-gray-200 line-clamp-2">{review.label}</span>
             </div>
-            <div className="flex flex-col flex-1 p-4">
+            <div className="flex flex-col flex-1 p-3 md:p-4">
               <span className="block text-xs text-gray-500 mb-1">
                 {formatDate(review.date)}
               </span>
               {review.image && (
-                <img src={review.image} alt="review" className="w-full h-40 object-cover rounded mb-2" />
+                <img src={review.image} alt="review" className="w-full h-32 md:h-40 object-cover rounded mb-2" />
               )}
-              <p className="text-sm text-gray-700 mb-4">{review.content}</p>
-              <div className="flex items-center mt-auto">
+              <p className="text-xs md:text-sm text-gray-700 mb-4">{review.content}</p>
+              <div className="flex items-center mt-auto gap-2">
                 <img
                   src={review.avatar}
                   alt={review.user}
-                  className="w-8 h-8 rounded-full border-2 border-gray-300 mr-3"
+                  className="w-8 h-8 rounded-full border-2 border-gray-300 flex-shrink-0"
                 />
-                <div>
-                  <span className="font-semibold text-sm">{review.user}</span>
-                  <div className="text-xs text-gray-500">{review.role}</div>
+                <div className="min-w-0">
+                  <span className="font-semibold text-xs md:text-sm block truncate">{review.user}</span>
+                  <div className="text-xs text-gray-500 truncate">{review.role}</div>
                 </div>
               </div>
             </div>
           </div>
         ))}
       </div>
-      <div className="flex justify-center">
+      <div className="flex justify-center px-4 md:px-0">
         {showForm ? (
           <form
-            className="flex flex-col gap-2 items-center"
+            className="flex flex-col gap-2 items-center w-full max-w-sm"
             onSubmit={e => {
               e.preventDefault();
               if (newContent.trim()) handleAddReview();
@@ -177,7 +177,7 @@ function ReviewsSection() {
               value={newContent}
               onChange={e => setNewContent(e.target.value)}
               placeholder="Write your review..."
-              className="border p-2 rounded w-72"
+              className="border p-2 rounded w-full text-sm"
               maxLength={120}
               required
             />
@@ -185,21 +185,21 @@ function ReviewsSection() {
               type="file"
               accept="image/*"
               onChange={handleFileChange}
-              className="border p-2 rounded w-72"
+              className="border p-2 rounded w-full text-sm"
             />
             {newImage && (
-              <img src={newImage} alt="Preview" className="max-h-28 rounded shadow mb-2" />
+              <img src={newImage} alt="Preview" className="max-h-24 md:max-h-28 rounded shadow mb-2" />
             )}
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full">
               <button
                 type="submit"
-                className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-2xl font-semibold shadow"
+                className="flex-1 bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-2xl font-semibold shadow text-sm"
               >
-                Save review
+                Save
               </button>
               <button
                 type="button"
-                className="bg-gray-300 rounded-2xl px-4 py-2"
+                className="flex-1 bg-gray-300 rounded-2xl px-4 py-2 text-sm"
                 onClick={() => { setShowForm(false); setNewImage(""); setNewContent(""); }}
               >
                 Cancel
@@ -208,7 +208,7 @@ function ReviewsSection() {
           </form>
         ) : (
           <button
-            className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-7 py-2 rounded-2xl font-semibold shadow"
+            className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-5 md:px-7 py-2 rounded-2xl font-semibold shadow text-sm md:text-base"
             onClick={() => setShowForm(true)}
           >
             Add a review
@@ -224,18 +224,18 @@ function Home() {
     <>
       <HeroImage
         title={
-          <div className="text-center">
+          <div className="text-center px-4">
             <h1 className="Display">A Will To Change</h1>
-            <h4>
+            <h4 className="text-base md:text-2xl">
               Join social and environmental initiatives and make an impact today
             </h4>
           </div>
         }
         imgSrc="/hero-img.jpg"
-        heightClass="h-64 md:h-96"
+        heightClass="h-48 md:h-96"
         titleClass="Display text-white"
       />
-      <main className="max-w-6xl mx-auto px-6 py-12">
+      <main className="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12">
         <h3>Newests Proyects</h3>
         <h4>Discover volunteer projects and make an impact.</h4>
         <Carousel />
