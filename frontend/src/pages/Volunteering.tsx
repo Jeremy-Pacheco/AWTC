@@ -36,6 +36,7 @@ const Volunteering: React.FC = () => {
   });
 
   const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
 
   useEffect(() => {
     fetch(`${API_URL}/api/projects`)
@@ -166,6 +167,10 @@ const Volunteering: React.FC = () => {
     }
   };
 
+  const filteredProjects = selectedCategory
+    ? projects.filter(p => p.categoryId === Number(selectedCategory))
+    : projects;
+
   return (
     <>
       {/* Hero */}
@@ -177,147 +182,150 @@ const Volunteering: React.FC = () => {
 
       <div className="p-4">
         <div className="flex flex-col md:flex-row justify-between items-center mt-8 mb-6 px-4 md:px-16">
-        <div>
-          <h2 className="text-3xl font-bold">Active Projects</h2>
-          <p className="text-lg text-gray-600">Small actions, big impact.</p>
-        </div>
-        <div className="mt-4 md:mt-0 flex items-center gap-2">
-          <select className="border rounded p-2">
-            <option value="">All Categories</option>
-          </select>
-          <span>Filter by category</span>
-        </div>
-      </div>
+          <div>
+            <h2 className="text-3xl font-bold">Active Projects</h2>
+            <p className="text-lg text-gray-600">Small actions, big impact.</p>
+          </div>
+          <div className="mt-4 md:mt-0 flex items-center gap-2">
+                        <span>Filter by category</span>
+            <select
+              className="border rounded p-2"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+            >
+              <option value="">All Categories</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
 
-      <div className="px-4 md:px-16 mb-4 flex justify-end">
-        <button
-          className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-2xl font-semibold shadow"
-          onClick={openAddModal}
-        >
-          Add Project
-        </button>
-      </div>
+          </div>
+        </div>
 
-      <div className="flex flex-col gap-6 px-4 md:px-16">
-        {projects.map(proj => (
-          <div
-            key={proj.id}
-            className="flex flex-col md:flex-row bg-white rounded p-4 md:p-6 gap-4 shadow-lg"
-          >
-            {proj.filename && (
-              <img
-                src={`${IMAGE_URL}/${proj.filename}`}
-                alt={proj.name}
-                className="w-full md:w-48 h-48 object-cover rounded"
-              />
-            )}
-            <div className="flex flex-col justify-between">
-              <h3 className="text-2xl font-bold mb-2">{proj.name}</h3>
-              <p className="mb-4">{proj.description}</p>
-              <div className="flex gap-2">
+
+
+        <div className="flex flex-col gap-6 px-4 md:px-16 pb-16">
+          {filteredProjects.map(proj => (
+            <div
+              key={proj.id}
+              className="flex flex-col md:flex-row bg-white rounded p-4 md:p-6 gap-4 shadow-2xl"
+            >
+              {proj.filename && (
+                <img
+                  src={`${IMAGE_URL}/${proj.filename}`}
+                  alt={proj.name}
+                  className="w-full md:w-48 h-48 object-cover rounded"
+                />
+              )}
+              <div className="flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="text-2xl font-bold">{proj.name}</h3>
+                    {proj.category && (
+                      <span className="bg-[#1f2124] text-white px-3 py-1 rounded-full text-xs font-bold">
+                        {proj.category.name}
+                      </span>
+                    )}
+                  </div>
+                  <p className="mb-4">{proj.description}</p>
+                </div>
                 <button
-                  className="bg-[#F0BB00] text-black px-4 py-2 rounded"
-                  onClick={() => openEditModal(proj)}
+                  className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-lg font-semibold transition-colors w-fit"
                 >
-                  Edit
-                </button>
-                <button
-                  className="bg-red-500 text-white px-4 py-2 rounded"
-                  onClick={() => handleDelete(proj.id)}
-                >
-                  Delete
+                  Inscribirse
                 </button>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded p-6 w-full max-w-md">
-            <h2 className="text-2xl font-bold mb-4">{editingProject ? "Edit Project" : "Add Project"}</h2>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-              <input
-                type="text"
-                name="name"
-                placeholder="Project Name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-                className="border p-2 rounded"
-              />
-              <textarea
-                name="description"
-                placeholder="Description"
-                value={formData.description}
-                onChange={handleInputChange}
-                required
-                className="border p-2 rounded"
-              />
-              <input
-                type="date"
-                name="start_date"
-                value={formData.start_date}
-                onChange={handleInputChange}
-                required
-                className="border p-2 rounded"
-              />
-              <input
-                type="date"
-                name="end_date"
-                value={formData.end_date}
-                onChange={handleInputChange}
-                required
-                className="border p-2 rounded"
-              />
-              <input
-                type="text"
-                name="location"
-                placeholder="Location"
-                value={formData.location}
-                onChange={handleInputChange}
-                required
-                className="border p-2 rounded"
-              />
-              <input
-                type="number"
-                name="capacity"
-                placeholder="Capacity"
-                value={formData.capacity}
-                onChange={handleInputChange}
-                required
-                className="border p-2 rounded"
-              />
-              <input
-                type="file"
-                name="file"
-                onChange={handleFileChange}
-                className="border p-2 rounded"
-              />
-              <select
-                name="categoryId"
-                value={formData.categoryId}
-                onChange={e => setFormData(prev => ({ ...prev, categoryId: e.target.value === '' ? '' : Number(e.target.value) }))}
-                className="border p-2 rounded"
-              >
-                <option value="">-- No category --</option>
-                {categories.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-              <div className="flex justify-end gap-2 mt-2">
-                <button type="button" className="bg-gray-300 px-4 py-2 rounded" onClick={() => setShowModal(false)}>
-                  Cancel
-                </button>
-                <button type="submit" className="bg-[#F0BB00] px-4 py-2 rounded">
-                  {editingProject ? "Save Changes" : "Add"}
-                </button>
-              </div>
-            </form>
-          </div>
+          ))}
         </div>
-      )}
+
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div className="bg-white rounded p-6 w-full max-w-md">
+              <h2 className="text-2xl font-bold mb-4">{editingProject ? "Edit Project" : "Add Project"}</h2>
+              <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Project Name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                  className="border p-2 rounded"
+                />
+                <textarea
+                  name="description"
+                  placeholder="Description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  required
+                  className="border p-2 rounded"
+                />
+                <input
+                  type="date"
+                  name="start_date"
+                  value={formData.start_date}
+                  onChange={handleInputChange}
+                  required
+                  className="border p-2 rounded"
+                />
+                <input
+                  type="date"
+                  name="end_date"
+                  value={formData.end_date}
+                  onChange={handleInputChange}
+                  required
+                  className="border p-2 rounded"
+                />
+                <input
+                  type="text"
+                  name="location"
+                  placeholder="Location"
+                  value={formData.location}
+                  onChange={handleInputChange}
+                  required
+                  className="border p-2 rounded"
+                />
+                <input
+                  type="number"
+                  name="capacity"
+                  placeholder="Capacity"
+                  value={formData.capacity}
+                  onChange={handleInputChange}
+                  required
+                  className="border p-2 rounded"
+                />
+                <input
+                  type="file"
+                  name="file"
+                  onChange={handleFileChange}
+                  className="border p-2 rounded"
+                />
+                <select
+                  name="categoryId"
+                  value={formData.categoryId}
+                  onChange={e => setFormData(prev => ({ ...prev, categoryId: e.target.value === '' ? '' : Number(e.target.value) }))}
+                  className="border p-2 rounded"
+                >
+                  <option value="">-- No category --</option>
+                  {categories.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+                <div className="flex justify-end gap-2 mt-2">
+                  <button type="button" className="bg-gray-300 px-4 py-2 rounded" onClick={() => setShowModal(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="bg-[#F0BB00] px-4 py-2 rounded">
+                    {editingProject ? "Save Changes" : "Add"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
