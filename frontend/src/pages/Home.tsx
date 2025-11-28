@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-// Asegúrate de que AuthModal existe en esta ruta
 import AuthModal from "../components/AuthModal"; 
 import HeroImage from "../components/HeroImage";
 import logo1 from "../img/medioambiente.png";
@@ -8,7 +7,6 @@ import logo3 from "../img/salud.png";
 import logo4 from "../img/charity.png";
 import { NavLink } from "react-router-dom";
 
-// Configuración de la API (Asegúrate de que coincida con tu backend)
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 const images: string[] = [logo1, logo2, logo3];
 
@@ -69,7 +67,8 @@ interface Review {
 function ReviewsSection({ onOpenLogin, onOpenSignup, refreshTrigger }: ReviewsSectionProps) {
   const [reviews, setReviews] = useState<Review[]>([]);
   
-  // Estados de Creación
+  // Estados para el Modal de Crear Review
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -81,7 +80,6 @@ function ReviewsSection({ onOpenLogin, onOpenSignup, refreshTrigger }: ReviewsSe
   const token = localStorage.getItem("jwtToken"); 
   const isLoggedIn = !!token;
 
-  // Decodificar Token para obtener ID del usuario actual (para mostrar botones de borrar/editar)
   let currentUserId: number | null = null;
   if (token) {
     try {
@@ -90,7 +88,7 @@ function ReviewsSection({ onOpenLogin, onOpenSignup, refreshTrigger }: ReviewsSe
     } catch (e) { console.error("Error decoding token", e); }
   }
 
-  // 1. OBTENER RESEÑAS (GET)
+  // 1. OBTENER RESEÑAS
   useEffect(() => {
     fetch(`${API_BASE_URL}/api/reviews`)
       .then((res) => {
@@ -103,7 +101,7 @@ function ReviewsSection({ onOpenLogin, onOpenSignup, refreshTrigger }: ReviewsSe
       .catch((err) => console.error(err));
   }, [refreshTrigger]); 
 
-  // 2. CREAR RESEÑA (POST con FormData para Imagen)
+  // 2. CREAR RESEÑA
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
@@ -117,7 +115,7 @@ function ReviewsSection({ onOpenLogin, onOpenSignup, refreshTrigger }: ReviewsSe
 
         const res = await fetch(`${API_BASE_URL}/api/reviews`, {
             method: "POST",
-            headers: { Authorization: `Bearer ${token}` }, // FormData no necesita Content-Type manual
+            headers: { Authorization: `Bearer ${token}` },
             body: formData
         });
 
@@ -126,18 +124,16 @@ function ReviewsSection({ onOpenLogin, onOpenSignup, refreshTrigger }: ReviewsSe
             setReviews([savedReview, ...reviews]);
             setNewComment("");
             setSelectedFile(null);
-            // Limpiar input file visualmente
-            const fileInput = document.getElementById('fileInput') as HTMLInputElement;
-            if(fileInput) fileInput.value = "";
+            setShowReviewModal(false);
         } else {
             alert("Error creating review");
         }
     } catch (error) { console.error(error); }
   };
 
-  // 3. BORRAR RESEÑA (DELETE)
+  // 3. BORRAR RESEÑA
   const handleDelete = async (id: number) => {
-    if(!window.confirm("Are you sure you want to delete this review?")) return;
+    if(!window.confirm("Are you sure?")) return;
     try {
         const res = await fetch(`${API_BASE_URL}/api/reviews/${id}`, {
             method: "DELETE",
@@ -145,13 +141,11 @@ function ReviewsSection({ onOpenLogin, onOpenSignup, refreshTrigger }: ReviewsSe
         });
         if(res.ok) {
             setReviews(reviews.filter(r => r.id !== id));
-        } else {
-            alert("Could not delete review");
         }
     } catch(err) { console.error(err); }
   };
 
-  // 4. EDITAR RESEÑA (PUT - Texto)
+  // 4. EDITAR RESEÑA
   const saveEdit = async (id: number) => {
     try {
         const res = await fetch(`${API_BASE_URL}/api/reviews/${id}`, {
@@ -164,7 +158,6 @@ function ReviewsSection({ onOpenLogin, onOpenSignup, refreshTrigger }: ReviewsSe
         });
         if(res.ok) {
             const updatedReview = await res.json();
-            // Actualizamos la lista manteniendo la imagen antigua si no se cambió
             setReviews(reviews.map(r => r.id === id ? { ...r, content: updatedReview.content } : r));
             setEditingId(null);
         }
@@ -178,129 +171,198 @@ function ReviewsSection({ onOpenLogin, onOpenSignup, refreshTrigger }: ReviewsSe
     window.location.reload(); 
   };
 
+  const getUserDisplayName = (user?: { email?: string; name?: string }) => {
+    if (user?.name) return user.name;
+    if (user?.email) return user.email.split('@')[0];
+    return "Anonymous";
+  };
+
   return (
-    <section className="my-12 px-4 md:px-0 bg-gray-50 p-6 rounded-lg">
-      <div className="flex flex-col md:flex-row gap-8">
+    <section className="my-12 px-4 md:px-0">
+      <div className="flex flex-col md:flex-row gap-8 items-start">
         
-        {/* LISTA DE RESEÑAS */}
-        <div className="flex-1">
-          <h5 className="text-lg font-bold mb-4">Community Feedback</h5>
-          <div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
-            {reviews.length === 0 ? <p className="text-gray-500 italic">No reviews yet.</p> : 
+        {/* --- LISTA DE RESEÑAS --- */}
+        <div className="flex-1 w-full">
+          <div className="flex justify-between items-baseline mb-6 border-b pb-2">
+            <h5 className="text-xl font-bold text-gray-800">Reviews</h5>
+            <span className="text-sm text-gray-500">{reviews.length} comments</span>
+          </div>
+
+          <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+            {reviews.length === 0 ? (
+                <div className="text-center py-10 text-gray-400">No reviews yet. Be the first!</div>
+            ) : (
               reviews.map((review) => (
-                <div key={review.id} className="bg-white p-4 rounded shadow-sm border border-gray-100 relative group">
+                <div key={review.id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                   
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-semibold text-gray-800 text-sm">
-                      {review.user?.name || review.user?.email || "User"}
-                    </span>
-                    
-                    {/* Botones de Acción (Solo dueño) */}
+                  {/* Header de la Review */}
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex flex-col">
+                        {/* AÑADIDO 'capitalize' AQUÍ */}
+                        <span className="font-bold text-gray-900 text-base capitalize">
+                            {getUserDisplayName(review.user)}
+                        </span>
+                        <span className="text-xs text-gray-400 mt-0.5">
+                            {new Date(review.date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                        </span>
+                    </div>
+
+                    {/* Acciones (Edit/Delete) */}
                     {currentUserId === review.userId && !editingId && (
-                        <div className="flex gap-2 text-xs">
-                           <button onClick={() => { setEditingId(review.id); setEditContent(review.content); }} className="text-blue-500 hover:underline">Edit</button>
-                           <button onClick={() => handleDelete(review.id)} className="text-red-500 hover:underline">Delete</button>
+                        <div className="flex gap-3 text-sm font-medium">
+                           {/* BOTÓN EDIT: VERDE */}
+                           <button 
+                             onClick={() => { setEditingId(review.id); setEditContent(review.content); }} 
+                             className="text-green-600 hover:text-green-800 transition-colors"
+                           >
+                             Edit
+                           </button>
+                           {/* BOTÓN DELETE: ROJO */}
+                           <button 
+                             onClick={() => handleDelete(review.id)} 
+                             className="text-red-500 hover:text-red-700 transition-colors"
+                           >
+                             Delete
+                           </button>
                         </div>
-                    )}
-                    
-                    {/* Fecha (si no es dueño, o a la derecha) */}
-                    {currentUserId !== review.userId && (
-                        <span className="text-xs text-gray-400">{new Date(review.date).toLocaleDateString()}</span>
                     )}
                   </div>
 
-                  {/* IMAGEN DE LA RESEÑA */}
+                  {/* Imagen */}
                   {review.image && (
-                      <div className="mb-2">
+                      <div className="mb-4">
                           <img 
                             src={`${API_BASE_URL}${review.image}`} 
-                            alt="Review attachment" 
-                            className="w-24 h-24 object-cover rounded cursor-pointer hover:opacity-90 transition"
+                            alt="Attached" 
+                            className="h-32 w-auto object-cover rounded-xl cursor-zoom-in hover:opacity-95"
                             onClick={() => window.open(`${API_BASE_URL}${review.image}`, '_blank')}
                           />
                       </div>
                   )}
 
-                  {/* CONTENIDO (Edición vs Lectura) */}
+                  {/* Contenido */}
                   {editingId === review.id ? (
-                      <div className="mt-2">
+                      <div className="mt-2 animate-fade-in">
                           <textarea 
                               value={editContent} 
                               onChange={(e) => setEditContent(e.target.value)} 
-                              className="w-full border p-2 rounded text-sm mb-2"
+                              className="w-full border border-gray-200 p-3 rounded-xl text-sm focus:ring-2 focus:ring-yellow-400 outline-none resize-none bg-gray-50"
                           />
-                          <div className="flex gap-2">
-                              <button onClick={() => saveEdit(review.id)} className="bg-green-500 text-white px-2 py-1 rounded text-xs">Save</button>
-                              <button onClick={() => setEditingId(null)} className="bg-gray-300 text-black px-2 py-1 rounded text-xs">Cancel</button>
+                          <div className="flex gap-2 mt-3 justify-end">
+                              <button onClick={() => setEditingId(null)} className="px-4 py-1.5 rounded-full text-xs font-medium bg-gray-100 hover:bg-gray-200">Cancel</button>
+                              <button onClick={() => saveEdit(review.id)} className="px-4 py-1.5 rounded-full text-xs font-medium bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white">Save</button>
                           </div>
                       </div>
                   ) : (
-                      <p className="text-gray-600 text-sm">{review.content}</p>
+                      <p className="text-gray-600 leading-relaxed text-sm">{review.content}</p>
                   )}
                 </div>
               ))
-            }
+            )}
           </div>
         </div>
 
-        {/* FORMULARIO */}
-        <div className="md:w-1/3 bg-white p-6 rounded shadow-md h-fit">
-          {isLoggedIn ? (
-            <div>
-               <div className="flex justify-between items-center mb-4">
-                  <h5 className="text-lg font-bold">Write a Review</h5>
-                  <button onClick={handleLogout} className="text-xs text-red-500 underline">Logout</button>
+        {/* --- LADO DERECHO (User Info / CTA) --- */}
+        <div className="md:w-1/4 flex flex-col items-center sticky top-8">
+           {isLoggedIn ? (
+               <div className="w-full bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
+                   <div className="mb-4">
+                       <p className="text-sm text-gray-500">Logged in as</p>
+                       {/* AÑADIDO 'capitalize' AQUÍ TAMBIÉN */}
+                       <p className="font-semibold text-gray-900 truncate px-2 capitalize">{getUserDisplayName({ name: localStorage.getItem("userName") || "" })}</p>
+                   </div>
+                   
+                   <button
+                     onClick={() => setShowReviewModal(true)}
+                     className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-5 py-2 rounded-3xl font-semibold shadow text-sm md:text-base w-full transition-colors duration-300 mb-3"
+                   >
+                     Write a Review
+                   </button>
+                   
+                   <button onClick={handleLogout} className="text-xs text-red-500 hover:text-red-700 font-medium">
+                       Sign Out
+                   </button>
                </div>
-               <form onSubmit={handleCreate}>
-                <textarea
-                  className="w-full border border-gray-300 rounded p-2 h-24 resize-none mb-3"
-                  placeholder="Share your experience..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                />
-                
-                {/* Input Imagen */}
-                <div className="mb-4">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Add a photo (optional)</label>
-                    <input 
-                        id="fileInput"
-                        type="file" 
-                        accept="image/*"
-                        onChange={(e) => e.target.files && setSelectedFile(e.target.files[0])}
-                        className="text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
-                    />
-                </div>
+           ) : (
+               <div className="w-full bg-yellow-50 p-8 rounded-3xl text-center border border-yellow-100">
+                   <h3 className="font-bold text-lg mb-2 text-gray-800">Join the conversation</h3>
+                   <p className="text-xs text-gray-500 mb-6">Share your experience with the community.</p>
 
-                <button type="submit" className="w-full bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white font-semibold py-2 rounded transition-colors">
-                  Submit Review
-                </button>
-              </form>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-600 mb-4 font-medium">Want to share your experience?</p>
-              <div className="flex flex-col gap-3">
-                <button 
-                  onClick={onOpenLogin}
-                  className="w-full bg-gray-800 text-white px-6 py-2 rounded hover:bg-black transition-colors shadow-lg"
-                >
-                  Login to Review
-                </button>
-                
-                <p className="text-xs text-gray-400">or</p>
-
-                <button 
-                  onClick={onOpenSignup}
-                  className="w-full border-2 border-gray-800 text-gray-800 px-6 py-2 rounded hover:bg-gray-100 transition-colors"
-                >
-                  Sign Up
-                </button>
-              </div>
-              <p className="text-xs text-gray-500 mt-4">You need to be logged in to post.</p>
-            </div>
-          )}
+                   <button
+                     onClick={onOpenSignup}
+                     className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-5 py-2 rounded-3xl font-semibold shadow text-sm md:text-base w-full transition-colors duration-300"
+                   >
+                     Add Review
+                   </button>
+               </div>
+           )}
         </div>
       </div>
+
+      {/* --- MODAL --- */}
+      {showReviewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-8 relative">
+                
+                <button 
+                    onClick={() => setShowReviewModal(false)}
+                    className="absolute top-4 right-5 text-gray-400 hover:text-black text-xl font-light"
+                >
+                    ✕
+                </button>
+
+                <h3 className="text-2xl font-bold mb-1 text-gray-900">New Review</h3>
+                <p className="text-sm text-gray-500 mb-6">How was your experience?</p>
+                
+                <form onSubmit={handleCreate}>
+                    <textarea
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl p-4 h-40 resize-none mb-4 focus:ring-2 focus:ring-[#F0BB00] focus:bg-white outline-none transition-all placeholder-gray-400"
+                        placeholder="Write something meaningful..."
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        autoFocus
+                    />
+                    
+                    <div className="flex items-center justify-between mb-8">
+                         <div>
+                            <input 
+                                id="fileInputModal"
+                                type="file" 
+                                accept="image/*"
+                                onChange={(e) => e.target.files && setSelectedFile(e.target.files[0])}
+                                className="hidden"
+                            />
+                            <label 
+                                htmlFor="fileInputModal" 
+                                className="cursor-pointer flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                                </svg>
+                                {selectedFile ? <span className="text-green-600">{selectedFile.name}</span> : "Add photo"}
+                            </label>
+                         </div>
+                    </div>
+
+                    <div className="flex gap-3">
+                        <button 
+                            type="button"
+                            onClick={() => setShowReviewModal(false)}
+                            className="flex-1 py-3 rounded-full font-semibold text-gray-500 hover:bg-gray-100 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            type="submit" 
+                            className="flex-1 bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white font-bold py-3 rounded-full transition-all shadow-lg hover:shadow-xl"
+                        >
+                            Post Review
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+      )}
     </section>
   );
 }
@@ -323,7 +385,6 @@ function Home() {
 
   const handleCloseAuth = () => {
     setAuthOpen(false);
-    // Forzamos recarga de Reviews por si el usuario se logueó
     setRefreshKey(prev => prev + 1);
   };
 
@@ -350,9 +411,6 @@ function Home() {
         <h4 className="text-gray-600 mb-6">At our platform, we believe that everyone can make a difference</h4>
         <AboutSection />
 
-        <h3 className="text-xl font-bold mb-2 mt-12">Reviews</h3>
-        <h4 className="text-gray-600 mb-6">Feedback and qualifications</h4>
-        
         <ReviewsSection 
           onOpenLogin={handleOpenLogin} 
           onOpenSignup={handleOpenSignup}
