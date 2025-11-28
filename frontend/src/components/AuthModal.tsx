@@ -162,7 +162,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, mode, onClose }) => {
 
               <button
                 type="submit"
-                className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition font-semibold"
+                className="w-full bg-[#F0BB00] text-black py-2 rounded-lg hover:bg-[#1f2124] hover:text-white transition font-semibold"
               >
                 {currentMode === "login" ? "Log In" : "Sign Up"}
               </button>
