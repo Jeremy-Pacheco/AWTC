@@ -17,6 +17,7 @@ type Opportunity = {
 function VolunteerList() {
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("https://www.volunteerconnector.org/api/search/")
@@ -29,58 +30,86 @@ function VolunteerList() {
       })
       .catch((err) => {
         setError(err.message);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, []);
 
-  if (error) return <div>Error: {error}</div>;
+  if (loading)
+    return (
+      <div className="flex justify-center items-center py-16">
+        <ThreeDots height={80} width={80} color="#F0BB00" visible={true} />
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+        <p className="text-red-700 font-semibold">Unable to load opportunities</p>
+        <p className="text-red-600 text-sm mt-2">{error}</p>
+      </div>
+    );
+
   if (!opportunities.length)
     return (
-      <div
-        style={{ display: "flex", justifyContent: "center", marginTop: "40px" }}
-      >
-        <ThreeDots height={64} width={64} color="#000000" visible={true} />
-        <span style={{ marginTop: "12px", color: "#222" }}>
-        </span>
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+        <p className="text-gray-700 font-semibold">No opportunities available</p>
+        <p className="text-gray-600 text-sm mt-2">Please try again later</p>
       </div>
     );
 
   return (
-    <div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {opportunities.map((item) => (
         <div
           key={item.id}
-          style={{
-            border: "1px solid #eee",
-            marginBottom: 24,
-            borderRadius: 8,
-            padding: 16,
-          }}
+          className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden flex flex-col h-full border border-gray-100"
         >
-          <h2 style={{ margin: 0 }}>{item.title}</h2>
-          <p>
-            <b>Organization:</b>{" "}
+          {/* Header */}
+          <div className="bg-[#1f2124] p-4 h-20 flex items-center">
+            <h3 className="font-bold text-white text-lg line-clamp-2">{item.title}</h3>
+          </div>
+
+          {/* Content */}
+          <div className="flex flex-col flex-1 p-4">
+            {/* Organization */}
+            <div className="mb-3">
+              <p className="text-xs text-gray-500 font-semibold uppercase">Organization</p>
+              <a
+                href={item.organization.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#F0BB00] hover:text-[#D4A700] font-semibold text-sm hover:underline break-words"
+              >
+                {item.organization.name}
+              </a>
+            </div>
+
+            {/* Description */}
+            <p className="text-sm text-gray-700 mb-3 line-clamp-4 flex-1">
+              {item.description}
+            </p>
+
+            {/* Dates if available */}
+            {item.dates && (
+              <div className="mb-3 text-xs text-gray-600">
+                <span className="font-semibold">Dates:</span> {item.dates}
+              </div>
+            )}
+          </div>
+
+          {/* Footer with CTA */}
+          <div className="border-t border-gray-100 p-4 pt-3">
             <a
-              href={item.organization.url}
+              href={item.url}
               target="_blank"
               rel="noopener noreferrer"
+              className="inline-block bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-full font-semibold text-sm transition-colors duration-200 w-full text-center"
             >
-              {item.organization.name}
+              View Details →
             </a>
-          </p>
-          <p>{item.description}</p>
-          {item.dates && (
-            <p>
-              <b>Dates:</b> {item.dates}
-            </p>
-          )}
-          <a
-            href={item.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: "#1867c0" }}
-          >
-            Details &gt;
-          </a>
+          </div>
         </div>
       ))}
     </div>
