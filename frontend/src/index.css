@@ -80,6 +80,40 @@
   }
 }
 
+/**--------- UTILITY CLASSES --------- */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/**--------- SCROLLBAR STYLING --------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background:rgb(177, 177, 177);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #1f2124;
+}
+
 /** --------- MOBILE TYPOGRAPHY AND STYLES --------- */
 @media (max-width: 768px) {
   .Display {
