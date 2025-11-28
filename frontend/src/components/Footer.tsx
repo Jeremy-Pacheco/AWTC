@@ -2,6 +2,14 @@ import { NavLink } from "react-router-dom";
 import Logo from "../assets/awtc-logo.png";
 
 function Footer() {
+  const handleNavClick = () => {
+    window.scrollTo(0, 0);
+  };
+
+  const handleContactClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    window.location.href = "/AboutUs#contact-section";
+  };
   return (
     <footer className="bg-[#fcfcfc] text-gray-800" style={{ boxShadow: '0 -8px 24px rgba(0,0,0,0.06)' }}>
       <div className="max-w-7xl mx-auto px-6 py-12">
@@ -29,13 +37,13 @@ function Footer() {
               <h3 className="footer-title mb-3">Explore</h3>
               <ul className="space-y-2">
                 <li>
-                  <NavLink to="/Home" className="body-small hover:underline">Home</NavLink>
+                  <NavLink to="/Home" className="body-small hover:underline" onClick={handleNavClick}>Home</NavLink>
                 </li>
                 <li>
-                  <NavLink to="/Volunteering" className="body-small hover:underline">Volunteering</NavLink>
+                  <NavLink to="/Volunteering" className="body-small hover:underline" onClick={handleNavClick}>Volunteering</NavLink>
                 </li>
                 <li>
-                  <NavLink to="/MoreInfo" className="body-small hover:underline">Info</NavLink>
+                  <NavLink to="/MoreInfo" className="body-small hover:underline" onClick={handleNavClick}>Info</NavLink>
                 </li>
               </ul>
             </div>
@@ -44,10 +52,10 @@ function Footer() {
               <h3 className="footer-title mb-3">Company</h3>
               <ul className="space-y-2">
                 <li>
-                  <NavLink to="/AboutUs" className="body-small hover:underline">About Us</NavLink>
+                  <NavLink to="/AboutUs" className="body-small hover:underline" onClick={handleNavClick}>About Us</NavLink>
                 </li>
                 <li>
-                  <NavLink to="/Contact" className="body-small hover:underline">Contact</NavLink>
+                  <a href="/AboutUs#contact-section" className="body-small hover:underline" onClick={handleContactClick}>Contact</a>
                 </li>
               </ul>
             </div>
@@ -58,10 +66,10 @@ function Footer() {
             <h3 className="footer-title mb-3">Legal</h3>
             <ul className="space-y-2">
               <li>
-                <NavLink to="/terms" className="body-small hover:underline">Terms &amp; Conditions</NavLink>
+                <NavLink to="/terms" className="body-small hover:underline" onClick={handleNavClick}>Terms &amp; Conditions</NavLink>
               </li>
               <li>
-                <NavLink to="/privacy" className="body-small hover:underline">Privacy Policy</NavLink>
+                <NavLink to="/privacy" className="body-small hover:underline" onClick={handleNavClick}>Privacy Policy</NavLink>
               </li>
             </ul>
           </div>
