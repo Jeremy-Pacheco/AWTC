@@ -4,35 +4,396 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= shopName %> - Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-      body { font-family: Arial, Helvetica, sans-serif; margin:0; padding:0; color:#111 }
-      .nav { background:#fff; border-bottom:1px solid #e5e5e5; padding:12px 24px }
-      .nav a { margin-right:16px; color:#333; text-decoration:none }
-      .container { max-width:1100px; margin:24px auto; padding:0 24px }
-      h1.site-title { display:inline-block; margin-right:24px; font-size:20px }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        color: #1a202c;
+        background: #f7fafc;
+      }
+
+      /* Sidebar Styles */
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        width: 80px;
+        background: linear-gradient(180deg, #B39519 0%, #806B0A 100%);
+        transition: width 0.3s ease;
+        z-index: 1000;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        overflow-y: auto;
+      }
+
+      .sidebar.expanded {
+        width: 280px;
+      }
+
+      .sidebar-header {
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        min-height: 80px;
+        position: relative;
+      }
+
+      .sidebar-logo {
+        width: 40px;
+        height: 40px;
+        background: #fff;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        overflow: hidden;
+      }
+
+      .sidebar-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .sidebar-title {
+        color: #fff;
+        font-size: 16px;
+        font-weight: 600;
+        margin-left: 15px;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+
+      .sidebar.expanded .sidebar-title {
+        opacity: 1;
+        transition-delay: 0.1s;
+      }
+
+      .sidebar-toggle {
+        position: fixed;
+        left: 66px;
+        top: 30px;
+        width: 36px;
+        height: 36px;
+        background: #F0BB00;
+        border: none;
+        border-radius: 50%;
+        color: #1a202c;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+        z-index: 1001;
+      }
+
+      .sidebar.expanded .sidebar-toggle {
+        left: 266px;
+      }
+
+      .sidebar.expanded .sidebar-toggle {
+        transform: rotate(180deg);
+      }
+
+      .sidebar-nav {
+        padding: 20px 0;
+      }
+
+      .sidebar-nav-item {
+        display: flex;
+        align-items: center;
+        padding: 15px 20px;
+        color: #fff;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        position: relative;
+      }
+
+      .sidebar-nav-item:hover {
+        background: rgba(255,255,255,0.05);
+        color: #fff;
+      }
+
+      .sidebar-nav-item.active {
+        background: #fff;
+        color: #1a202c;
+        border-left: 4px solid #fff;
+      }
+
+      .sidebar-nav-item i {
+        width: 40px;
+        font-size: 20px;
+        text-align: center;
+        flex-shrink: 0;
+      }
+
+      .sidebar-nav-text {
+        margin-left: 15px;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+
+      .sidebar.expanded .sidebar-nav-text {
+        opacity: 1;
+        transition-delay: 0.1s;
+      }
+
+      /* Top Bar */
+      .topbar {
+        position: fixed;
+        top: 0;
+        left: 80px;
+        right: 0;
+        height: 70px;
+        background: #fff;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0 30px;
+        transition: left 0.3s ease;
+        z-index: 999;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      }
+
+      .sidebar.expanded + .topbar {
+        left: 280px;
+      }
+
+      .user-menu {
+        position: relative;
+      }
+
+      .user-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid #e2e8f0;
+        transition: all 0.2s ease;
+        object-fit: cover;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #1a202c;
+        font-weight: 600;
+        font-size: 18px;
+      }
+
+      .user-avatar:hover {
+        border-color: #F0BB00;
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(240, 187, 0, 0.3);
+      }
+
+      .user-avatar img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .user-dropdown {
+        position: absolute;
+        top: 60px;
+        right: 0;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        min-width: 220px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.2s ease;
+        overflow: hidden;
+      }
+
+      .user-dropdown.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+
+      .user-dropdown-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid #e2e8f0;
+        background: #f7fafc;
+      }
+
+      .user-dropdown-email {
+        font-size: 13px;
+        color: #4a5568;
+        font-weight: 500;
+      }
+
+      .user-dropdown-name {
+        font-size: 11px;
+        color: #718096;
+        margin-top: 2px;
+      }
+
+      .user-dropdown-item {
+        display: block;
+        padding: 12px 20px;
+        color: #2d3748;
+        text-decoration: none;
+        transition: background 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .user-dropdown-item:hover {
+        background: #f7fafc;
+      }
+
+      .user-dropdown-item i {
+        width: 18px;
+        text-align: center;
+        color: #718096;
+      }
+
+      .user-dropdown-item.logout {
+        color: #e53e3e;
+        border-top: 1px solid #e2e8f0;
+      }
+
+      .user-dropdown-item.logout i {
+        color: #e53e3e;
+      }
+
+      /* Main Content */
+      .main-content {
+        margin-left: 80px;
+        margin-top: 70px;
+        padding: 30px;
+        transition: margin-left 0.3s ease;
+        min-height: calc(100vh - 70px);
+      }
+
+      .sidebar.expanded ~ .main-content {
+        margin-left: 280px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
     </style>
   </head>
   <body>
-    <div class="nav">
-      <div class="container">
-        <h1 class="site-title"><%= shopName %></h1>
-          <nav class="nav" style="display:inline-block; margin-left:12px">
-            <a href="/projects" style="margin-right:12px" class="<%= (typeof currentSection !== 'undefined' && currentSection==='projects') ? 'active-link' : '' %>">Projects</a>
-            <a href="/users" style="margin-right:12px" class="<%= (typeof currentSection !== 'undefined' && currentSection==='users') ? 'active-link' : '' %>">Users</a>
-            <a href="/reviews" style="margin-right:12px" class="<%= (typeof currentSection !== 'undefined' && currentSection==='reviews') ? 'active-link' : '' %>">Reviews</a>
-            <a href="/contacts" style="margin-right:12px" class="<%= (typeof currentSection !== 'undefined' && currentSection==='contacts') ? 'active-link' : '' %>">Incidents</a>
-          </nav>
-          <span style="float:right">
-            <% if (typeof currentUser !== 'undefined' && currentUser) { %>
-              <span style="margin-right:12px; color:#333">Signed in as <strong><%= currentUser.email %></strong></span>
-              <a href="/logout">Logout</a>
-            <% } else { %>
-              <a href="/login">Login</a>
-            <% } %>
-          </span>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <img src="/images/awtc-logo.png" alt="Logo" onerror="this.parentElement.innerHTML='<i class=\'fas fa-hands-helping\' style=\'color:#F0BB00;font-size:24px\'></i>'">
+        </div>
+        <span class="sidebar-title">A Will To Change</span>
+        <button class="sidebar-toggle" id="sidebarToggle">
+          <i class="fas fa-chevron-right"></i>
+        </button>
       </div>
+      <nav class="sidebar-nav">
+        <a href="/projects" class="sidebar-nav-item <%= (typeof currentSection !== 'undefined' && currentSection==='projects') ? 'active' : '' %>">
+          <i class="fas fa-project-diagram"></i>
+          <span class="sidebar-nav-text">Projects</span>
+        </a>
+        <a href="/users" class="sidebar-nav-item <%= (typeof currentSection !== 'undefined' && currentSection==='users') ? 'active' : '' %>">
+          <i class="fas fa-users"></i>
+          <span class="sidebar-nav-text">Users</span>
+        </a>
+        <a href="/reviews" class="sidebar-nav-item <%= (typeof currentSection !== 'undefined' && currentSection==='reviews') ? 'active' : '' %>">
+          <i class="fas fa-star"></i>
+          <span class="sidebar-nav-text">Reviews</span>
+        </a>
+        <a href="/contacts" class="sidebar-nav-item <%= (typeof currentSection !== 'undefined' && currentSection==='contacts') ? 'active' : '' %>">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span class="sidebar-nav-text">Incidents</span>
+        </a>
+      </nav>
     </div>
 
-    <div class="container">
-      <!-- page content will be inserted here -->
+    <!-- Top Bar -->
+    <div class="topbar">
+      <% if (typeof currentUser !== 'undefined' && currentUser) { %>
+        <div class="user-menu">
+          <div class="user-avatar" id="userAvatar">
+            <% if (currentUser.profileImage) { %>
+              <% 
+                let imgSrc = currentUser.profileImage;
+                if (!imgSrc.startsWith('/') && !imgSrc.startsWith('http')) {
+                  imgSrc = '/images/' + imgSrc;
+                }
+              %>
+              <img src="<%= imgSrc %>" alt="<%= currentUser.name || currentUser.email %>" onerror="this.style.display='none'; this.parentElement.textContent='<%= (currentUser.name || currentUser.email).charAt(0).toUpperCase() %>';">
+            <% } else { %>
+              <%= (currentUser.name || currentUser.email).charAt(0).toUpperCase() %>
+            <% } %>
+          </div>
+          <div class="user-dropdown" id="userDropdown">
+            <div class="user-dropdown-header">
+              <div class="user-dropdown-email"><%= currentUser.email %></div>
+              <% if (currentUser.name) { %>
+                <div class="user-dropdown-name"><%= currentUser.name %></div>
+              <% } %>
+            </div>
+            <a href="/logout" class="user-dropdown-item logout">
+              <i class="fas fa-sign-out-alt"></i>
+              <span>Log Out</span>
+            </a>
+          </div>
+        </div>
+      <% } else { %>
+        <a href="/login" style="color:#F0BB00;text-decoration:none;font-weight:500">
+          <i class="fas fa-sign-in-alt"></i> Login
+        </a>
+      <% } %>
     </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="container">
+
+    <script>
+      // Sidebar toggle
+      const sidebar = document.getElementById('sidebar');
+      const sidebarToggle = document.getElementById('sidebarToggle');
+      
+      sidebarToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('expanded');
+        localStorage.setItem('sidebarExpanded', sidebar.classList.contains('expanded'));
+      });
+
+      // Restore sidebar state
+      if (localStorage.getItem('sidebarExpanded') === 'true') {
+        sidebar.classList.add('expanded');
+      }
+
+      // User dropdown
+      const userAvatar = document.getElementById('userAvatar');
+      const userDropdown = document.getElementById('userDropdown');
+      
+      if (userAvatar && userDropdown) {
+        userAvatar.addEventListener('click', (e) => {
+          e.stopPropagation();
+          userDropdown.classList.toggle('show');
+        });
+
+        document.addEventListener('click', () => {
+          userDropdown.classList.remove('show');
+        });
+
+        userDropdown.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+      }
+    </script>
