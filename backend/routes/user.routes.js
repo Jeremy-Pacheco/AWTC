@@ -64,6 +64,8 @@ router.delete('/dashboard', authMiddleware, requireAuth, userCtrl.deleteOwnProfi
 
 // Get projects for current user (dashboard)
 router.get('/dashboard/projects', authMiddleware, requireAuth, userCtrl.getOwnProjects);
+// Get bans for current user
+router.get('/dashboard/bans', authMiddleware, requireAuth, userCtrl.getOwnBans);
 
 // Admin or coordinator can list another user's projects
 router.get('/:id/projects', authMiddleware, isAdminOrCoordinator, userCtrl.getUserProjects);

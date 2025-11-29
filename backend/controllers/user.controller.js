@@ -212,6 +212,23 @@ exports.getOwnProjects = async (req, res) => {
   }
 };
 
+// Return bans for current user
+exports.getOwnBans = async (req, res) => {
+  try {
+    const user = req.user;
+    const { UserProjectBan, Project } = require('../models');
+    const bans = await UserProjectBan.findAll({ 
+      where: { userId: user.id }, 
+      include: [{ model: Project }] 
+    });
+    const projects = bans.map(b => ({ id: b.projectId, name: b.Project ? b.Project.name : null, reason: b.reason }));
+    return res.json({ projects });
+  } catch (err) {
+    console.error('Error fetching user bans:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // Admin/coordinator: get projects for a specific user
 exports.getUserProjects = async (req, res) => {
   try {
