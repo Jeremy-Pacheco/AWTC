@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import HeroImage from "../components/HeroImage";
+import AuthModal from "../components/AuthModal";
 
 type Project = {
   id: number;
@@ -37,8 +38,52 @@ const Volunteering: React.FC = () => {
 
   const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
+  
+  // Auth modal state
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [enrolledProjectIds, setEnrolledProjectIds] = useState<number[]>([]);
+  const [bannedProjectIds, setBannedProjectIds] = useState<number[]>([]);
+
+  const fetchEnrolledProjects = async () => {
+    const token = localStorage.getItem("jwtToken");
+    if (!token) {
+      setEnrolledProjectIds([]);
+      setBannedProjectIds([]);
+      return;
+    }
+
+    try {
+      // Fetch enrolled projects
+      const resProjects = await fetch(`${API_URL}/api/users/dashboard/projects`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (resProjects.ok) {
+        const data = await resProjects.json();
+        const projectIds = data.projects?.map((p: Project) => p.id) || [];
+        setEnrolledProjectIds(projectIds);
+      }
+
+      // Fetch banned projects
+      const resBans = await fetch(`${API_URL}/api/users/dashboard/bans`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (resBans.ok) {
+        const data = await resBans.json();
+        const bannedIds = data.projects?.map((p: { id: number }) => p.id) || [];
+        setBannedProjectIds(bannedIds);
+      }
+    } catch (err) {
+      console.error("Error fetching enrolled projects:", err);
+    }
+  };
 
   useEffect(() => {
+    // Check login status
+    const token = localStorage.getItem("jwtToken");
+    setIsLoggedIn(!!token);
+
     fetch(`${API_URL}/api/projects`)
       .then(res => res.json())
       .then((data: Project[]) => setProjects(data))
@@ -47,8 +92,11 @@ const Volunteering: React.FC = () => {
     // fetch categories for filter and form
     fetch(`${API_URL}/api/categories`)
       .then(res => res.json())
-      .then((cats: any[]) => setCategories(cats || []))
+      .then((cats: { id: number; name: string }[]) => setCategories(cats || []))
       .catch(err => console.error('Error fetching categories:', err));
+
+    // fetch enrolled projects if logged in
+    fetchEnrolledProjects();
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -167,6 +215,48 @@ const Volunteering: React.FC = () => {
     }
   };
 
+  const handleEnroll = async (projectId: number) => {
+    // Check if user is logged in
+    const token = localStorage.getItem("jwtToken");
+    
+    if (!token) {
+      // User is not logged in, open auth modal
+      setAuthMode("login");
+      setAuthOpen(true);
+      return;
+    }
+
+    // User is logged in, proceed with enrollment
+    try {
+      const res = await fetch(`${API_URL}/api/projects/${projectId}/register`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 409) {
+          alert("Ya estás inscrito en este proyecto");
+        } else if (res.status === 403) {
+          alert("No puedes inscribirte en este proyecto");
+        } else {
+          alert(data.message || "Error al inscribirse");
+        }
+        return;
+      }
+
+      alert("¡Te has inscrito exitosamente en el proyecto!");
+      // Refresh enrolled projects
+      await fetchEnrolledProjects();
+    } catch (err) {
+      console.error(err);
+      alert("Error de red al inscribirse");
+    }
+  };
+
   const filteredProjects = selectedCategory
     ? projects.filter(p => p.categoryId === Number(selectedCategory))
     : projects;
@@ -231,11 +321,28 @@ const Volunteering: React.FC = () => {
                   </div>
                   <p className="mb-4">{proj.description}</p>
                 </div>
-                <button
-                  className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-lg font-semibold transition-colors w-fit"
-                >
-                  Inscribirse
-                </button>
+                {bannedProjectIds.includes(proj.id) ? (
+                  <button
+                    disabled
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold cursor-not-allowed w-fit"
+                  >
+                    Not Available
+                  </button>
+                ) : enrolledProjectIds.includes(proj.id) ? (
+                  <button
+                    disabled
+                    className="bg-gray-400 text-white px-4 py-2 rounded-lg font-semibold cursor-not-allowed w-fit"
+                  >
+                    Already Enrolled
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleEnroll(proj.id)}
+                    className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-lg font-semibold transition-colors w-fit"
+                  >
+                    Enroll
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -326,6 +433,20 @@ const Volunteering: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Auth Modal */}
+        <AuthModal 
+          open={authOpen} 
+          onClose={() => {
+            setAuthOpen(false);
+            // Refresh login status after closing modal
+            const token = localStorage.getItem("jwtToken");
+            setIsLoggedIn(!!token);
+            // Refresh enrolled projects
+            fetchEnrolledProjects();
+          }} 
+          mode={authMode} 
+        />
       </div>
     </>
   );
