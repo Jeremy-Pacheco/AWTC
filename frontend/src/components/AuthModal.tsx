@@ -52,6 +52,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, mode, onClose }) => {
       localStorage.setItem("userName", data.user.name);
       localStorage.setItem("userRole", data.user.role);
 
+      // Notify other components
+      window.dispatchEvent(new CustomEvent("authChanged", { detail: { loggedIn: true } }));
+      try { localStorage.setItem("__auth_last_update", Date.now().toString()); } catch {}
+
       onClose();
     } catch (err: any) {
       alert(err.message);
@@ -74,6 +78,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, mode, onClose }) => {
       localStorage.setItem("jwtToken", data.access_token);
       localStorage.setItem("userName", data.user.name);
       localStorage.setItem("userRole", data.user.role);
+
+      // Notify other components
+      window.dispatchEvent(new CustomEvent("authChanged", { detail: { loggedIn: true } }));
+      try { localStorage.setItem("__auth_last_update", Date.now().toString()); } catch {}
 
       setCurrentMode("login");
     } catch (err: any) {

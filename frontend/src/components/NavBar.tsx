@@ -14,8 +14,26 @@ function NavBar() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("jwtToken");
-    setIsLoggedIn(!!token);
+    // Initialize
+    setIsLoggedIn(!!localStorage.getItem("jwtToken"));
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "jwtToken" || e.key === "__auth_last_update") {
+        setIsLoggedIn(!!localStorage.getItem("jwtToken"));
+      }
+    };
+
+    const onAuthChanged = () => {
+      setIsLoggedIn(!!localStorage.getItem("jwtToken"));
+    };
+
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("authChanged", onAuthChanged);
+
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("authChanged", onAuthChanged);
+    };
   }, []);
 
   // listen for global requests to open the auth modal (from other pages/components)
@@ -40,6 +58,11 @@ function NavBar() {
     localStorage.removeItem("userName");
     localStorage.removeItem("userRole");
     setIsLoggedIn(false);
+
+    // Notify other components
+    window.dispatchEvent(new CustomEvent("authChanged", { detail: { loggedIn: false } }));
+    try { localStorage.setItem("__auth_last_update", Date.now().toString()); } catch {}
+
     navigate("/");
   };
 
