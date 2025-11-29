@@ -226,6 +226,7 @@ async function renderDashboard(req, res, section = 'overview') {
   try {
     const data = await getDashboardData();
     console.log(`Dashboard counts -> projects: ${data.projects.length}, users: ${data.users.length}, categories: ${data.categories.length}, reviews: ${data.reviews.length}`);
+    console.log(`Section: ${section}, latestProjects: ${data.latestProjects?.length}, latestUsers: ${data.latestUsers?.length}`);
     // compute current user's registrations and bans if any
     const userRegisteredProjectIds = req.user ? (await db.UserProject.findAll({ where: { userId: req.user.id } })).map(r => r.projectId) : [];
     const userBannedProjectIds = req.user ? (await db.UserProjectBan.findAll({ where: { userId: req.user.id } })).map(b => b.projectId) : [];
