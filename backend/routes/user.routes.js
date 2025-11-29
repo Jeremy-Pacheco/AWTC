@@ -59,6 +59,17 @@ router.get(
   userCtrl.getOwnProfile
 );
 
+// Delete own account
+router.delete('/dashboard', authMiddleware, requireAuth, userCtrl.deleteOwnProfile);
+
+// Get projects for current user (dashboard)
+router.get('/dashboard/projects', authMiddleware, requireAuth, userCtrl.getOwnProjects);
+
+// Admin or coordinator can list another user's projects
+router.get('/:id/projects', authMiddleware, isAdminOrCoordinator, userCtrl.getUserProjects);
+// Get bans for specific user (admin or coordinator)
+router.get('/:id/bans', authMiddleware, isAdminOrCoordinator, userCtrl.getUserBans);
+
 /**
  * @swagger
  * /api/users/signup:

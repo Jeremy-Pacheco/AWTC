@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/contact.controller');
+const authMiddleware = require('../middlewares/auth.middlewares');
+const { isAdmin } = require('../middlewares/role.middlewares');
 
 /**
  * @swagger
@@ -37,7 +39,7 @@ const controller = require('../controllers/contact.controller');
  *                 $ref: '#/components/schemas/Contact'
  */
 router.post('/', controller.create);
-router.get('/', controller.findAll);
+router.get('/', authMiddleware, isAdmin, controller.findAll);
 
 /**
  * @swagger
@@ -95,8 +97,8 @@ router.get('/', controller.findAll);
  *       404:
  *         description: Contact not found
  */
-router.get('/:id', controller.findOne);
-router.put('/:id', controller.update);
-router.delete('/:id', controller.delete);
+router.get('/:id', authMiddleware, isAdmin, controller.findOne);
+router.put('/:id', authMiddleware, isAdmin, controller.update);
+router.delete('/:id', authMiddleware, isAdmin, controller.delete);
 
 module.exports = router;

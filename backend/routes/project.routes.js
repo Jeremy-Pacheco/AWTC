@@ -3,6 +3,7 @@ const router = express.Router();
 const upload = require('../multer/upload');
 const projectController = require('../controllers/project.controller');
 const requireAuth = require('../middlewares/requireAuth');
+const authMiddleware = require('../middlewares/auth.middlewares');
 const roleMid = require('../middlewares/role.middlewares');
 
 /**
@@ -39,7 +40,8 @@ const roleMid = require('../middlewares/role.middlewares');
  *               items:
  *                 $ref: '#/components/schemas/Project'
  */
-router.post('/', upload.single('file'), projectController.createProject);
+// Only coordinators or admins can create projects
+router.post('/', authMiddleware, roleMid.isAdminOrCoordinator, upload.single('file'), projectController.createProject);
 router.get('/', projectController.getAllProjects);
 
 /**
