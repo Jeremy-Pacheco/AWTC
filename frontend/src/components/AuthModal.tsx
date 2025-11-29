@@ -7,6 +7,7 @@ import {
   EyeIcon,
   EyeSlashIcon,
 } from "@heroicons/react/24/outline";
+import AlertModal from "./AlertModal";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -19,6 +20,8 @@ interface AuthModalProps {
 const AuthModal: React.FC<AuthModalProps> = ({ open, mode, onClose }) => {
   const [currentMode, setCurrentMode] = useState<"login" | "signup">(mode);
   const [showPass, setShowPass] = useState(false);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   // Form state
   const [email, setEmail] = useState("");
@@ -58,7 +61,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, mode, onClose }) => {
 
       onClose();
     } catch (err: any) {
-      alert(err.message);
+      setAlertMessage(err.message);
+      setAlertOpen(true);
     }
   };
 
@@ -85,7 +89,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, mode, onClose }) => {
 
       setCurrentMode("login");
     } catch (err: any) {
-      alert(err.message);
+      setAlertMessage(err.message);
+      setAlertOpen(true);
     }
   };
 
@@ -170,7 +175,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, mode, onClose }) => {
 
               <button
                 type="submit"
-                className="w-full bg-[#F0BB00] text-black py-2 rounded-lg hover:bg-[#1f2124] hover:text-white transition font-semibold"
+                className="w-full bg-[#F0BB00] text-black py-2 rounded-3xl hover:bg-[#1f2124] hover:text-white transition font-semibold"
               >
                 {currentMode === "login" ? "Log In" : "Sign Up"}
               </button>
@@ -202,6 +207,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, mode, onClose }) => {
           </motion.div>
         </motion.div>
       )}
+      <AlertModal open={alertOpen} message={alertMessage} onAccept={() => setAlertOpen(false)} />
     </AnimatePresence>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AuthModal from "../components/AuthModal";
 import HeroImage from "../components/HeroImage";
+import AlertModal from "../components/AlertModal";
 import logo1 from "../assets/home/medioambiente.png";
 import logo2 from "../assets/home/rd.png";
 import logo3 from "../assets/home/salud.png";
@@ -80,7 +81,6 @@ function AboutSection() {
 
 // --- REVIEWS SECTION ---
 interface ReviewsSectionProps {
-  onOpenLogin: () => void;
   onOpenSignup: () => void;
   refreshTrigger: number;
 }
@@ -95,7 +95,6 @@ interface Review {
 }
 
 function ReviewsSection({
-  onOpenLogin,
   onOpenSignup,
   refreshTrigger,
 }: ReviewsSectionProps) {
@@ -109,6 +108,10 @@ function ReviewsSection({
   const [editContent, setEditContent] = useState("");
   const [editSelectedFile, setEditSelectedFile] = useState<File | null>(null);
   const [editRemoveImage, setEditRemoveImage] = useState(false);
+
+  // Alert modal state
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   // Auth reactivo
   const [token, setToken] = useState<string | null>(() =>
@@ -189,7 +192,8 @@ function ReviewsSection({
         setSelectedFile(null);
         setShowReviewModal(false);
       } else {
-        alert("Error creating review");
+        setAlertMessage("Error creating review");
+        setAlertOpen(true);
       }
     } catch (error) {
       console.error(error);
@@ -270,7 +274,8 @@ function ReviewsSection({
   };
 
   return (
-    <section className="my-12 px-4 md:px-0">
+    <>
+      <section className="my-12 px-4 md:px-0">
       <div className="flex flex-col md:flex-row gap-8 items-start">
         {/* --- LISTA DE RESEÑAS --- */}
         <div className="flex-1 w-full">
@@ -588,7 +593,9 @@ function ReviewsSection({
           </div>
         </div>
       )}
-    </section>
+      </section>
+      <AlertModal open={alertOpen} message={alertMessage} onAccept={() => setAlertOpen(false)} />
+    </>
   );
 }
 
@@ -597,11 +604,6 @@ function Home() {
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [refreshKey, setRefreshKey] = useState(0);
-
-  const handleOpenLogin = () => {
-    setAuthMode("login");
-    setAuthOpen(true);
-  };
 
   const handleOpenSignup = () => {
     setAuthMode("signup");
@@ -638,7 +640,6 @@ function Home() {
         <h4>At our platform, we believe that everyone can make a difference</h4>
         <AboutSection />
         <ReviewsSection
-          onOpenLogin={handleOpenLogin}
           onOpenSignup={handleOpenSignup}
           refreshTrigger={refreshKey}
         />
