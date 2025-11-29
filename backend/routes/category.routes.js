@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const categoryController = require('../controllers/category.controller');
+const { isAdminOrCoordinator } = require('../middlewares/role.middlewares');
 
 /**
  * @swagger
@@ -8,6 +9,8 @@ const categoryController = require('../controllers/category.controller');
  *   post:
  *     summary: Create a new category
  *     tags: [Categories]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -23,6 +26,10 @@ const categoryController = require('../controllers/category.controller');
  *               $ref: '#/components/schemas/Category'
  *       400:
  *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  *   get:
  *     summary: Get all categories
  *     tags: [Categories]
@@ -36,7 +43,7 @@ const categoryController = require('../controllers/category.controller');
  *               items:
  *                 $ref: '#/components/schemas/Category'
  */
-router.post('/', categoryController.createCategory);
+router.post('/', isAdminOrCoordinator, categoryController.createCategory);
 router.get('/', categoryController.getAllCategories);
 
 /**
@@ -45,6 +52,8 @@ router.get('/', categoryController.getAllCategories);
  *   put:
  *     summary: Update a category
  *     tags: [Categories]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -60,11 +69,17 @@ router.get('/', categoryController.getAllCategories);
  *     responses:
  *       200:
  *         description: Category updated
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  *       404:
  *         description: Category not found
  *   delete:
  *     summary: Delete a category
  *     tags: [Categories]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -74,10 +89,14 @@ router.get('/', categoryController.getAllCategories);
  *     responses:
  *       200:
  *         description: Category deleted
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  *       404:
  *         description: Category not found
  */
-router.put('/:id', categoryController.updateCategory);
-router.delete('/:id', categoryController.deleteCategory);
+router.put('/:id', isAdminOrCoordinator, categoryController.updateCategory);
+router.delete('/:id', isAdminOrCoordinator, categoryController.deleteCategory);
 
 module.exports = router;
