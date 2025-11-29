@@ -107,19 +107,51 @@ function ReviewsSection({
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editContent, setEditContent] = useState("");
+  const [editSelectedFile, setEditSelectedFile] = useState<File | null>(null);
+  const [editRemoveImage, setEditRemoveImage] = useState(false);
 
-  const token = localStorage.getItem("jwtToken");
+  // Auth reactivo
+  const [token, setToken] = useState<string | null>(() =>
+    localStorage.getItem("jwtToken")
+  );
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const isLoggedIn = !!token;
 
-  let currentUserId: number | null = null;
-  if (token) {
+  // Escuchar cambios de autenticación
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "jwtToken") {
+        setToken(e.newValue);
+      }
+    };
+
+    const onAuthChanged = () => {
+      setToken(localStorage.getItem("jwtToken"));
+    };
+
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("authChanged", onAuthChanged);
+
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("authChanged", onAuthChanged);
+    };
+  }, []);
+
+  // Decodificar token
+  useEffect(() => {
+    if (!token) {
+      setCurrentUserId(null);
+      return;
+    }
     try {
       const payload = JSON.parse(atob(token.split(".")[1]));
-      currentUserId = payload.id;
+      setCurrentUserId(payload.id ?? null);
     } catch (e) {
       console.error("Error decoding token", e);
+      setCurrentUserId(null);
     }
-  }
+  }, [token]);
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/api/reviews`)
@@ -181,22 +213,43 @@ function ReviewsSection({
 
   const saveEdit = async (id: number) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/reviews/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ content: editContent }),
-      });
+      let res;
+      // Si hay archivo nuevo o se solicita quitar imagen, usar FormData
+      if (editSelectedFile || editRemoveImage) {
+        const formData = new FormData();
+        formData.append("content", editContent);
+        if (editSelectedFile) formData.append("image", editSelectedFile);
+        if (editRemoveImage) formData.append("removeImage", "true");
+
+        res = await fetch(`${API_BASE_URL}/api/reviews/${id}`, {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        });
+      } else {
+        // Solo texto -> JSON
+        res = await fetch(`${API_BASE_URL}/api/reviews/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ content: editContent }),
+        });
+      }
+
       if (res.ok) {
         const updatedReview = await res.json();
         setReviews(
           reviews.map((r) =>
-            r.id === id ? { ...r, content: updatedReview.content } : r
+            r.id === id
+              ? { ...r, content: updatedReview.content, image: updatedReview.image ?? null }
+              : r
           )
         );
         setEditingId(null);
+        setEditSelectedFile(null);
+        setEditRemoveImage(false);
       }
     } catch (err) {
       console.error(err);
@@ -219,6 +272,7 @@ function ReviewsSection({
   return (
     <section className="my-12 px-4 md:px-0">
       <div className="flex flex-col md:flex-row gap-8 items-start">
+        {/* --- LISTA DE RESEÑAS --- */}
         <div className="flex-1 w-full">
           <div className="flex justify-between items-baseline mb-6 border-b pb-2">
             <h5 className="text-xl font-bold text-gray-800">Reviews</h5>
@@ -296,9 +350,96 @@ function ReviewsSection({
                         onChange={(e) => setEditContent(e.target.value)}
                         className="w-full border border-gray-200 p-3 rounded-xl text-sm focus:ring-2 focus:ring-yellow-400 outline-none resize-none bg-gray-50"
                       />
+
+                      {/* Preview imagen actual (si existe y no se marca para eliminar) */}
+                      {review.image && !editRemoveImage && !editSelectedFile && (
+                        <div className="mt-3 mb-2">
+                          <img
+                            src={`${API_BASE_URL}${review.image}`}
+                            alt="Current"
+                            className="h-24 w-auto object-cover rounded-lg"
+                          />
+                        </div>
+                      )}
+
+                      {/* Preview imagen nueva seleccionada */}
+                      {editSelectedFile && (
+                        <div className="mt-3 mb-2">
+                          <img
+                            src={URL.createObjectURL(editSelectedFile)}
+                            alt="New preview"
+                            className="h-24 w-auto object-cover rounded-lg"
+                          />
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between gap-4 mt-3">
+                        <div>
+                          <input
+                            id={`editFileInput-${review.id}`}
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const f = e.target.files && e.target.files[0];
+                              setEditSelectedFile(f ?? null);
+                              if (f) setEditRemoveImage(false);
+                            }}
+                            className="hidden"
+                          />
+                          <label
+                            htmlFor={`editFileInput-${review.id}`}
+                            className="cursor-pointer flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-colors"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={1.5}
+                              stroke="currentColor"
+                              className="w-5 h-5"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M4.5 12.75l6 6 9-13.5"
+                              />
+                            </svg>
+                            {editSelectedFile
+                              ? editSelectedFile.name
+                              : "Add / Replace image"}
+                          </label>
+                        </div>
+
+                        {review.image && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditRemoveImage((prev) => {
+                                const next = !prev;
+                                if (next) setEditSelectedFile(null);
+                                return next;
+                              });
+                            }}
+                            className={`text-sm px-3 py-1 rounded-full border ${
+                              editRemoveImage
+                                ? "bg-red-50 text-red-600 border-red-200"
+                                : "bg-gray-100 text-gray-700 border-gray-200"
+                            }`}
+                          >
+                            {editRemoveImage
+                              ? "Image will be removed"
+                              : "Remove image"}
+                          </button>
+                        )}
+                      </div>
+
                       <div className="flex gap-2 mt-3 justify-end">
                         <button
-                          onClick={() => setEditingId(null)}
+                          onClick={() => {
+                            setEditingId(null);
+                            setEditSelectedFile(null);
+                            setEditRemoveImage(false);
+                          }}
                           className="px-4 py-1.5 rounded-full text-xs font-medium bg-gray-100 hover:bg-gray-200"
                         >
                           Cancel
@@ -322,6 +463,7 @@ function ReviewsSection({
           </div>
         </div>
 
+        {/* --- PANEL LATERAL --- */}
         <div className="md:w-1/4 flex flex-col items-center sticky top-8">
           {isLoggedIn ? (
             <div className="w-full bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
