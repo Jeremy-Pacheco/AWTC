@@ -5,18 +5,18 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     // Get the Environment and Community categories
     const [environment] = await queryInterface.sequelize.query(
-      `SELECT id FROM categories WHERE name = 'Environment' LIMIT 1`
+      `SELECT id FROM Categories WHERE name = 'Environment' LIMIT 1`
     );
     
     const [community] = await queryInterface.sequelize.query(
-      `SELECT id FROM categories WHERE name = 'Community' LIMIT 1`
+      `SELECT id FROM Categories WHERE name = 'Community' LIMIT 1`
     );
     
     const environmentId = environment && environment.length > 0 ? environment[0].id : null;
     const communityId = community && community.length > 0 ? community[0].id : null;
 
     await queryInterface.bulkInsert(
-      "projects",
+      "Projects",
       [
         {
           name: "Planting trees",
@@ -51,7 +51,7 @@ module.exports = {
 
   async down(queryInterface, Sequelize) {
     
-      await queryInterface.bulkDelete('projects', null, {});
+      await queryInterface.bulkDelete('Projects', null, {});
      
   },
 };
