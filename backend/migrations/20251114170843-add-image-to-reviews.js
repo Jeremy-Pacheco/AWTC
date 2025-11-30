@@ -3,13 +3,19 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.addColumn("Reviews", "image", {
-      type: Sequelize.STRING,
-      allowNull: true,
-    });
+    const table = await queryInterface.describeTable("Reviews");
+    if (!table.image) {
+      await queryInterface.addColumn("Reviews", "image", {
+        type: Sequelize.STRING,
+        allowNull: true,
+      });
+    }
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.removeColumn("Reviews", "image");
+    const table = await queryInterface.describeTable("Reviews");
+    if (table.image) {
+      await queryInterface.removeColumn("Reviews", "image");
+    }
   },
 };
