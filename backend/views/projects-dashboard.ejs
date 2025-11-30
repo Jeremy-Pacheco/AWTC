@@ -1,0 +1,845 @@
+<!-- D3.js Library -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<style>
+  .projects-dashboard {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 30px;
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 1400px) {
+    .projects-dashboard {
+      grid-template-columns: 300px 1fr;
+      gap: 20px;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    .projects-dashboard {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .projects-dashboard {
+      gap: 16px;
+    }
+  }
+
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  @media (max-width: 1024px) {
+    .charts-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+  }
+
+  .projects-list-container {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 1px solid #e2e8f0;
+    max-height: 600px;
+    overflow-y: auto;
+  }
+
+  @media (max-width: 768px) {
+    .projects-list-container {
+      padding: 16px;
+      max-height: none;
+    }
+  }
+
+  .projects-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #F0BB00;
+  }
+
+  .projects-list-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a202c;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .projects-count-badge {
+    background: #F0BB00;
+    color: #1a202c;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .project-item {
+    padding: 16px;
+    margin-bottom: 12px;
+    background: #f7fafc;
+    border-radius: 8px;
+    border-left: 4px solid #cbd5e0;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .project-item:hover {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transform: translateX(4px);
+  }
+
+  .project-item.active { border-left-color: #F0BB00; }
+  .project-item.finished { border-left-color: #48bb78; }
+  .project-item.cancelled { border-left-color: #f56565; }
+
+  .project-item-name {
+    font-weight: 600;
+    color: #1a202c;
+    font-size: 15px;
+    margin-bottom: 4px;
+    word-break: break-word;
+  }
+
+  .project-item-category {
+    font-size: 12px;
+    color: #718096;
+    margin-bottom: 6px;
+    display: inline-block;
+    background: #edf2f7;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .project-item-status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  .status-active {
+    background: #c6f6d5;
+    color: #22543d;
+  }
+
+  .status-finished {
+    background: #bee3f8;
+    color: #2c5282;
+  }
+
+  .status-cancelled {
+    background: #fed7d7;
+    color: #742a2a;
+  }
+
+  .chart-container {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 1px solid #e2e8f0;
+  }
+
+  @media (max-width: 768px) {
+    .chart-container {
+      padding: 16px;
+    }
+  }
+
+  .chart-header {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #F0BB00;
+  }
+
+  .chart-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 4px;
+  }
+
+  .chart-subtitle {
+    font-size: 13px;
+    color: #718096;
+  }
+
+  #projectsStatusChart, #projectsMonthlyChart, #projectsCategoryChart, #projectsOccupancyChart {
+    width: 100%;
+    height: 280px;
+  }
+
+  @media (max-width: 768px) {
+    #projectsStatusChart, #projectsMonthlyChart, #projectsCategoryChart, #projectsOccupancyChart {
+      height: 250px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    #projectsStatusChart, #projectsMonthlyChart, #projectsCategoryChart, #projectsOccupancyChart {
+      height: 220px;
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #718096;
+  }
+
+  .empty-state i {
+    font-size: 48px;
+    color: #cbd5e0;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar::-webkit-scrollbar-track {
+    background: #f7fafc;
+    border-radius: 10px;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 10px;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+  }
+</style>
+
+<div class="section-card">
+  <h2 class="section-title">
+    <i class="fas fa-tasks" style="color: #F0BB00;"></i>
+    Projects Dashboard
+  </h2>
+</div>
+
+<div class="projects-dashboard">
+  <!-- Projects List Component -->
+  <div class="projects-list-container scrollbar">
+    <div class="projects-list-header">
+      <div class="projects-list-title">
+        <i class="fas fa-list"></i>
+        All Projects
+      </div>
+      <span class="projects-count-badge"><%= projects ? projects.length : 0 %> Total</span>
+    </div>
+    
+    <% if (projects && projects.length) { %>
+      <div id="projectsListContent"></div>
+    <% } else { %>
+      <div class="empty-state">
+        <i class="fas fa-tasks"></i>
+        <p>No projects available</p>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Charts Grid -->
+  <div class="charts-grid">
+    <!-- Chart 1: Projects Status Distribution -->
+    <div class="chart-container">
+      <div class="chart-header">
+        <div class="chart-title">
+          <i class="fas fa-chart-pie" style="color: #F0BB00; margin-right: 8px;"></i>
+          Projects by Status
+        </div>
+        <div class="chart-subtitle">Distribution of active, finished & cancelled</div>
+      </div>
+      <div id="projectsStatusChart"></div>
+    </div>
+
+    <!-- Chart 2: Projects Created Monthly -->
+    <div class="chart-container">
+      <div class="chart-header">
+        <div class="chart-title">
+          <i class="fas fa-chart-line" style="color: #F0BB00; margin-right: 8px;"></i>
+          Projects Created Monthly
+        </div>
+        <div class="chart-subtitle">Trend over the last 12 months</div>
+      </div>
+      <div id="projectsMonthlyChart"></div>
+    </div>
+
+    <!-- Chart 3: Projects by Category -->
+    <div class="chart-container">
+      <div class="chart-header">
+        <div class="chart-title">
+          <i class="fas fa-chart-bar" style="color: #F0BB00; margin-right: 8px;"></i>
+          Projects by Category
+        </div>
+        <div class="chart-subtitle">Distribution across categories</div>
+      </div>
+      <div id="projectsCategoryChart"></div>
+    </div>
+
+    <!-- Chart 4: Projects Occupancy & Engagement -->
+    <div class="chart-container">
+      <div class="chart-header">
+        <div class="chart-title">
+          <i class="fas fa-chart-area" style="color: #F0BB00; margin-right: 8px;"></i>
+          Occupancy & Engagement
+        </div>
+        <div class="chart-subtitle">Capacity vs Volunteer Participation</div>
+      </div>
+      <div id="projectsOccupancyChart"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Projects data from server
+  const projectsData = <%- JSON.stringify(projects || []) %>;
+  const categoriesData = <%- JSON.stringify(categories || []) %>;
+  const allUserProjects = <%- JSON.stringify(typeof allUserProjects !== 'undefined' ? allUserProjects : []) %>;
+
+  console.log('=== PROJECTS DASHBOARD ===');
+  console.log('Projects Data:', projectsData);
+  console.log('Projects length:', projectsData.length);
+  console.log('Categories Data:', categoriesData);
+  console.log('User Projects:', allUserProjects);
+
+  // Render projects list
+  function renderProjectsList() {
+    const container = document.getElementById('projectsListContent');
+    
+    if (!projectsData || projectsData.length === 0) {
+      container.innerHTML = '<div class="empty-state"><p>No projects available</p></div>';
+      return;
+    }
+
+    container.innerHTML = projectsData.map(proj => {
+      const category = categoriesData.find(c => c.id === proj.categoryId);
+      const volunteerCount = allUserProjects.filter(up => up.projectId === proj.id).length;
+      const statusClass = `status-${proj.status || 'active'}`;
+      const statusText = (proj.status || 'active').toUpperCase();
+
+      return `
+        <div class="project-item ${proj.status || 'active'}">
+          <div class="project-item-name">${proj.name}</div>
+          ${category ? `<span class="project-item-category">${category.name}</span>` : ''}
+          <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+            <span class="project-item-status ${statusClass}">${statusText}</span>
+            <span style="font-size: 12px; color: #718096;">
+              <i class="fas fa-users" style="color: #4CAF50;"></i> ${volunteerCount} volunteers
+            </span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Chart 1: Projects Status (Donut Chart)
+  function renderProjectsStatusChart() {
+    // Normalize status: if null/undefined, treat as 'active'
+    // Also handle case-insensitive comparison
+    const normalizedProjects = projectsData.map(p => {
+      const status = (p.status || 'active').toLowerCase();
+      return { ...p, normalizedStatus: status };
+    });
+
+    console.log('Normalized projects:', normalizedProjects.map(p => ({ name: p.name, status: p.status, normalizedStatus: p.normalizedStatus })));
+    
+    const activeCount = normalizedProjects.filter(p => p.normalizedStatus === 'active').length;
+    const finishedCount = normalizedProjects.filter(p => p.normalizedStatus === 'finished').length;
+    const cancelledCount = normalizedProjects.filter(p => p.normalizedStatus === 'cancelled').length;
+    
+    console.log('Active count:', activeCount);
+    console.log('Finished count:', finishedCount);
+    console.log('Cancelled count:', cancelledCount);
+    
+    const statusData = [
+      { status: 'active', count: activeCount },
+      { status: 'finished', count: finishedCount },
+      { status: 'cancelled', count: cancelledCount }
+    ].filter(d => d.count > 0);
+
+    console.log('Status data after filter:', statusData);
+
+    if (statusData.length === 0 || statusData.reduce((s, d) => s + d.count, 0) === 0) {
+      document.getElementById('projectsStatusChart').innerHTML = '<p style="padding: 20px; text-align: center; color: #718096;">No data available</p>';
+      return;
+    }
+
+    const width = document.getElementById('projectsStatusChart').offsetWidth;
+    const isMobile = width < 480;
+    const height = isMobile ? 250 : 300;
+    const radius = Math.min(width, height) / 2 - 40;
+
+    const svg = d3.select('#projectsStatusChart')
+      .append('svg')
+      .attr('width', width)
+      .attr('height', height)
+      .append('g')
+      .attr('transform', `translate(${width / 2},${height / 2})`);
+
+    const color = d3.scaleOrdinal()
+      .domain(['active', 'finished', 'cancelled'])
+      .range(['#48bb78', '#4299e1', '#f56565']);
+
+    const pie = d3.pie()
+      .value(d => d.count)
+      .sort(null);
+
+    const arc = d3.arc()
+      .innerRadius(radius * 0.6)
+      .outerRadius(radius);
+
+    const arcs = svg.selectAll('.arc')
+      .data(pie(statusData))
+      .enter()
+      .append('g')
+      .attr('class', 'arc');
+
+    arcs.append('path')
+      .attr('d', arc)
+      .attr('fill', d => color(d.data.status))
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 2)
+      .transition()
+      .duration(800)
+      .attrTween('d', function(d) {
+        const interpolate = d3.interpolate({ startAngle: 0, endAngle: 0 }, d);
+        return function(t) {
+          return arc(interpolate(t));
+        };
+      });
+
+    // Center text
+    svg.append('text')
+      .attr('text-anchor', 'middle')
+      .attr('dy', '-0.5em')
+      .style('font-size', '32px')
+      .style('font-weight', '700')
+      .style('fill', '#1a202c')
+      .text(statusData.reduce((s, d) => s + d.count, 0));
+
+    svg.append('text')
+      .attr('text-anchor', 'middle')
+      .attr('dy', '1.2em')
+      .style('font-size', '14px')
+      .style('fill', '#718096')
+      .text('Total Projects');
+
+    // Legend
+    const legend = svg.selectAll('.legend')
+      .data(statusData)
+      .enter()
+      .append('g')
+      .attr('class', 'legend')
+      .attr('transform', (d, i) => `translate(${radius + 20},${-30 + i * 22})`);
+
+    legend.append('rect')
+      .attr('width', 14)
+      .attr('height', 14)
+      .attr('rx', 2)
+      .attr('fill', d => color(d.status));
+
+    legend.append('text')
+      .attr('x', 18)
+      .attr('y', 7)
+      .attr('dy', '.35em')
+      .style('font-size', '12px')
+      .style('fill', '#4a5568')
+      .text(d => `${d.status.charAt(0).toUpperCase() + d.status.slice(1)} (${d.count})`);
+  }
+
+  // Chart 2: Projects Created Monthly (Line Chart)
+  function renderProjectsMonthlyChart() {
+    const last12Months = [];
+    const today = new Date();
+    
+    for (let i = 11; i >= 0; i--) {
+      const date = new Date(today);
+      date.setMonth(date.getMonth() - i);
+      const monthStr = date.toLocaleDateString('en-US', { year: '2-digit', month: 'short' });
+      
+      const count = projectsData.filter(p => {
+        if (!p.createdAt) return false;
+        const projDate = new Date(p.createdAt);
+        return projDate.getMonth() === date.getMonth() && projDate.getFullYear() === date.getFullYear();
+      }).length;
+
+      last12Months.push({ month: monthStr, count: count });
+    }
+
+    const margin = { top: 20, right: 30, bottom: 60, left: 50 };
+    const container = document.getElementById('projectsMonthlyChart');
+    const width = container.offsetWidth - margin.left - margin.right;
+    const height = 280 - margin.top - margin.bottom;
+
+    const svg = d3.select('#projectsMonthlyChart')
+      .append('svg')
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom)
+      .append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scalePoint()
+      .domain(last12Months.map(d => d.month))
+      .range([0, width])
+      .padding(0.5);
+
+    const maxValue = Math.max(...last12Months.map(d => d.count), 5);
+    const y = d3.scaleLinear()
+      .domain([0, maxValue])
+      .range([height, 0]);
+
+    // Grid
+    svg.append('g')
+      .attr('opacity', 0.1)
+      .call(d3.axisLeft(y).tickSize(-width).tickFormat(''));
+
+    // Line
+    const line = d3.line()
+      .x(d => x(d.month))
+      .y(d => y(d.count))
+      .curve(d3.curveMonotoneX);
+
+    svg.append('path')
+      .datum(last12Months)
+      .attr('fill', 'none')
+      .attr('stroke', '#F0BB00')
+      .attr('stroke-width', 3)
+      .attr('d', line);
+
+    // Area under line
+    const area = d3.area()
+      .x(d => x(d.month))
+      .y0(height)
+      .y1(d => y(d.count))
+      .curve(d3.curveMonotoneX);
+
+    svg.append('path')
+      .datum(last12Months)
+      .attr('fill', '#F0BB00')
+      .attr('opacity', 0.1)
+      .attr('d', area);
+
+    // Points
+    const tooltip = d3.select('body').append('div')
+      .style('position', 'absolute')
+      .style('background', 'rgba(0, 0, 0, 0.85)')
+      .style('color', '#fff')
+      .style('padding', '8px 12px')
+      .style('border-radius', '6px')
+      .style('font-size', '12px')
+      .style('pointer-events', 'none')
+      .style('opacity', 0);
+
+    svg.selectAll('.dot')
+      .data(last12Months)
+      .enter()
+      .append('circle')
+      .attr('class', 'dot')
+      .attr('cx', d => x(d.month))
+      .attr('cy', d => y(d.count))
+      .attr('r', 4)
+      .attr('fill', '#F0BB00')
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 2)
+      .on('mouseover', function(event, d) {
+        d3.select(this).transition().duration(200).attr('r', 6);
+        tooltip.transition().duration(200).style('opacity', 1);
+        tooltip.html(`${d.month}: <strong>${d.count} projects</strong>`)
+          .style('left', (event.pageX + 10) + 'px')
+          .style('top', (event.pageY - 28) + 'px');
+      })
+      .on('mouseout', function() {
+        d3.select(this).transition().duration(200).attr('r', 4);
+        tooltip.transition().duration(200).style('opacity', 0);
+      });
+
+    // X axis
+    svg.append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(d3.axisBottom(x))
+      .selectAll('text')
+      .attr('transform', 'rotate(-45)')
+      .style('text-anchor', 'end')
+      .attr('dx', '-.8em')
+      .attr('dy', '.15em');
+
+    // Y axis
+    svg.append('g')
+      .call(d3.axisLeft(y).ticks(5));
+  }
+
+  // Chart 3: Projects by Category (Bar Chart)
+  function renderProjectsCategoryChart() {
+    const categoryData = categoriesData.map(cat => ({
+      name: cat.name,
+      projects: projectsData.filter(p => p.categoryId === cat.id).length
+    })).filter(d => d.projects > 0).sort((a, b) => b.projects - a.projects);
+
+    if (categoryData.length === 0) {
+      document.getElementById('projectsCategoryChart').innerHTML = '<p style="padding: 20px; text-align: center; color: #718096;">No data available</p>';
+      return;
+    }
+
+    const margin = { top: 20, right: 30, bottom: 60, left: 50 };
+    const container = document.getElementById('projectsCategoryChart');
+    const width = container.offsetWidth - margin.left - margin.right;
+    const height = 280 - margin.top - margin.bottom;
+
+    const svg = d3.select('#projectsCategoryChart')
+      .append('svg')
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom)
+      .append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleBand()
+      .domain(categoryData.map(d => d.name))
+      .range([0, width])
+      .padding(0.3);
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(categoryData, d => d.projects) + 2])
+      .range([height, 0]);
+
+    // Grid lines
+    svg.append('g')
+      .attr('class', 'grid')
+      .attr('opacity', 0.1)
+      .call(d3.axisLeft(y).tickSize(-width).tickFormat(''));
+
+    // Bars
+    svg.selectAll('.bar')
+      .data(categoryData)
+      .enter()
+      .append('rect')
+      .attr('class', 'bar')
+      .attr('x', d => x(d.name))
+      .attr('width', x.bandwidth())
+      .attr('y', height)
+      .attr('height', 0)
+      .attr('fill', '#F0BB00')
+      .attr('rx', 4)
+      .transition()
+      .duration(800)
+      .attr('y', d => y(d.projects))
+      .attr('height', d => height - y(d.projects));
+
+    // Value labels
+    svg.selectAll('.label')
+      .data(categoryData)
+      .enter()
+      .append('text')
+      .attr('class', 'label')
+      .attr('x', d => x(d.name) + x.bandwidth() / 2)
+      .attr('y', d => y(d.projects) - 5)
+      .attr('text-anchor', 'middle')
+      .attr('fill', '#1a202c')
+      .attr('font-size', '12px')
+      .attr('font-weight', '600')
+      .text(d => d.projects);
+
+    // X axis
+    svg.append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(d3.axisBottom(x))
+      .selectAll('text')
+      .attr('transform', 'rotate(-45)')
+      .style('text-anchor', 'end')
+      .attr('dx', '-.8em')
+      .attr('dy', '.15em');
+
+    // Y axis
+    svg.append('g')
+      .call(d3.axisLeft(y).ticks(5));
+  }
+
+  // Chart 4: Projects Occupancy & Engagement (Bubble Chart)
+  function renderProjectsOccupancyChart() {
+    const occupancyData = projectsData.map(proj => {
+      const volunteers = allUserProjects.filter(up => up.projectId === proj.id).length;
+      const capacity = proj.capacity || 10;
+      const occupancy = (volunteers / capacity) * 100;
+
+      return {
+        name: proj.name.substring(0, 20),
+        capacity: capacity,
+        volunteers: volunteers,
+        occupancy: occupancy,
+        radius: Math.sqrt(volunteers + 1)
+      };
+    }).filter(d => d.capacity > 0 && (d.volunteers > 0 || d.capacity > 0));
+
+    if (occupancyData.length === 0) {
+      document.getElementById('projectsOccupancyChart').innerHTML = '<p style="padding: 20px; text-align: center; color: #718096;">No data available</p>';
+      return;
+    }
+
+    const margin = { top: 20, right: 30, bottom: 60, left: 50 };
+    const container = document.getElementById('projectsOccupancyChart');
+    const width = container.offsetWidth - margin.left - margin.right;
+    const height = 280 - margin.top - margin.bottom;
+
+    const svg = d3.select('#projectsOccupancyChart')
+      .append('svg')
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom)
+      .append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleLinear()
+      .domain([0, d3.max(occupancyData, d => d.capacity) + 5])
+      .range([0, width]);
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(occupancyData, d => d.volunteers) + 2])
+      .range([height, 0]);
+
+    // Color scale based on occupancy percentage
+    const colorScale = d3.scaleLinear()
+      .domain([0, 50, 100])
+      .range(['#f56565', '#F0BB00', '#48bb78'])
+      .clamp(true);
+
+    // Grid
+    svg.append('g')
+      .attr('opacity', 0.1)
+      .call(d3.axisLeft(y).tickSize(-width).tickFormat(''));
+
+    // Bubbles
+    svg.selectAll('.bubble')
+      .data(occupancyData)
+      .enter()
+      .append('circle')
+      .attr('class', 'bubble')
+      .attr('cx', d => x(d.capacity))
+      .attr('cy', d => y(d.volunteers))
+      .attr('r', d => Math.max(d.radius * 3, 20))
+      .attr('fill', d => colorScale(d.occupancy))
+      .attr('opacity', 0.7)
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 2);
+
+    // Tooltips
+    const tooltip = d3.select('body').append('div')
+      .style('position', 'absolute')
+      .style('background', 'rgba(0, 0, 0, 0.85)')
+      .style('color', '#fff')
+      .style('padding', '8px 12px')
+      .style('border-radius', '6px')
+      .style('font-size', '12px')
+      .style('pointer-events', 'none')
+      .style('opacity', 0);
+
+    svg.selectAll('.bubble')
+      .on('mouseover', function(event, d) {
+        d3.select(this).transition().duration(200).attr('r', d => Math.max(d.radius * 3.5, 25));
+        tooltip.transition().duration(200).style('opacity', 1);
+        tooltip.html(`<strong>${d.name}</strong><br/>Occupancy: ${d.occupancy.toFixed(1)}%<br/>${d.volunteers}/${d.capacity} volunteers`)
+          .style('left', (event.pageX + 10) + 'px')
+          .style('top', (event.pageY - 28) + 'px');
+      })
+      .on('mouseout', function(d) {
+        d3.select(this).transition().duration(200).attr('r', d => Math.max(d.radius * 3, 20));
+        tooltip.transition().duration(200).style('opacity', 0);
+      });
+
+    // X axis
+    svg.append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(d3.axisBottom(x));
+
+    // Y axis
+    svg.append('g')
+      .call(d3.axisLeft(y).ticks(5));
+
+    // Axis labels
+    svg.append('text')
+      .attr('x', width / 2)
+      .attr('y', height + 40)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '12px')
+      .style('fill', '#718096')
+      .text('Capacity');
+
+    svg.append('text')
+      .attr('transform', 'rotate(-90)')
+      .attr('x', -height / 2)
+      .attr('y', -35)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '12px')
+      .style('fill', '#718096')
+      .text('Active Volunteers');
+
+    // Legend for color scale
+    const legendY = -10;
+    svg.append('text')
+      .attr('x', width - 100)
+      .attr('y', legendY)
+      .style('font-size', '11px')
+      .style('fill', '#718096')
+      .style('font-weight', '600')
+      .text('Occupancy:');
+
+    const legendItems = [
+      { color: '#f56565', label: 'Low' },
+      { color: '#F0BB00', label: 'Med' },
+      { color: '#48bb78', label: 'High' }
+    ];
+
+    legendItems.forEach((item, i) => {
+      const g = svg.append('g')
+        .attr('transform', `translate(${width - 100 + i * 35},${legendY + 12})`);
+
+      g.append('circle')
+        .attr('r', 4)
+        .attr('fill', item.color)
+        .attr('opacity', 0.7);
+
+      g.append('text')
+        .attr('x', 10)
+        .attr('y', 4)
+        .style('font-size', '10px')
+        .style('fill', '#718096')
+        .text(item.label);
+    });
+  }
+
+  // Render all elements when D3 is ready
+  function renderDashboard() {
+    if (typeof d3 === 'undefined') {
+      setTimeout(renderDashboard, 100);
+      return;
+    }
+
+    renderProjectsList();
+    
+    if (projectsData && projectsData.length > 0) {
+      renderProjectsStatusChart();
+      renderProjectsMonthlyChart();
+      renderProjectsCategoryChart();
+      renderProjectsOccupancyChart();
+    }
+  }
+
+  renderDashboard();
+</script>

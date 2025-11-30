@@ -288,35 +288,7 @@
   <% } %>
 
   <% if (currentSection === 'projects') { %>
-  <div class="section-card">
-    <h2 class="section-title">
-      <i class="fas fa-project-diagram" style="color: #F0BB00;"></i>
-      Projects
-    </h2>
-    <p style="color: #4a5568; margin-bottom: 20px;">Total projects: <strong><%= projectsNumber %></strong> | Latest: <%= latestProjects ? latestProjects.length : 0 %></p>
-    
-    <h3 class="section-subtitle">Latest Projects</h3>
-    <% if (latestProjects && latestProjects.length) { %>
-      <ul class="item-list">
-        <% latestProjects.forEach(function(p){ %>
-          <li class="item-list-item" id="proj-<%= p.id %>">
-            <div class="item-title"><%= p.name %></div>
-            <% if (p.status) { %>
-              <div class="item-meta">Status: <%= p.status %></div>
-            <% } %>
-            <% if (p.description) { %>
-              <div class="item-description"><%= p.description %></div>
-            <% } %>
-          </li>
-        <% }) %>
-      </ul>
-    <% } else { %>
-      <div class="empty-state">
-        <i class="fas fa-folder-open"></i>
-        <p>No recent projects to display.</p>
-      </div>
-    <% } %>
-  </div>
+    <%- include('projects-dashboard', { projects: projects, categories: categories, allUserProjects: allUserProjects }) %>
   <% } %>
 
   <% if (currentSection === 'users') { %>
