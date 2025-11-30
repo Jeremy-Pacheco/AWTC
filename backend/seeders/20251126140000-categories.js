@@ -12,7 +12,7 @@ module.exports = {
      *   isBetaMember: false
      * }], {});
     */
-    await queryInterface.bulkInsert('categories', [
+    await queryInterface.bulkInsert('Categories', [
       {
         name: 'Education',
         description: 'Projects related to education and training',
@@ -59,6 +59,6 @@ module.exports = {
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
-    await queryInterface.bulkDelete('categories', null, {});
+    await queryInterface.bulkDelete('Categories', null, {});
   }
 };
