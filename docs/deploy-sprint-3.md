@@ -4,13 +4,28 @@
 
 A Will To Change (AWTC) is deployed on **DigitalOcean** with both frontend and backend running on a single Droplet (VPS) managed by **PM2**. We use DigitalOcean's managed MySQL database for data storage and handle image uploads via Multer middleware.
 
+### Deployment URLs
+- **Frontend**: http://209.97.187.131:5173/
+- **Backend API**: http://209.97.187.131:8080/
+- **API Documentation**: http://209.97.187.131:8080/api-docs
+
 ---
 
 ## Deployment Architecture
 
-- **Frontend**: React/TypeScript application running on `http://0.0.0.0:5173`
-- **Backend**: Node.js/Express server running on `http://0.0.0.0:8080`
-- **Database**: MySQL database managed by DigitalOcean
+### Infrastructure Stack
+- **Hosting**: DigitalOcean Droplet (VPS)
+- **Frontend**: React 19 + TypeScript with Vite
+- **Backend**: Node.js + Express 5
+- **Database**: DigitalOcean Managed MySQL
+- **Process Manager**: PM2 for process management and auto-restart
+- **Web Server**: Express (no separate nginx/apache needed)
+- **File Storage**: Local filesystem (`backend/public/images/`)
+
+### Application Architecture
+- **Frontend**: React/TypeScript application running on port 5173
+- **Backend**: Node.js/Express server running on port 8080
+- **Database**: MySQL managed by DigitalOcean
 - **Process Manager**: PM2 for managing and auto-restarting applications
 - **Image Storage**: Backend `public/images` directory for project and user images
 
@@ -104,11 +119,8 @@ DB_NAME=db_awtc_production
 JWT_SECRET=your_jwt_secret_key
 
 # CORS Configuration (adjust as needed)
-ALLOWED_ORIGINS=https://awtc.netlify.app,http://209.97.187.131:5173
+ALLOWED_ORIGINS=http://209.97.187.131:5173,http://localhost:5173
 
-# API Configuration
-API_URL=http://localhost:8080
-IMAGE_URL=http://localhost:8080/images
 ```
 
 ---
@@ -200,9 +212,52 @@ Both applications should show status **"online"** in the PM2 list.
 
 **Test the application:**
 
-- Frontend: `http://your-droplet-ip:5173`
-- Backend: `http://your-droplet-ip:8080`
-- API: `http://your-droplet-ip:8080/api`
+- Frontend: `http://209.97.187.131:5173/`
+- Backend: `http://209.97.187.131:8080`
+- API Docs: `http://209.97.187.131:8080/api-docs`
+
+---
+
+## Database Schema & Migrations
+
+The database is automatically initialized through Sequelize migrations. The current schema includes:
+
+### Tables
+- **Users**: User accounts with roles (Admin, Coordinator, Volunteer)
+- **Projects**: Volunteer projects with details, images, and category
+- **Categories**: Project categories
+- **Reviews**: User reviews and ratings for projects
+- **UserProjects**: Join table for user-project enrollments with status tracking
+- **UserProjectBans**: Tracks banned users per project
+- **Contacts**: Contact form submissions
+
+### Migrations
+All migrations are stored in `backend/migrations/`. Key migrations include:
+- User profile management with image upload
+- Project creation with categories and images
+- Review system with images
+- User-project relationship management
+- User bans per project
+
+---
+
+## Authentication & Security
+
+### Authentication Methods
+- **Session-based**: For EJS dashboard views (server-side sessions)
+- **JWT Bearer tokens**: For API endpoints (stateless)
+
+### Security Features
+- Password hashing with bcrypt
+- Session cookies with httpOnly flag
+- CORS configuration for allowed origins
+- Role-based access control (RBAC)
+- Environment variables for sensitive data
+
+### Default Admin Credentials
+Created automatically on first run:
+- **Email**: admin@awtc.com
+- **Password**: adminawtc1234
 
 ---
 
@@ -219,10 +274,17 @@ Images are stored in the backend's `public/images` directory:
 ### Upload Process
 
 1. **Frontend**: User selects image file via form
-2. **Multer Middleware**: Validates and stores image in `public/images/`
-3. **Database**: Stores filename reference in project/user record
+2. **Multer Middleware**: Validates file type and size, stores in `public/images/`
+3. **Database**: Stores filename reference in project/user/review record
 4. **API Response**: Returns image URL for frontend display
-5. **Frontend Display**: Accesses image at `http://api-url/images/{filename}`
+5. **Frontend Display**: Accesses image at `http://209.97.187.131:8080/images/{filename}`
+
+### Image Access
+All images are accessible via: `http://209.97.187.131:8080/images/{filename}`
+
+### Supported File Types
+- Images: `.jpg`, `.jpeg`, `.png`, `.gif`
+- Max file size: Configured in multer middleware
 
 ### File Organization
 
@@ -357,7 +419,36 @@ pm2 save
 
 # Check system resources
 pm2 web  # Opens dashboard on http://localhost:9615
+
+# View specific process logs
+pm2 logs awtc-backend --lines 50
+pm2 logs awtc-frontend --lines 50
 ```
+
+---
+
+## Maintenance & Best Practices
+
+### Regular Maintenance
+1. **Monitor disk space** for uploaded images
+2. **Check database backups** through DigitalOcean console
+3. **Review PM2 logs** regularly for errors
+4. **Update dependencies** periodically (test in dev first)
+5. **Backup database** before major updates
+
+### Performance Optimization
+- Use CDN for static assets (optional)
+- Implement image compression for uploads
+- Cache frequently accessed data
+- Monitor database query performance
+
+### Security Best Practices
+- Keep environment variables secure
+- Rotate session secrets periodically
+- Use strong database passwords
+- Enable HTTPS in production (use reverse proxy like Nginx)
+- Implement rate limiting for API endpoints
+- Validate all user inputs on backend
 
 ---
 
@@ -385,6 +476,7 @@ pm2 web  # Opens dashboard on http://localhost:9615
 
 ---
 
-**Last Updated**: November 28, 2025  
+**Last Updated**: November 30, 2025  
 **Project**: A Will To Change (AWTC)  
 **Sprint**: 3
+**Deployment Status**: ✅ Active on DigitalOcean
