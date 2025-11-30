@@ -213,11 +213,34 @@ async function getDashboardData() {
       } catch (err) {
         result.projectsWithVolunteers = null;
       }
+
+      // Get projects per user (how many projects each user is registered in)
+      try {
+        const [projectsPerUser] = await db.sequelize.query(
+          `SELECT u.id as userId, u.name as userName, u.email, COUNT(up.projectId) as projectCount
+           FROM \`Users\` u
+           LEFT JOIN \`UserProjects\` up ON up.userId = u.id
+           GROUP BY u.id, u.name, u.email
+           ORDER BY projectCount DESC`
+        );
+        result.projectsPerUser = projectsPerUser;
+        
+        // Also get all UserProjects for frontend
+        const allUserProjects = await db.UserProject.findAll({
+          attributes: ['userId', 'projectId', 'status', 'role', 'createdAt', 'updatedAt']
+        });
+        result.allUserProjects = allUserProjects;
+      } catch (err) {
+        console.warn('Could not compute projectsPerUser:', err.message);
+        result.projectsPerUser = null;
+        result.allUserProjects = [];
+      }
     }
   } catch (err) {
     console.warn('Could not compute usersPerProject or projectsWithVolunteers:', err.message);
     result.usersPerProject = null;
     result.projectsWithVolunteers = null;
+    result.projectsPerUser = null;
   }
 
   return result;
@@ -233,6 +256,7 @@ async function renderDashboard(req, res, section = 'overview') {
     const data = await getDashboardData();
     console.log(`Dashboard counts -> projects: ${data.projects.length}, users: ${data.users.length}, categories: ${data.categories.length}, reviews: ${data.reviews.length}`);
     console.log(`Section: ${section}, latestProjects: ${data.latestProjects?.length}, latestUsers: ${data.latestUsers?.length}`);
+    console.log(`ProjectsPerUser data:`, data.projectsPerUser ? `${data.projectsPerUser.length} users` : 'null');
     // compute current user's registrations and bans if any
     const userRegisteredProjectIds = req.user ? (await db.UserProject.findAll({ where: { userId: req.user.id } })).map(r => r.projectId) : [];
     const userBannedProjectIds = req.user ? (await db.UserProjectBan.findAll({ where: { userId: req.user.id } })).map(b => b.projectId) : [];
@@ -288,7 +312,9 @@ app.get('/projects/:id/volunteers', async (req, res) => {
     res.redirect('/projects');
   }
 });
+app.get('/overview', (req, res) => renderDashboard(req, res, 'overview'));
 app.get('/users', (req, res) => renderDashboard(req, res, 'users'));
+app.get('/categories', (req, res) => renderDashboard(req, res, 'categories'));
 app.get('/reviews', (req, res) => renderDashboard(req, res, 'reviews'));
 app.get('/contacts', (req, res) => renderDashboard(req, res, 'contacts'));
 
