@@ -149,7 +149,7 @@ const Volunteering: React.FC = () => {
         <div className="flex flex-col md:flex-row justify-between items-center mt-8 mb-6 px-4 md:px-16">
           <div>
             <h2 className="text-3xl font-bold">Active Projects</h2>
-            <p className="text-lg text-gray-600">Small actions, big impact.</p>
+            <p className="text-lg text-gray-600">Small actions, big impact</p>
           </div>
           <div className="mt-4 md:mt-0 flex items-center gap-2">
                         <span>Filter by category</span>
