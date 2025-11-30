@@ -1363,30 +1363,946 @@
   <% } %>
 
   <% if (currentSection === 'contacts') { %>
+  <!-- D3.js Library -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  
   <div class="section-card">
     <h2 class="section-title">
       <i class="fas fa-exclamation-triangle" style="color: #F0BB00;"></i>
-      Incidents
+      Incidents Dashboard
     </h2>
-    <p style="color: #4a5568; margin-bottom: 20px;">Total incidents: <%= contacts ? contacts.length : 0 %></p>
-    
-    <% if (typeof contacts !== 'undefined' && contacts && contacts.length) { %>
-      <ul class="item-list">
-        <% contacts.forEach(function(c){ %>
-          <li class="item-list-item">
-            <div class="item-title"><%= c.name %></div>
-            <div class="item-meta"><%= c.email %><% if (c.subject) { %> — <%= c.subject %><% } %></div>
-            <div class="item-description"><%= c.message %></div>
-          </li>
-        <% }) %>
-      </ul>
-    <% } else { %>
-      <div class="empty-state">
-        <i class="fas fa-inbox"></i>
-        <p>No contact messages yet</p>
+    <p style="color: #4a5568; margin-bottom: 30px; font-size: 15px;">
+      Analytics and visualizations for incident management
+    </p>
+
+    <div class="incidents-stats">
+      <div class="incident-stat-card">
+        <div class="incident-stat-icon" style="background: linear-gradient(135deg, #F0BB00, #B39519);">
+          <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <div class="incident-stat-content">
+          <div class="incident-stat-number"><%= contacts ? contacts.length : 0 %></div>
+          <div class="incident-stat-label">Total Incidents</div>
+        </div>
       </div>
-    <% } %>
+      
+      <div class="incident-stat-card">
+        <div class="incident-stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="incident-stat-content">
+          <div class="incident-stat-number">
+            <%= contacts ? contacts.filter(c => c.read === 1 || c.read === true || c.read === '1').length : 0 %>
+          </div>
+          <div class="incident-stat-label">Closed</div>
+        </div>
+      </div>
+      
+      <div class="incident-stat-card">
+        <div class="incident-stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="incident-stat-content">
+          <div class="incident-stat-number">
+            <%= contacts ? contacts.filter(c => c.read === 0 || c.read === false || c.read === '0').length : 0 %>
+          </div>
+          <div class="incident-stat-label">Pending</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="incidents-grid">
+      <!-- Chart 1: Incidents Created -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3 class="chart-title">
+            <i class="fas fa-plus-circle" style="color: #F0BB00;"></i>
+            Incidents Created
+          </h3>
+          <div class="time-filter">
+            <button class="filter-btn active" data-chart="created" data-period="30">30 Days</button>
+            <button class="filter-btn" data-chart="created" data-period="7">7 Days</button>
+            <button class="filter-btn" data-chart="created" data-period="1">Today</button>
+          </div>
+        </div>
+        <div id="incidentsCreatedChart"></div>
+      </div>
+
+      <!-- Chart 2: Incidents Closed -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3 class="chart-title">
+            <i class="fas fa-check-circle" style="color: #10b981;"></i>
+            Incidents Closed
+          </h3>
+          <div class="time-filter">
+            <button class="filter-btn active" data-chart="closed" data-period="30">30 Days</button>
+            <button class="filter-btn" data-chart="closed" data-period="7">7 Days</button>
+            <button class="filter-btn" data-chart="closed" data-period="1">Today</button>
+          </div>
+        </div>
+        <div id="incidentsClosedChart"></div>
+      </div>
+
+      <!-- Chart 3: Status Distribution -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3 class="chart-title">
+            <i class="fas fa-chart-pie" style="color: #F0BB00;"></i>
+            Status Distribution
+          </h3>
+        </div>
+        <div id="statusDistributionChart"></div>
+      </div>
+
+      <!-- Chart 4: Response Time Average -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3 class="chart-title">
+            <i class="fas fa-clock" style="color: #F0BB00;"></i>
+            Average Response Time
+          </h3>
+        </div>
+        <div id="avgResponseTimeChart"></div>
+      </div>
+    </div>
   </div>
+
+  <style>
+    .incidents-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .incident-stat-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .incident-stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .incident-stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    
+    .incident-stat-content {
+      flex: 1;
+    }
+    
+    .incident-stat-number {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1a202c;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+    
+    .incident-stat-label {
+      font-size: 13px;
+      color: #718096;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .incidents-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .chart-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #F0BB00;
+    }
+
+    .chart-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a202c;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .time-filter {
+      display: flex;
+      gap: 8px;
+    }
+
+    .filter-btn {
+      padding: 6px 12px;
+      background: #f7fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #4a5568;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+      background: #FEF3C7;
+      border-color: #F0BB00;
+      color: #92400e;
+    }
+
+    .filter-btn.active {
+      background: #F0BB00;
+      border-color: #F0BB00;
+      color: white;
+    }
+
+    #incidentsCreatedChart,
+    #incidentsClosedChart,
+    #statusDistributionChart,
+    #avgResponseTimeChart {
+      width: 100%;
+      height: 300px;
+    }
+
+    @media (max-width: 1400px) {
+      .incidents-grid {
+        gap: 20px;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .incidents-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .chart-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .time-filter {
+        width: 100%;
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .incidents-stats {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .chart-card {
+        padding: 16px;
+      }
+
+      .chart-title {
+        font-size: 16px;
+      }
+
+      .filter-btn {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+
+      #incidentsCreatedChart,
+      #incidentsClosedChart,
+      #statusDistributionChart,
+      #avgResponseTimeChart {
+        height: 250px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .incidents-stats {
+        gap: 12px;
+      }
+
+      .incident-stat-card {
+        padding: 15px;
+      }
+
+      .incident-stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+      }
+
+      .incident-stat-number {
+        font-size: 24px;
+      }
+
+      .time-filter {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+
+  <script>
+    // Get contacts data
+    const contactsData = <%- JSON.stringify(contacts || []) %>;
+    console.log('Total contacts:', contactsData.length);
+
+    // Helper function to get date range
+    function getDateRange(days) {
+      const dates = [];
+      const today = new Date();
+      
+      if (days === 1) {
+        // For "today", just return today
+        dates.push(today.toISOString().split('T')[0]);
+      } else {
+        // For multiple days, get the range
+        for (let i = days - 1; i >= 0; i--) {
+          const date = new Date(today);
+          date.setDate(date.getDate() - i);
+          dates.push(date.toISOString().split('T')[0]);
+        }
+      }
+      
+      return dates;
+    }
+
+    // Helper function to format date for display
+    function formatDateForDisplay(dateStr, days) {
+      const date = new Date(dateStr);
+      if (days === 1) {
+        return 'Today';
+      } else if (days === 7) {
+        const options = { weekday: 'short', month: 'short', day: 'numeric' };
+        return date.toLocaleDateString('en-US', options);
+      } else {
+        const options = { month: 'short', day: 'numeric' };
+        return date.toLocaleDateString('en-US', options);
+      }
+    }
+
+    // Chart 1: Incidents Created Over Time
+    function renderIncidentsCreatedChart(days = 30) {
+      const chartElement = document.getElementById('incidentsCreatedChart');
+      if (!chartElement) return;
+
+      // Clear previous chart
+      d3.select('#incidentsCreatedChart').selectAll('*').remove();
+
+      const dateRange = getDateRange(days);
+      const data = dateRange.map(date => {
+        const count = contactsData.filter(contact => {
+          if (!contact.createdAt && !contact.created_at) return false;
+          const contactDate = new Date(contact.createdAt || contact.created_at).toISOString().split('T')[0];
+          return contactDate === date;
+        }).length;
+        return { date, count };
+      });
+
+      console.log('Incidents created data:', data);
+
+      // Set up dimensions
+      const margin = { top: 20, right: 20, bottom: 40, left: 40 };
+      const width = chartElement.offsetWidth - margin.left - margin.right;
+      const height = 300 - margin.top - margin.bottom;
+
+      // Create SVG
+      const svg = d3.select('#incidentsCreatedChart')
+        .append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
+
+      // Create scales
+      const x = d3.scaleBand()
+        .domain(data.map(d => d.date))
+        .range([0, width])
+        .padding(0.2);
+
+      const y = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.count) || 1])
+        .nice()
+        .range([height, 0]);
+
+      // Add bars
+      svg.selectAll('.bar')
+        .data(data)
+        .enter()
+        .append('rect')
+        .attr('class', 'bar')
+        .attr('x', d => x(d.date))
+        .attr('y', d => y(d.count))
+        .attr('width', x.bandwidth())
+        .attr('height', d => height - y(d.count))
+        .attr('fill', '#F0BB00')
+        .attr('rx', 4);
+
+      // Add X axis
+      svg.append('g')
+        .attr('transform', `translate(0,${height})`)
+        .call(d3.axisBottom(x).tickFormat(d => formatDateForDisplay(d, days)))
+        .selectAll('text')
+        .style('text-anchor', 'end')
+        .attr('dx', '-.8em')
+        .attr('dy', '.15em')
+        .attr('transform', 'rotate(-45)');
+
+      // Add Y axis
+      svg.append('g')
+        .call(d3.axisLeft(y).ticks(5));
+
+      // Add value labels on bars
+      svg.selectAll('.label')
+        .data(data)
+        .enter()
+        .append('text')
+        .attr('class', 'label')
+        .attr('x', d => x(d.date) + x.bandwidth() / 2)
+        .attr('y', d => y(d.count) - 5)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '12px')
+        .style('font-weight', '600')
+        .style('fill', '#1a202c')
+        .text(d => d.count);
+    }
+
+    // Chart 2: Incidents Closed Over Time
+    function renderIncidentsClosedChart(days = 30) {
+      const chartElement = document.getElementById('incidentsClosedChart');
+      if (!chartElement) return;
+
+      // Clear previous chart
+      d3.select('#incidentsClosedChart').selectAll('*').remove();
+
+      const dateRange = getDateRange(days);
+      const data = dateRange.map(date => {
+        const count = contactsData.filter(contact => {
+          if (!contact.updatedAt && !contact.updated_at) return false;
+          if (contact.read !== 1 && contact.read !== true && contact.read !== '1') return false;
+          const contactDate = new Date(contact.updatedAt || contact.updated_at).toISOString().split('T')[0];
+          return contactDate === date;
+        }).length;
+        return { date, count };
+      });
+
+      console.log('Incidents closed data:', data);
+
+      // Set up dimensions
+      const margin = { top: 20, right: 20, bottom: 40, left: 40 };
+      const width = chartElement.offsetWidth - margin.left - margin.right;
+      const height = 300 - margin.top - margin.bottom;
+
+      // Create SVG
+      const svg = d3.select('#incidentsClosedChart')
+        .append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
+
+      // Create scales
+      const x = d3.scaleBand()
+        .domain(data.map(d => d.date))
+        .range([0, width])
+        .padding(0.2);
+
+      const y = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.count) || 1])
+        .nice()
+        .range([height, 0]);
+
+      // Add bars
+      svg.selectAll('.bar')
+        .data(data)
+        .enter()
+        .append('rect')
+        .attr('class', 'bar')
+        .attr('x', d => x(d.date))
+        .attr('y', d => y(d.count))
+        .attr('width', x.bandwidth())
+        .attr('height', d => height - y(d.count))
+        .attr('fill', '#10b981')
+        .attr('rx', 4);
+
+      // Add X axis
+      svg.append('g')
+        .attr('transform', `translate(0,${height})`)
+        .call(d3.axisBottom(x).tickFormat(d => formatDateForDisplay(d, days)))
+        .selectAll('text')
+        .style('text-anchor', 'end')
+        .attr('dx', '-.8em')
+        .attr('dy', '.15em')
+        .attr('transform', 'rotate(-45)');
+
+      // Add Y axis
+      svg.append('g')
+        .call(d3.axisLeft(y).ticks(5));
+
+      // Add value labels on bars
+      svg.selectAll('.label')
+        .data(data)
+        .enter()
+        .append('text')
+        .attr('class', 'label')
+        .attr('x', d => x(d.date) + x.bandwidth() / 2)
+        .attr('y', d => y(d.count) - 5)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '12px')
+        .style('font-weight', '600')
+        .style('fill', '#1a202c')
+        .text(d => d.count);
+    }
+
+    // Chart 3: Status Distribution (Donut Chart)
+    function renderStatusDistributionChart() {
+      const chartElement = document.getElementById('statusDistributionChart');
+      if (!chartElement) return;
+
+      // Clear previous chart
+      d3.select('#statusDistributionChart').selectAll('*').remove();
+
+      // Filter and count data
+      const openCount = contactsData.filter(c => c.read === 0 || c.read === false || c.read === '0').length;
+      const closedCount = contactsData.filter(c => c.read === 1 || c.read === true || c.read === '1').length;
+      
+      const data = [
+        { status: 'Open', count: openCount, color: '#f59e0b' },
+        { status: 'Closed', count: closedCount, color: '#10b981' }
+      ].filter(d => d.count > 0);
+
+      console.log('Status Distribution - Total contacts:', contactsData.length);
+      console.log('Open/Closed counts:', { openCount, closedCount });
+
+      if (data.length === 0) {
+        d3.select('#statusDistributionChart')
+          .append('div')
+          .style('text-align', 'center')
+          .style('padding', '40px')
+          .style('color', '#718096')
+          .text('No data available');
+        return;
+      }
+
+      // Set up dimensions
+      const width = chartElement.offsetWidth;
+      const height = 300;
+      const margin = 40;
+      const radius = Math.min(width, height) / 2 - margin;
+
+      // Create SVG
+      const svg = d3.select('#statusDistributionChart')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height)
+        .append('g')
+        .attr('transform', `translate(${width / 2},${height / 2 - 20})`);
+
+      // Create donut
+      const pie = d3.pie().value(d => d.count);
+      const arc = d3.arc()
+        .innerRadius(radius * 0.6)
+        .outerRadius(radius);
+
+      // Add slices
+      const slices = svg.selectAll('path')
+        .data(pie(data))
+        .enter()
+        .append('path')
+        .attr('d', arc)
+        .attr('fill', d => d.data.color)
+        .attr('stroke', 'white')
+        .attr('stroke-width', 2);
+
+      // Add center text
+      const total = data.reduce((sum, d) => sum + d.count, 0);
+      svg.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('dy', '-0.5em')
+        .style('font-size', '32px')
+        .style('font-weight', '700')
+        .style('fill', '#1a202c')
+        .text(total);
+
+      svg.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('dy', '1.2em')
+        .style('font-size', '14px')
+        .style('fill', '#718096')
+        .text('Total Incidents');
+
+      // Add legend below
+      const legend = d3.select('#statusDistributionChart')
+        .append('div')
+        .style('display', 'flex')
+        .style('justify-content', 'center')
+        .style('gap', '24px')
+        .style('margin-top', '20px');
+
+      data.forEach(d => {
+        const item = legend.append('div')
+          .style('display', 'flex')
+          .style('align-items', 'center')
+          .style('gap', '8px');
+
+        item.append('div')
+          .style('width', '12px')
+          .style('height', '12px')
+          .style('border-radius', '50%')
+          .style('background-color', d.color);
+
+        item.append('span')
+          .style('font-size', '14px')
+          .style('color', '#4a5568')
+          .text(`${d.status}: ${d.count}`);
+      });
+    }
+
+    // Chart 4: Average Response Time (Gauge)
+    function renderAvgResponseTimeChart() {
+      const chartElement = document.getElementById('avgResponseTimeChart');
+      if (!chartElement) return;
+
+      // Clear previous chart
+      d3.select('#avgResponseTimeChart').selectAll('*').remove();
+
+      // Calculate response time statistics
+      const closedIncidents = contactsData.filter(c => {
+        const isClosed = c.read === 1 || c.read === true || c.read === '1';
+        const hasCreated = c.createdAt || c.created_at;
+        const hasUpdated = c.updatedAt || c.updated_at;
+        return isClosed && hasCreated && hasUpdated;
+      });
+
+      let avgResponseTime = 0;
+      let minResponseTime = 0;
+      let maxResponseTime = 0;
+      let closedCount = 0;
+      let pendingCount = contactsData.length - closedIncidents.length;
+      let fastCount = 0; // < 24h
+      let slowCount = 0; // >= 48h
+
+      if (closedIncidents.length > 0) {
+        const responseTimes = closedIncidents.map(c => {
+          const created = new Date(c.createdAt || c.created_at);
+          const closed = new Date(c.updatedAt || c.updated_at);
+          return (closed - created) / (1000 * 60 * 60); // hours
+        });
+
+        avgResponseTime = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
+        minResponseTime = Math.min(...responseTimes);
+        maxResponseTime = Math.max(...responseTimes);
+        closedCount = closedIncidents.length;
+        fastCount = responseTimes.filter(t => t < 24).length;
+        slowCount = responseTimes.filter(t => t >= 48).length;
+      }
+
+      // Set up dimensions
+      const width = chartElement.offsetWidth;
+      const height = 300;
+      const gaugeWidth = Math.min(width * 0.5, 250);
+      const gaugeRadius = gaugeWidth / 2 - 20;
+
+      // Create SVG
+      const svg = d3.select('#avgResponseTimeChart')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+      // Left side: Gauge
+      const gaugeG = svg.append('g')
+        .attr('transform', `translate(${gaugeWidth / 2 + 20},${height / 2 + 20})`);
+
+      // Create gauge arc (semicircle pointing up: from -PI/2 to PI/2)
+      const arc = d3.arc()
+        .innerRadius(gaugeRadius * 0.7)
+        .outerRadius(gaugeRadius)
+        .startAngle(-Math.PI / 2)
+        .endAngle(Math.PI / 2);
+
+      // Background arc
+      gaugeG.append('path')
+        .attr('d', arc)
+        .attr('fill', '#e2e8f0');
+
+      // Color segments for reference
+      const segments = [
+        { start: 0, end: 24, color: '#10b981', opacity: 0.3 },
+        { start: 24, end: 48, color: '#f59e0b', opacity: 0.3 },
+        { start: 48, end: 72, color: '#ef4444', opacity: 0.3 }
+      ];
+
+      segments.forEach(seg => {
+        const segmentArc = d3.arc()
+          .innerRadius(gaugeRadius * 0.7)
+          .outerRadius(gaugeRadius)
+          .startAngle(-Math.PI / 2 + Math.PI * (seg.start / 72))
+          .endAngle(-Math.PI / 2 + Math.PI * (seg.end / 72));
+
+        gaugeG.append('path')
+          .attr('d', segmentArc)
+          .attr('fill', seg.color)
+          .attr('opacity', seg.opacity);
+      });
+
+      // Value arc
+      const maxHours = 72;
+      const percentage = Math.min(avgResponseTime / maxHours, 1);
+      const color = avgResponseTime < 24 ? '#10b981' : avgResponseTime < 48 ? '#f59e0b' : '#ef4444';
+
+      const valueArc = d3.arc()
+        .innerRadius(gaugeRadius * 0.7)
+        .outerRadius(gaugeRadius)
+        .startAngle(-Math.PI / 2)
+        .endAngle(-Math.PI / 2 + Math.PI * percentage);
+
+      gaugeG.append('path')
+        .attr('d', valueArc)
+        .attr('fill', color);
+
+      // Center text
+      gaugeG.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('dy', '-0.3em')
+        .style('font-size', '32px')
+        .style('font-weight', '700')
+        .style('fill', '#1a202c')
+        .text(avgResponseTime.toFixed(1));
+
+      gaugeG.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('dy', '1.2em')
+        .style('font-size', '13px')
+        .style('fill', '#718096')
+        .style('font-weight', '600')
+        .text('HOURS');
+
+
+
+      // Right side: Statistics grid
+      const statsX = gaugeWidth + 40;
+      const statsY = 40;
+      const statBoxWidth = (width - statsX - 40) / 2;
+      const statBoxHeight = 70;
+      const gap = 15;
+
+      const stats = [
+        { 
+          label: 'Fastest', 
+          value: minResponseTime.toFixed(1), 
+          unit: 'h',
+          icon: '⚡',
+          color: '#10b981',
+          row: 0,
+          col: 0
+        },
+        { 
+          label: 'Slowest', 
+          value: maxResponseTime.toFixed(1), 
+          unit: 'h',
+          icon: '🐌',
+          color: '#ef4444',
+          row: 0,
+          col: 1
+        },
+        { 
+          label: 'Fast (<24h)', 
+          value: fastCount, 
+          unit: '',
+          icon: '✓',
+          color: '#10b981',
+          row: 1,
+          col: 0
+        },
+        { 
+          label: 'Slow (≥48h)', 
+          value: slowCount, 
+          unit: '',
+          icon: '⚠',
+          color: '#f59e0b',
+          row: 1,
+          col: 1
+        },
+        { 
+          label: 'Resolved', 
+          value: closedCount, 
+          unit: '',
+          icon: '✓',
+          color: '#10b981',
+          row: 2,
+          col: 0
+        },
+        { 
+          label: 'Pending', 
+          value: pendingCount, 
+          unit: '',
+          icon: '⏱',
+          color: '#F0BB00',
+          row: 2,
+          col: 1
+        }
+      ];
+
+      stats.forEach(stat => {
+        const x = statsX + stat.col * (statBoxWidth + gap);
+        const y = statsY + stat.row * (statBoxHeight + gap);
+
+        const statG = svg.append('g')
+          .attr('transform', `translate(${x},${y})`);
+
+        // Background box
+        statG.append('rect')
+          .attr('width', statBoxWidth)
+          .attr('height', statBoxHeight)
+          .attr('rx', 8)
+          .attr('fill', '#f7fafc')
+          .attr('stroke', '#e2e8f0')
+          .attr('stroke-width', 1);
+
+        // Icon circle
+        statG.append('circle')
+          .attr('cx', 25)
+          .attr('cy', statBoxHeight / 2)
+          .attr('r', 16)
+          .attr('fill', stat.color)
+          .attr('opacity', 0.15);
+
+        // Icon
+        statG.append('text')
+          .attr('x', 25)
+          .attr('y', statBoxHeight / 2)
+          .attr('text-anchor', 'middle')
+          .attr('dy', '0.3em')
+          .style('font-size', '16px')
+          .text(stat.icon);
+
+        // Value
+        statG.append('text')
+          .attr('x', 50)
+          .attr('y', statBoxHeight / 2 - 8)
+          .style('font-size', '22px')
+          .style('font-weight', '700')
+          .style('fill', '#1a202c')
+          .text(stat.value + stat.unit);
+
+        // Label
+        statG.append('text')
+          .attr('x', 50)
+          .attr('y', statBoxHeight / 2 + 12)
+          .style('font-size', '11px')
+          .style('fill', '#718096')
+          .style('font-weight', '600')
+          .text(stat.label.toUpperCase());
+      });
+
+      // Performance indicator badge
+      let performance = 'EXCELLENT';
+      let perfColor = '#10b981';
+      if (avgResponseTime >= 48) {
+        performance = 'NEEDS IMPROVEMENT';
+        perfColor = '#ef4444';
+      } else if (avgResponseTime >= 24) {
+        performance = 'GOOD';
+        perfColor = '#f59e0b';
+      }
+
+      const badgeG = svg.append('g')
+        .attr('transform', `translate(${width / 2},${height - 25})`);
+
+      const badgeWidth = 180;
+      const badgeHeight = 30;
+
+      badgeG.append('rect')
+        .attr('x', -badgeWidth / 2)
+        .attr('y', -badgeHeight / 2)
+        .attr('width', badgeWidth)
+        .attr('height', badgeHeight)
+        .attr('rx', 15)
+        .attr('fill', perfColor)
+        .attr('opacity', 0.1)
+        .attr('stroke', perfColor)
+        .attr('stroke-width', 2);
+
+      badgeG.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('dy', '0.3em')
+        .style('font-size', '12px')
+        .style('font-weight', '700')
+        .style('fill', perfColor)
+        .text(performance);
+    }
+
+    // Initial render with 30 days
+    renderIncidentsCreatedChart(30);
+    renderIncidentsClosedChart(30);
+    renderStatusDistributionChart();
+    renderAvgResponseTimeChart();
+
+    // Filter button handlers
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const chart = this.dataset.chart;
+        const period = parseInt(this.dataset.period);
+        
+        // Update active state
+        this.parentElement.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Re-render chart
+        if (chart === 'created') {
+          renderIncidentsCreatedChart(period);
+        } else if (chart === 'closed') {
+          renderIncidentsClosedChart(period);
+        }
+      });
+    });
+
+    // Responsive resize
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        const activeCreatedBtn = document.querySelector('.filter-btn[data-chart="created"].active');
+        const activeClosedBtn = document.querySelector('.filter-btn[data-chart="closed"].active');
+        
+        const createdPeriod = activeCreatedBtn ? parseInt(activeCreatedBtn.dataset.period) : 30;
+        const closedPeriod = activeClosedBtn ? parseInt(activeClosedBtn.dataset.period) : 30;
+        
+        renderIncidentsCreatedChart(createdPeriod);
+        renderIncidentsClosedChart(closedPeriod);
+        renderStatusDistributionChart();
+        renderAvgResponseTimeChart();
+      }, 250);
+    });
+  </script>
   <% } %>
 
 </body>
