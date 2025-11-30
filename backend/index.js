@@ -4,10 +4,13 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const swaggerUI = require("swagger-ui-express");
 const swaggerSpecs = require("./swagger");
+const { isAdmin } = require('./middlewares/role.middlewares');
 
 const env = process.env.NODE_ENV || 'development';
 const envPath = path.resolve(__dirname, `.env.${env}`);
 dotenv.config({ path: envPath });
+
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 const app = express();
 
@@ -223,6 +226,9 @@ async function getDashboardData() {
 // Render dashboard with specified section
 async function renderDashboard(req, res, section = 'overview') {
   if (!req.user) return res.redirect('/login');
+  if (req.user.role !== 'admin') {
+    return res.status(403).render('access-denied', { currentUser: req.user, frontendUrl: FRONTEND_URL });
+  }
   try {
     const data = await getDashboardData();
     console.log(`Dashboard counts -> projects: ${data.projects.length}, users: ${data.users.length}, categories: ${data.categories.length}, reviews: ${data.reviews.length}`);
@@ -235,6 +241,7 @@ async function renderDashboard(req, res, section = 'overview') {
       shopName: 'A Will To Change',
       currentUser: req.user || null,
       currentSection: section,
+      frontendUrl: FRONTEND_URL,
       userRegisteredProjectIds: userRegisteredProjectIds,
       userBannedProjectIds: userBannedProjectIds,
       projectsNumber: Array.isArray(data.projects) ? data.projects.length : 0,
@@ -253,7 +260,8 @@ async function renderDashboard(req, res, section = 'overview') {
       reviews: [], reviewsNumber: 0,
       contacts: [], contactsNumber: 0,
       currentUser: req.user || null,
-      currentSection: section
+      currentSection: section,
+      frontendUrl: FRONTEND_URL
     });
   }
 }
