@@ -14,7 +14,7 @@ function MoreInfo() {
         <div className="mb-12">
           <h2 className="text-3xl font-bold">Explore More Opportunities</h2>
           <p className="text-lg text-gray-600">
-            Discover volunteer opportunities from external platforms. Find projects that match your interests and availability.
+            Discover volunteer opportunities from external platforms
           </p>
         </div>
         <VolunteerList />
