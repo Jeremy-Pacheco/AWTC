@@ -1305,33 +1305,7 @@
   <% } %>
 
   <% if (currentSection === 'categories') { %>
-  <div class="section-card">
-    <h2 class="section-title">
-      <i class="fas fa-tags" style="color: #F0BB00;"></i>
-      Categories
-    </h2>
-    <p style="color: #4a5568; margin-bottom: 20px; font-size: 16px; font-weight: 600;">
-      Total categories: <span style="color: #F0BB00; font-size: 18px;"><%= categories ? categories.length : 0 %></span>
-    </p>
-    
-    <% if (categories && categories.length) { %>
-      <ul class="item-list">
-        <% categories.forEach(function(c){ %>
-          <li class="item-list-item">
-            <div class="item-title"><%= c.name %></div>
-            <% if (c.description) { %>
-              <div class="item-description"><%= c.description %></div>
-            <% } %>
-          </li>
-        <% }) %>
-      </ul>
-    <% } else { %>
-      <div class="empty-state">
-        <i class="fas fa-tags"></i>
-        <p>No categories available</p>
-      </div>
-    <% } %>
-  </div>
+    <%- include('categories-dashboard', { categories: categories, projects: projects, allUserProjects: allUserProjects }) %>
   <% } %>
 
   <% if (currentSection === 'reviews') { %>

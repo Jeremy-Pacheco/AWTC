@@ -1,0 +1,750 @@
+<!-- D3.js Library -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<style>
+  .categories-dashboard {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 30px;
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 1400px) {
+    .categories-dashboard {
+      grid-template-columns: 300px 1fr;
+      gap: 20px;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    .categories-dashboard {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .categories-dashboard {
+      gap: 16px;
+    }
+  }
+
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  @media (max-width: 1024px) {
+    .charts-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+  }
+
+  .category-list-container {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 1px solid #e2e8f0;
+    max-height: 600px;
+    overflow-y: auto;
+  }
+
+  @media (max-width: 768px) {
+    .category-list-container {
+      padding: 16px;
+      max-height: none;
+    }
+  }
+
+  .category-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #F0BB00;
+  }
+
+  .category-list-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a202c;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .category-count-badge {
+    background: #F0BB00;
+    color: #1a202c;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .category-item {
+    padding: 16px;
+    margin-bottom: 12px;
+    background: #f7fafc;
+    border-radius: 8px;
+    border-left: 3px solid #cbd5e0;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .category-item:hover {
+    background: #fff;
+    border-left-color: #F0BB00;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transform: translateX(4px);
+  }
+
+  .category-item-name {
+    font-weight: 600;
+    color: #1a202c;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+
+  .category-item-description {
+    font-size: 13px;
+    color: #718096;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+
+  .category-item-stats {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    font-size: 12px;
+  }
+
+  .category-item-stat {
+    background: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: #4a5568;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .chart-container {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 1px solid #e2e8f0;
+  }
+
+  @media (max-width: 768px) {
+    .chart-container {
+      padding: 16px;
+    }
+  }
+
+  .chart-header {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #F0BB00;
+  }
+
+  .chart-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 4px;
+  }
+
+  .chart-subtitle {
+    font-size: 13px;
+    color: #718096;
+  }
+
+  #categoriesUsageChart, #volunteersPerCategoryChart, #projectsTrendChart, #categoryActivityChart {
+    width: 100%;
+    height: 280px;
+  }
+
+  @media (max-width: 768px) {
+    #categoriesUsageChart, #volunteersPerCategoryChart, #projectsTrendChart, #categoryActivityChart {
+      height: 250px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    #categoriesUsageChart, #volunteersPerCategoryChart, #projectsTrendChart, #categoryActivityChart {
+      height: 220px;
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #718096;
+  }
+
+  .empty-state i {
+    font-size: 48px;
+    color: #cbd5e0;
+    margin-bottom: 16px;
+    display: block;
+  }
+</style>
+
+<div class="section-card">
+  <h2 class="section-title">
+    <i class="fas fa-tags" style="color: #F0BB00;"></i>
+    Categories Dashboard
+  </h2>
+</div>
+
+<div class="categories-dashboard">
+  <!-- Categories List Component -->
+  <div class="category-list-container">
+    <div class="category-list-header">
+      <div class="category-list-title">
+        <i class="fas fa-list"></i>
+        All Categories
+      </div>
+      <span class="category-count-badge"><%= categories ? categories.length : 0 %> Total</span>
+    </div>
+    
+    <% if (categories && categories.length) { %>
+      <div id="categoryListContent"></div>
+    <% } else { %>
+      <div class="empty-state">
+        <i class="fas fa-tags"></i>
+        <p>No categories available</p>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Charts Grid -->
+  <div class="charts-grid">
+    <!-- Chart 1: Categories Usage in Projects -->
+    <div class="chart-container">
+      <div class="chart-header">
+        <div class="chart-title">
+          <i class="fas fa-chart-bar" style="color: #F0BB00; margin-right: 8px;"></i>
+          Categories Usage
+        </div>
+        <div class="chart-subtitle">Projects per category</div>
+      </div>
+      <div id="categoriesUsageChart"></div>
+    </div>
+
+    <!-- Chart 2: Volunteers by Category -->
+    <div class="chart-container">
+      <div class="chart-header">
+        <div class="chart-title">
+          <i class="fas fa-chart-pie" style="color: #F0BB00; margin-right: 8px;"></i>
+          Volunteers Distribution
+        </div>
+        <div class="chart-subtitle">Total volunteers per category</div>
+      </div>
+      <div id="volunteersPerCategoryChart"></div>
+    </div>
+
+    <!-- Chart 3: Projects Trend by Category -->
+    <div class="chart-container">
+      <div class="chart-header">
+        <div class="chart-title">
+          <i class="fas fa-chart-line" style="color: #F0BB00; margin-right: 8px;"></i>
+          Projects Created Trend
+        </div>
+        <div class="chart-subtitle">Last 7 days by category</div>
+      </div>
+      <div id="projectsTrendChart"></div>
+    </div>
+
+    <!-- Chart 4: Category Activity -->
+    <div class="chart-container">
+      <div class="chart-header">
+        <div class="chart-title">
+          <i class="fas fa-chart-area" style="color: #F0BB00; margin-right: 8px;"></i>
+          Category Activity
+        </div>
+        <div class="chart-subtitle">Total projects and volunteers</div>
+      </div>
+      <div id="categoryActivityChart"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Categories data from server
+  const categoriesData = <%- JSON.stringify(categories || []) %>;
+  const categoriesProjects = <%- JSON.stringify(projects || []) %>;
+  const categoriesUserProjects = <%- JSON.stringify(typeof allUserProjects !== 'undefined' ? allUserProjects : []) %>;
+
+  // Render categories list
+  function renderCategoryList() {
+    const container = document.getElementById('categoryListContent');
+    
+    if (!categoriesData || categoriesData.length === 0) {
+      container.innerHTML = '<div class="empty-state"><p>No categories available</p></div>';
+      return;
+    }
+
+    container.innerHTML = categoriesData.map(cat => {
+      const projectsInCat = categoriesProjects.filter(p => p.categoryId === cat.id).length;
+      
+      // Count unique volunteers for this category
+      const volunteersSet = new Set();
+      categoriesProjects
+        .filter(p => p.categoryId === cat.id)
+        .forEach(project => {
+          categoriesUserProjects
+            .filter(up => up.projectId === project.id)
+            .forEach(up => volunteersSet.add(up.userId));
+        });
+      const volunteersInCat = volunteersSet.size;
+
+      return `
+        <div class="category-item">
+          <div class="category-item-name">${cat.name}</div>
+          ${cat.description ? `<div class="category-item-description">${cat.description}</div>` : ''}
+          <div class="category-item-stats">
+            <span class="category-item-stat">
+              <i class="fas fa-project-diagram" style="color: #F0BB00;"></i>
+              ${projectsInCat} Projects
+            </span>
+            <span class="category-item-stat">
+              <i class="fas fa-users" style="color: #4CAF50;"></i>
+              ${volunteersInCat} Volunteers
+            </span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Chart 1: Categories Usage (Bar Chart)
+  function renderCategoriesUsageChart() {
+    const categoryData = categoriesData.map(cat => ({
+      name: cat.name,
+      projects: categoriesProjects.filter(p => p.categoryId === cat.id).length
+    })).filter(d => d.projects > 0).sort((a, b) => b.projects - a.projects);
+
+    if (categoryData.length === 0) {
+      document.getElementById('categoriesUsageChart').innerHTML = '<p style="padding: 20px; text-align: center; color: #718096;">No data available</p>';
+      return;
+    }
+
+    const margin = { top: 20, right: 30, bottom: 60, left: 50 };
+    const container = document.getElementById('categoriesUsageChart');
+    const width = container.offsetWidth - margin.left - margin.right;
+    const height = 280 - margin.top - margin.bottom;
+
+    const svg = d3.select('#categoriesUsageChart')
+      .append('svg')
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom)
+      .append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleBand()
+      .domain(categoryData.map(d => d.name))
+      .range([0, width])
+      .padding(0.3);
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(categoryData, d => d.projects) + 2])
+      .range([height, 0]);
+
+    // Grid lines
+    svg.append('g')
+      .attr('class', 'grid')
+      .attr('opacity', 0.1)
+      .call(d3.axisLeft(y).tickSize(-width).tickFormat(''));
+
+    // Bars
+    svg.selectAll('.bar')
+      .data(categoryData)
+      .enter()
+      .append('rect')
+      .attr('class', 'bar')
+      .attr('x', d => x(d.name))
+      .attr('width', x.bandwidth())
+      .attr('y', height)
+      .attr('height', 0)
+      .attr('fill', '#F0BB00')
+      .attr('rx', 4)
+      .transition()
+      .duration(800)
+      .attr('y', d => y(d.projects))
+      .attr('height', d => height - y(d.projects));
+
+    // Value labels
+    svg.selectAll('.label')
+      .data(categoryData)
+      .enter()
+      .append('text')
+      .attr('class', 'label')
+      .attr('x', d => x(d.name) + x.bandwidth() / 2)
+      .attr('y', d => y(d.projects) - 5)
+      .attr('text-anchor', 'middle')
+      .attr('fill', '#1a202c')
+      .attr('font-size', '12px')
+      .attr('font-weight', '600')
+      .text(d => d.projects);
+
+    // X axis
+    svg.append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(d3.axisBottom(x))
+      .selectAll('text')
+      .attr('transform', 'rotate(-45)')
+      .style('text-anchor', 'end')
+      .attr('dx', '-.8em')
+      .attr('dy', '.15em');
+
+    // Y axis
+    svg.append('g')
+      .call(d3.axisLeft(y).ticks(5));
+  }
+
+  // Chart 2: Volunteers per Category (Pie Chart)
+  function renderVolunteersPerCategoryChart() {
+    const volunteerData = categoriesData.map(cat => {
+      const projectsInCat = categoriesProjects.filter(p => p.categoryId === cat.id);
+      const volunteersSet = new Set();
+      projectsInCat.forEach(project => {
+        categoriesUserProjects
+          .filter(up => up.projectId === project.id)
+          .forEach(up => volunteersSet.add(up.userId));
+      });
+
+      return {
+        name: cat.name,
+        count: volunteersSet.size
+      };
+    }).filter(d => d.count > 0);
+
+    if (volunteerData.length === 0) {
+      document.getElementById('volunteersPerCategoryChart').innerHTML = '<p style="padding: 20px; text-align: center; color: #718096;">No data available</p>';
+      return;
+    }
+
+    const width = document.getElementById('volunteersPerCategoryChart').offsetWidth;
+    const isMobile = width < 480;
+    const height = isMobile ? 250 : 300;
+    const radius = Math.min(width, height) / 2 - 40;
+
+    const svg = d3.select('#volunteersPerCategoryChart')
+      .append('svg')
+      .attr('width', width)
+      .attr('height', height)
+      .append('g')
+      .attr('transform', `translate(${width / 2},${height / 2})`);
+
+    const color = d3.scaleOrdinal()
+      .domain(volunteerData.map(d => d.name))
+      .range(['#F0BB00', '#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899']);
+
+    const pie = d3.pie()
+      .value(d => d.count)
+      .sort(null);
+
+    const arc = d3.arc()
+      .innerRadius(radius * 0.6)
+      .outerRadius(radius);
+
+    const arcs = svg.selectAll('.arc')
+      .data(pie(volunteerData))
+      .enter()
+      .append('g')
+      .attr('class', 'arc');
+
+    arcs.append('path')
+      .attr('d', arc)
+      .attr('fill', d => color(d.data.name))
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 2)
+      .transition()
+      .duration(800)
+      .attrTween('d', function(d) {
+        const interpolate = d3.interpolate({ startAngle: 0, endAngle: 0 }, d);
+        return function(t) {
+          return arc(interpolate(t));
+        };
+      });
+
+    // Center text
+    svg.append('text')
+      .attr('text-anchor', 'middle')
+      .attr('dy', '-0.5em')
+      .style('font-size', '32px')
+      .style('font-weight', '700')
+      .style('fill', '#1a202c')
+      .text(volunteerData.reduce((s, d) => s + d.count, 0));
+
+    svg.append('text')
+      .attr('text-anchor', 'middle')
+      .attr('dy', '1.2em')
+      .style('font-size', '14px')
+      .style('fill', '#718096')
+      .text('Total Volunteers');
+
+    // Legend
+    const legend = svg.selectAll('.legend')
+      .data(volunteerData)
+      .enter()
+      .append('g')
+      .attr('class', 'legend')
+      .attr('transform', (d, i) => `translate(${radius + 20},${-30 + i * 22})`);
+
+    legend.append('rect')
+      .attr('width', 14)
+      .attr('height', 14)
+      .attr('rx', 2)
+      .attr('fill', d => color(d.name));
+
+    legend.append('text')
+      .attr('x', 18)
+      .attr('y', 7)
+      .attr('dy', '.35em')
+      .style('font-size', '12px')
+      .style('fill', '#4a5568')
+      .text(d => `${d.name} (${d.count})`);
+  }
+
+  // Chart 3: Projects Trend by Category (Line Chart)
+  function renderProjectsTrendChart() {
+    const last7Days = [];
+    const today = new Date();
+    
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      const categoryTrends = {};
+      categoriesData.forEach(cat => {
+        categoryTrends[cat.name] = categoriesProjects.filter(p => {
+          if (!p.createdAt) return false;
+          const projDate = new Date(p.createdAt).toISOString().split('T')[0];
+          return projDate === dateStr && p.categoryId === cat.id;
+        }).length;
+      });
+
+      last7Days.push({
+        date: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+        ...categoryTrends
+      });
+    }
+
+    const margin = { top: 20, right: 30, bottom: 60, left: 50 };
+    const container = document.getElementById('projectsTrendChart');
+    const width = container.offsetWidth - margin.left - margin.right;
+    const height = 280 - margin.top - margin.bottom;
+
+    const svg = d3.select('#projectsTrendChart')
+      .append('svg')
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom)
+      .append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scalePoint()
+      .domain(last7Days.map(d => d.date))
+      .range([0, width])
+      .padding(0.5);
+
+    const maxValue = Math.max(...last7Days.flatMap(d => Object.values(d).filter(v => typeof v === 'number')));
+    const y = d3.scaleLinear()
+      .domain([0, Math.max(maxValue || 0, 5)])
+      .range([height, 0]);
+
+    const color = d3.scaleOrdinal()
+      .domain(categoriesData.map(c => c.name))
+      .range(['#F0BB00', '#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899']);
+
+    // Grid
+    svg.append('g')
+      .attr('opacity', 0.1)
+      .call(d3.axisLeft(y).tickSize(-width).tickFormat(''));
+
+    // Lines for each category
+    categoriesData.slice(0, 4).forEach(cat => {
+      const line = d3.line()
+        .x(d => x(d.date))
+        .y(d => y(d[cat.name]))
+        .curve(d3.curveMonotoneX);
+
+      svg.append('path')
+        .datum(last7Days)
+        .attr('fill', 'none')
+        .attr('stroke', color(cat.name))
+        .attr('stroke-width', 2)
+        .attr('d', line);
+    });
+
+    // X axis
+    svg.append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(d3.axisBottom(x))
+      .selectAll('text')
+      .attr('transform', 'rotate(-45)')
+      .style('text-anchor', 'end')
+      .attr('dx', '-.8em')
+      .attr('dy', '.15em');
+
+    // Y axis
+    svg.append('g')
+      .call(d3.axisLeft(y).ticks(5));
+
+    // Legend
+    const legendX = width - 150;
+    categoriesData.slice(0, 4).forEach((cat, i) => {
+      const g = svg.append('g')
+        .attr('transform', `translate(${legendX},${i * 18})`);
+
+      g.append('line')
+        .attr('x1', 0)
+        .attr('x2', 15)
+        .attr('stroke', color(cat.name))
+        .attr('stroke-width', 2);
+
+      g.append('text')
+        .attr('x', 20)
+        .attr('y', 4)
+        .style('font-size', '11px')
+        .style('fill', '#4a5568')
+        .text(cat.name);
+    });
+  }
+
+  // Chart 4: Category Activity (Scatter/Bubble Chart)
+  function renderCategoryActivityChart() {
+    const activityData = categoriesData.map(cat => {
+      const projectsInCat = categoriesProjects.filter(p => p.categoryId === cat.id).length;
+      const volunteersSet = new Set();
+      categoriesProjects
+        .filter(p => p.categoryId === cat.id)
+        .forEach(project => {
+          categoriesUserProjects
+            .filter(up => up.projectId === project.id)
+            .forEach(up => volunteersSet.add(up.userId));
+        });
+
+      return {
+        name: cat.name,
+        projects: projectsInCat,
+        volunteers: volunteersSet.size,
+        radius: Math.sqrt(projectsInCat + volunteersSet.size)
+      };
+    }).filter(d => d.projects > 0 || d.volunteers > 0);
+
+    if (activityData.length === 0) {
+      document.getElementById('categoryActivityChart').innerHTML = '<p style="padding: 20px; text-align: center; color: #718096;">No data available</p>';
+      return;
+    }
+
+    const margin = { top: 20, right: 30, bottom: 60, left: 50 };
+    const container = document.getElementById('categoryActivityChart');
+    const width = container.offsetWidth - margin.left - margin.right;
+    const height = 280 - margin.top - margin.bottom;
+
+    const svg = d3.select('#categoryActivityChart')
+      .append('svg')
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom)
+      .append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleLinear()
+      .domain([0, d3.max(activityData, d => d.projects) + 1])
+      .range([0, width]);
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(activityData, d => d.volunteers) + 1])
+      .range([height, 0]);
+
+    // Grid
+    svg.append('g')
+      .attr('opacity', 0.1)
+      .call(d3.axisLeft(y).tickSize(-width).tickFormat(''));
+
+    // Bubbles
+    svg.selectAll('.bubble')
+      .data(activityData)
+      .enter()
+      .append('circle')
+      .attr('class', 'bubble')
+      .attr('cx', d => x(d.projects))
+      .attr('cy', d => y(d.volunteers))
+      .attr('r', d => Math.max(d.radius * 3, 20))
+      .attr('fill', '#F0BB00')
+      .attr('opacity', 0.6)
+      .attr('stroke', '#f09500')
+      .attr('stroke-width', 2);
+
+    // Labels
+    svg.selectAll('.label')
+      .data(activityData)
+      .enter()
+      .append('text')
+      .attr('class', 'label')
+      .attr('x', d => x(d.projects))
+      .attr('y', d => y(d.volunteers))
+      .attr('text-anchor', 'middle')
+      .attr('dy', '.3em')
+      .style('font-size', '11px')
+      .style('font-weight', '600')
+      .style('fill', '#1a202c')
+      .text(d => d.name.substring(0, 3).toUpperCase());
+
+    // X axis
+    svg.append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(d3.axisBottom(x));
+
+    // Y axis
+    svg.append('g')
+      .call(d3.axisLeft(y).ticks(5));
+
+    // Axis labels
+    svg.append('text')
+      .attr('x', width / 2)
+      .attr('y', height + 40)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '12px')
+      .style('fill', '#718096')
+      .text('Projects');
+
+    svg.append('text')
+      .attr('transform', 'rotate(-90)')
+      .attr('x', -height / 2)
+      .attr('y', -35)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '12px')
+      .style('fill', '#718096')
+      .text('Volunteers');
+  }
+
+  // Render all elements when D3 is ready
+  function renderDashboard() {
+    if (typeof d3 === 'undefined') {
+      setTimeout(renderDashboard, 100);
+      return;
+    }
+
+    renderCategoryList();
+    
+    if (categoriesData && categoriesData.length > 0) {
+      renderCategoriesUsageChart();
+      renderVolunteersPerCategoryChart();
+      renderProjectsTrendChart();
+      renderCategoryActivityChart();
+    }
+  }
+
+  renderDashboard();
+</script>
