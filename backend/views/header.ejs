@@ -28,6 +28,7 @@
         z-index: 1000;
         box-shadow: 2px 0 10px rgba(0,0,0,0.1);
         overflow-y: auto;
+        overflow-x: hidden;
       }
 
       .sidebar.expanded {
@@ -318,7 +319,7 @@
   </head>
   <body>
     <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
+    <div class="sidebar expanded" id="sidebar">
       <div class="sidebar-header">
         <div class="sidebar-logo">
           <img src="/images/awtc-logo.png" alt="Logo" onerror="this.parentElement.innerHTML='<i class=\'fas fa-hands-helping\' style=\'color:#F0BB00;font-size:24px\'></i>'">
@@ -402,17 +403,16 @@
       const sidebar = document.getElementById('sidebar');
       const sidebarToggle = document.getElementById('sidebarToggle');
       
+      // En móvil siempre contraído
+      if (window.innerWidth <= 768) {
+        sidebar.classList.remove('expanded');
+      }
+      
       sidebarToggle.addEventListener('click', () => {
         // No expandir en móvil
         if (window.innerWidth <= 768) return;
         sidebar.classList.toggle('expanded');
-        localStorage.setItem('sidebarExpanded', sidebar.classList.contains('expanded'));
       });
-
-      // Restore sidebar state (solo en desktop)
-      if (window.innerWidth > 768 && localStorage.getItem('sidebarExpanded') === 'true') {
-        sidebar.classList.add('expanded');
-      }
 
       // Colapsar sidebar en móvil al redimensionar
       window.addEventListener('resize', () => {
