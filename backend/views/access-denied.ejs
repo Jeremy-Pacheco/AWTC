@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Access Denied - A Will To Change</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #fff 0%, #F0BB00 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .error-container {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      padding: 60px 40px;
+      text-align: center;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    .error-icon {
+      font-size: 80px;
+      color: #e53e3e;
+      margin-bottom: 24px;
+    }
+
+    .error-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1a202c;
+      margin-bottom: 16px;
+    }
+
+    .error-message {
+      font-size: 16px;
+      color: #4a5568;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .error-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: #F0BB00;
+      color: #1a202c;
+    }
+
+    .btn-primary:hover {
+      background: #d4a500;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(240, 187, 0, 0.3);
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #2d3748;
+    }
+
+    .btn-secondary:hover {
+      background: #cbd5e0;
+      transform: translateY(-2px);
+    }
+
+    .user-info {
+      background: #f7fafc;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+      border-left: 4px solid #F0BB00;
+    }
+
+    .user-info-label {
+      font-size: 12px;
+      color: #718096;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .user-info-value {
+      font-size: 16px;
+      color: #1a202c;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="error-container">
+    <div class="error-icon">
+      <i class="fas fa-shield-alt"></i>
+    </div>
+    
+    <h1 class="error-title">Access Denied</h1>
+    
+    <p class="error-message">
+      Sorry, you don't have permission to access the admin dashboard. 
+      This area is restricted to administrators only.
+    </p>
+
+    <% if (currentUser) { %>
+      <div class="user-info">
+        <div class="user-info-label">Logged in as</div>
+        <div class="user-info-value"><%= currentUser.email %></div>
+        <div class="user-info-label" style="margin-top: 8px;">Role</div>
+        <div class="user-info-value"><%= currentUser.role || 'volunteer' %></div>
+      </div>
+    <% } %>
+
+    <div class="error-buttons">
+      <a href="/logout" class="btn btn-primary">
+        <i class="fas fa-sign-out-alt"></i>
+        Log Out
+      </a>
+      <a href="<%= frontendUrl || 'http://localhost:5173' %>" class="btn btn-secondary">
+        <i class="fas fa-home"></i>
+        Go to Home
+      </a>
+    </div>
+  </div>
+</body>
+</html>
