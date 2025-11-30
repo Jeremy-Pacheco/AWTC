@@ -1,7 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import HeroImage from "../components/HeroImage";
+import AlertModal from "../components/AlertModal";
 
 const AboutUs: React.FC = () => {
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+
   const openSignup = () => {
     window.dispatchEvent(new CustomEvent("openAuthModal", { detail: { mode: "signup" } }));
   };
@@ -88,7 +92,7 @@ const AboutUs: React.FC = () => {
           </p>
           <button
             onClick={openSignup}
-            className="inline-block bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-6 py-2 rounded-2xl font-semibold shadow transition"
+            className="inline-block bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-6 py-2 rounded-3xl font-semibold shadow transition"
           >
             Become a volunteer today
           </button>
@@ -118,10 +122,12 @@ const AboutUs: React.FC = () => {
                       const text = await res.text();
                       throw new Error(text || res.statusText || 'Network error');
                     }
-                    alert('Message sent — thank you!');
+                    setAlertMessage('Your message has been sent successfully. Our team will get back to you shortly.');
+                    setAlertOpen(true);
                     form.reset();
                   } catch (err: any) {
-                    alert('Failed to send message: ' + (err.message || err));
+                    setAlertMessage('Failed to send message: ' + (err.message || err));
+                    setAlertOpen(true);
                   }
                 }}
               className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full"
@@ -157,7 +163,7 @@ const AboutUs: React.FC = () => {
               <div className="md:col-span-2 text-right">
                 <button
                   type="submit"
-                  className="inline-block bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-6 py-2 rounded-2xl font-semibold shadow transition"
+                  className="inline-block bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-6 py-2 rounded-3xl font-semibold shadow transition"
                 >
                   Send message
                 </button>
@@ -166,6 +172,8 @@ const AboutUs: React.FC = () => {
           </div>
         </section>
       </div>
+
+      <AlertModal open={alertOpen} message={alertMessage} onAccept={() => setAlertOpen(false)} />
     </div>
   );
 };

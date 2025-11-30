@@ -115,13 +115,13 @@ function NavBar() {
             <>
               <button
                 onClick={() => navigate("/dashboard")}
-                className="px-4 py-2 rounded-md border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
+                className="px-4 py-2 rounded-3xl border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
                 Profile
               </button>
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 rounded-md bg-red-500 text-white hover:bg-[#1f2124] transition-colors duration-200"
+                className="px-4 py-2 rounded-3xl bg-[#B33A3A] text-white hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
                 Log Out
               </button>
@@ -130,13 +130,13 @@ function NavBar() {
             <>
               <button
                 onClick={() => openAuth("login")}
-                className="px-4 py-2 rounded-md border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
+                className="px-4 py-2 rounded-3xl border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
                 Log In
               </button>
               <button
                 onClick={() => openAuth("signup")}
-                className="px-4 py-2 rounded-md bg-[#F0BB00] text-black border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
+                className="px-4 py-2 rounded-3xl bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
                 Sign Up
               </button>
@@ -178,7 +178,7 @@ function NavBar() {
         {isLoggedIn && (
           <>
             <button onClick={() => {navigate("/dashboard"); setMenuOpen(false)}} className="mt-4 text-left bg-[#F0BB00] text-black px-2 py-1 rounded">Profile</button>
-            <button onClick={() => {handleLogout(); setMenuOpen(false)}} className="mt-2 text-left bg-red-500 text-white px-2 py-1 rounded">Log Out</button>
+            <button onClick={() => {handleLogout(); setMenuOpen(false)}} className="mt-2 text-left bg-[#B33A3A] text-white px-2 py-1 rounded hover:bg-[#992F2F]">Log Out</button>
           </>
         )}
       </div>

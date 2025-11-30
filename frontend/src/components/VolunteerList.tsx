@@ -105,7 +105,7 @@ function VolunteerList() {
               href={item.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-full font-semibold text-sm transition-colors duration-200 w-full text-center"
+              className="inline-block bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-3xl font-semibold text-sm transition-colors duration-200 w-full text-center"
             >
               View Details →
             </a>
