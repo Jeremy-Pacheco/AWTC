@@ -13,6 +13,7 @@
         padding: 0;
         color: #1a202c;
         background: #f7fafc;
+        overflow-x: hidden;
       }
 
       /* Sidebar Styles */
@@ -27,6 +28,7 @@
         z-index: 1000;
         box-shadow: 2px 0 10px rgba(0,0,0,0.1);
         overflow-y: auto;
+        overflow-x: hidden;
       }
 
       .sidebar.expanded {
@@ -100,6 +102,28 @@
 
       .sidebar.expanded .sidebar-toggle {
         transform: rotate(180deg);
+      }
+
+      @media (max-width: 768px) {
+        .sidebar-toggle {
+          display: none !important;
+        }
+
+        .sidebar {
+          width: 80px !important;
+        }
+
+        .sidebar.expanded {
+          width: 80px !important;
+        }
+
+        .sidebar-title {
+          display: none !important;
+        }
+
+        .sidebar-nav-text {
+          display: none !important;
+        }
       }
 
       .sidebar-nav {
@@ -275,24 +299,27 @@
       .main-content {
         margin-left: 80px;
         margin-top: 70px;
-        padding: 30px;
+        padding: 20px 30px 20px 30px;
         transition: margin-left 0.3s ease;
-        min-height: calc(100vh - 70px);
+        width: calc(100vw - 80px);
+        overflow-x: hidden;
+        box-sizing: border-box;
       }
 
       .sidebar.expanded ~ .main-content {
         margin-left: 280px;
+        width: calc(100vw - 280px);
       }
 
       .container {
-        max-width: 1200px;
+        max-width: 100%;
         margin: 0 auto;
       }
     </style>
   </head>
   <body>
     <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
+    <div class="sidebar expanded" id="sidebar">
       <div class="sidebar-header">
         <div class="sidebar-logo">
           <img src="/images/awtc-logo.png" alt="Logo" onerror="this.parentElement.innerHTML='<i class=\'fas fa-hands-helping\' style=\'color:#F0BB00;font-size:24px\'></i>'">
@@ -303,9 +330,17 @@
         </button>
       </div>
       <nav class="sidebar-nav">
+        <a href="/" class="sidebar-nav-item <%= (typeof currentSection !== 'undefined' && currentSection==='overview') ? 'active' : '' %>">
+          <i class="fas fa-chart-line"></i>
+          <span class="sidebar-nav-text">Overview</span>
+        </a>
         <a href="/projects" class="sidebar-nav-item <%= (typeof currentSection !== 'undefined' && currentSection==='projects') ? 'active' : '' %>">
           <i class="fas fa-project-diagram"></i>
           <span class="sidebar-nav-text">Projects</span>
+        </a>
+        <a href="/categories" class="sidebar-nav-item <%= (typeof currentSection !== 'undefined' && currentSection==='categories') ? 'active' : '' %>">
+          <i class="fas fa-tags"></i>
+          <span class="sidebar-nav-text">Categories</span>
         </a>
         <a href="/users" class="sidebar-nav-item <%= (typeof currentSection !== 'undefined' && currentSection==='users') ? 'active' : '' %>">
           <i class="fas fa-users"></i>
@@ -368,15 +403,23 @@
       const sidebar = document.getElementById('sidebar');
       const sidebarToggle = document.getElementById('sidebarToggle');
       
+      // En móvil siempre contraído
+      if (window.innerWidth <= 768) {
+        sidebar.classList.remove('expanded');
+      }
+      
       sidebarToggle.addEventListener('click', () => {
+        // No expandir en móvil
+        if (window.innerWidth <= 768) return;
         sidebar.classList.toggle('expanded');
-        localStorage.setItem('sidebarExpanded', sidebar.classList.contains('expanded'));
       });
 
-      // Restore sidebar state
-      if (localStorage.getItem('sidebarExpanded') === 'true') {
-        sidebar.classList.add('expanded');
-      }
+      // Colapsar sidebar en móvil al redimensionar
+      window.addEventListener('resize', () => {
+        if (window.innerWidth <= 768) {
+          sidebar.classList.remove('expanded');
+        }
+      });
 
       // User dropdown
       const userAvatar = document.getElementById('userAvatar');
