@@ -14,8 +14,26 @@ function NavBar() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("jwtToken");
-    setIsLoggedIn(!!token);
+    // Initialize
+    setIsLoggedIn(!!localStorage.getItem("jwtToken"));
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "jwtToken" || e.key === "__auth_last_update") {
+        setIsLoggedIn(!!localStorage.getItem("jwtToken"));
+      }
+    };
+
+    const onAuthChanged = () => {
+      setIsLoggedIn(!!localStorage.getItem("jwtToken"));
+    };
+
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("authChanged", onAuthChanged);
+
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("authChanged", onAuthChanged);
+    };
   }, []);
 
   // listen for global requests to open the auth modal (from other pages/components)
@@ -40,6 +58,11 @@ function NavBar() {
     localStorage.removeItem("userName");
     localStorage.removeItem("userRole");
     setIsLoggedIn(false);
+
+    // Notify other components
+    window.dispatchEvent(new CustomEvent("authChanged", { detail: { loggedIn: false } }));
+    try { localStorage.setItem("__auth_last_update", Date.now().toString()); } catch {}
+
     navigate("/");
   };
 
@@ -92,13 +115,13 @@ function NavBar() {
             <>
               <button
                 onClick={() => navigate("/dashboard")}
-                className="px-4 py-2 rounded-md border border-[#767676] hover:bg-[#EDEBEB] transition"
+                className="px-4 py-2 rounded-3xl border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
                 Profile
               </button>
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 rounded-md bg-red-500 text-white hover:bg-red-600 transition"
+                className="px-4 py-2 rounded-3xl bg-[#B33A3A] text-white hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
                 Log Out
               </button>
@@ -107,13 +130,13 @@ function NavBar() {
             <>
               <button
                 onClick={() => openAuth("login")}
-                className="px-4 py-2 rounded-md border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
+                className="px-4 py-2 rounded-3xl border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
                 Log In
               </button>
               <button
                 onClick={() => openAuth("signup")}
-                className="px-4 py-2 rounded-md bg-[#F0BB00] text-black border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
+                className="px-4 py-2 rounded-3xl bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
                 Sign Up
               </button>
@@ -154,8 +177,8 @@ function NavBar() {
         <NavLink to="/AboutUs" onClick={() => setMenuOpen(false)}>About Us</NavLink>
         {isLoggedIn && (
           <>
-            <button onClick={() => {navigate("/dashboard"); setMenuOpen(false)}} className="mt-4 text-left">Profile</button>
-            <button onClick={() => {handleLogout(); setMenuOpen(false)}} className="mt-2 text-left text-red-500">Log Out</button>
+            <button onClick={() => {navigate("/dashboard"); setMenuOpen(false)}} className="mt-4 text-left bg-[#F0BB00] text-black px-2 py-1 rounded">Profile</button>
+            <button onClick={() => {handleLogout(); setMenuOpen(false)}} className="mt-2 text-left bg-[#B33A3A] text-white px-2 py-1 rounded hover:bg-[#992F2F]">Log Out</button>
           </>
         )}
       </div>

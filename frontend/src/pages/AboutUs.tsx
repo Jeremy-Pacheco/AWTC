@@ -1,11 +1,25 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import HeroImage from "../components/HeroImage";
-import Logo from "../assets/awtc-logo.png";
+import AlertModal from "../components/AlertModal";
 
 const AboutUs: React.FC = () => {
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+
   const openSignup = () => {
     window.dispatchEvent(new CustomEvent("openAuthModal", { detail: { mode: "signup" } }));
   };
+
+  useEffect(() => {
+    if (window.location.hash) {
+      const element = document.querySelector(window.location.hash);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      }
+    }
+  }, []);
 
   return (
     <div className="min-h-[80vh]">
@@ -16,21 +30,26 @@ const AboutUs: React.FC = () => {
         <section>
           <h2 className="text-2xl md:text-3xl font-bold mb-6">About Us</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
             <img
-              src={Logo}
+              src="/aboutUs/aboutUs.jpg"
               alt="About AWTC"
-              className="w-full h-64 md:h-80 object-cover rounded-lg order-1 md:order-2"
+              className="w-full h-64 md:h-72 object-cover rounded-lg order-1 md:order-2"
+              style={{ objectPosition: "center 20%" }}
             />
 
-            <div className="order-2 md:order-1">
-              <p className="mb-4">
+            <div className="order-2 md:order-1 flex flex-col justify-center">
+              <p className="mb-4 text-justify leading-relaxed">
                 A Will to Change (AWTC) is a platform dedicated to enabling structured, verified
                 volunteering opportunities. All projects listed within our platform are created,
                 curated, and managed by our administrative team to ensure clarity, compliance, and
-                community relevance. Our goal is to make volunteering accessible, well-defined,
-                and aligned with real needs — so that participants can contribute with confidence
-                and purpose.
+                community relevance.
+              </p>
+              <p className="text-justify leading-relaxed">
+                Our goal is to make volunteering accessible, well-defined,
+                and aligned with real needs so that participants can contribute with confidence
+                and purpose. We believe that meaningful change happens when opportunities are clear,
+                achievable, and supported by a trusted community.
               </p>
             </div>
           </div>
@@ -40,23 +59,27 @@ const AboutUs: React.FC = () => {
         <section>
           <h2 className="text-2xl md:text-3xl font-bold mb-6">Our mission</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
             <img
-              src={Logo}
+              src="/aboutUs/mision.jpg"
               alt="Our mission"
-              className="w-full h-64 md:h-80 object-cover rounded-lg"
+              className="w-full h-64 md:h-72 object-cover rounded-lg"
             />
 
-            <div>
-              <p>
+            <div className="flex flex-col justify-center">
+              <p className="mb-4 text-justify leading-relaxed">
                 Our mission is to reduce the friction between willingness and action by designing
                 volunteer projects that are transparent, feasible, and outcome-oriented. We
                 believe that when people are given clear pathways to contribute, positive impact
-                scales — one decision, one hour, and one project at a time.
+                scales one decision, one hour, and one project at a time.
+              </p>
+              <p className="text-justify leading-relaxed">
+                Through AWTC, we empower individuals to become agents of change in their communities,
+                guided by our core values of transparency, accessibility, and measurable impact.
               </p>
             </div>
           </div>
-  </section>
+        </section>
       </main>
 
       {/* Wanna join our team (styled same as Contact us) */}
@@ -69,14 +92,14 @@ const AboutUs: React.FC = () => {
           </p>
           <button
             onClick={openSignup}
-            className="inline-block bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-6 py-2 rounded-2xl font-semibold shadow transition"
+            className="inline-block bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-6 py-2 rounded-3xl font-semibold shadow transition"
           >
             Become a volunteer today
           </button>
         </section>
 
         {/* Contact us */}
-        <section className="bg-white p-8 rounded-lg mt-8 shadow-lg">
+        <section id="contact-section" className="bg-white p-8 rounded-lg mt-8 shadow-2xl">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 text-black">Contact us</h2>
 
           <div className="w-full">
@@ -99,10 +122,12 @@ const AboutUs: React.FC = () => {
                       const text = await res.text();
                       throw new Error(text || res.statusText || 'Network error');
                     }
-                    alert('Message sent — thank you!');
+                    setAlertMessage('Your message has been sent successfully. Our team will get back to you shortly.');
+                    setAlertOpen(true);
                     form.reset();
                   } catch (err: any) {
-                    alert('Failed to send message: ' + (err.message || err));
+                    setAlertMessage('Failed to send message: ' + (err.message || err));
+                    setAlertOpen(true);
                   }
                 }}
               className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full"
@@ -138,7 +163,7 @@ const AboutUs: React.FC = () => {
               <div className="md:col-span-2 text-right">
                 <button
                   type="submit"
-                  className="inline-block bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-6 py-2 rounded-2xl font-semibold shadow transition"
+                  className="inline-block bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-6 py-2 rounded-3xl font-semibold shadow transition"
                 >
                   Send message
                 </button>
@@ -147,6 +172,8 @@ const AboutUs: React.FC = () => {
           </div>
         </section>
       </div>
+
+      <AlertModal open={alertOpen} message={alertMessage} onAccept={() => setAlertOpen(false)} />
     </div>
   );
 };

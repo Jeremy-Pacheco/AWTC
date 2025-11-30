@@ -199,3 +199,78 @@ exports.getOwnProfile = async (req, res) => {
     res.status(500).json({ message: "Error fetching profile" });
   }
 };
+
+// Return projects associated with current user
+exports.getOwnProjects = async (req, res) => {
+  try {
+    const user = req.user;
+    const projects = await user.getProjects({ through: { attributes: ['status', 'role'] } });
+    return res.json({ projects });
+  } catch (err) {
+    console.error('Error fetching user projects:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Return bans for current user
+exports.getOwnBans = async (req, res) => {
+  try {
+    const user = req.user;
+    const { UserProjectBan, Project } = require('../models');
+    const bans = await UserProjectBan.findAll({ 
+      where: { userId: user.id }, 
+      include: [{ model: Project }] 
+    });
+    const projects = bans.map(b => ({ id: b.projectId, name: b.Project ? b.Project.name : null, reason: b.reason }));
+    return res.json({ projects });
+  } catch (err) {
+    console.error('Error fetching user bans:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Admin/coordinator: get projects for a specific user
+exports.getUserProjects = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByPk(id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    const projects = await user.getProjects({ through: { attributes: ['status', 'role'] } });
+    return res.json({ projects });
+  } catch (err) {
+    console.error('Error fetching user projects:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Admin/coordinator: get banned projects for a specific user
+exports.getUserBans = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByPk(id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    // Import models in runtime to avoid circular dependencies
+    const { UserProjectBan, Project } = require('../models');
+    const bans = await UserProjectBan.findAll({ where: { userId: id }, include: [{ model: Project }] });
+    const projects = bans.map(b => ({ id: b.projectId, name: b.Project ? b.Project.name : null }));
+    return res.json({ projects });
+  } catch (err) {
+    console.error('Error fetching user bans:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Delete own profile (dashboard) - authenticated user
+exports.deleteOwnProfile = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) return res.status(401).json({ message: 'Unauthorized' });
+
+    // Optionally: remove related associations; for now, just destroy user record
+    await user.destroy();
+    res.json({ message: 'User deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting own profile:', err);
+    res.status(500).json({ message: 'Error deleting profile' });
+  }
+};

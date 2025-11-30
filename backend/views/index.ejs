@@ -1,150 +1,294 @@
 <%- include('header', { shopName: shopName, currentUser: currentUser, currentSection: (typeof currentSection !== 'undefined' ? currentSection : 'overview') }) %>
 
-<main style="max-width:1100px; margin: 16px auto; padding: 0 24px 80px;">
+<style>
+  .section-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 1px solid #e2e8f0;
+  }
+
+  .section-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-subtitle {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-top: 20px;
+    margin-bottom: 12px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .stat-card {
+    background: linear-gradient(135deg, #fff 0%, #F0BB00 100%);
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(240, 187, 0, 0.2);
+  }
+
+  .stat-label {
+    font-size: 14px;
+    color: #4a5568;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1a202c;
+  }
+
+  .item-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .item-list-item {
+    background: #f7fafc;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+  }
+
+  .item-list-item:hover {
+    background: #fff;
+    border-color: #cbd5e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  .item-title {
+    font-weight: 600;
+    color: #1a202c;
+    font-size: 16px;
+  }
+
+  .item-meta {
+    color: #718096;
+    font-size: 14px;
+    margin-top: 4px;
+  }
+
+  .item-description {
+    color: #4a5568;
+    font-size: 14px;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #718096;
+  }
+
+  .empty-state i {
+    font-size: 48px;
+    color: #cbd5e0;
+    margin-bottom: 16px;
+  }
+</style>
 
   <% if (!currentSection || currentSection === 'overview') { %>
-  <section>
-    <h2>Overview</h2>
-    <p>Welcome to the <strong><%= shopName %></strong> admin dashboard for volunteering projects.</p>
-    <ul>
-      <li>Available projects: <strong><%= projectsNumber %></strong></li>
-      <li>Registered users: <strong><%= usersNumber %></strong></li>
-      <li>Categories: <strong><%= categoriesNumber %></strong></li>
-      <li>Reviews: <strong><%= reviewsNumber %></strong></li>
-    </ul>
-  </section>
+  <div class="section-card">
+    <h2 class="section-title">
+      <i class="fas fa-chart-line" style="color: #F0BB00;"></i>
+      Overview
+    </h2>
+    <p style="color: #4a5568; margin-bottom: 20px;">Welcome to the <strong><%= shopName %></strong> admin dashboard for volunteering projects.</p>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Available Projects</div>
+        <div class="stat-value"><%= projectsNumber %></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Registered Users</div>
+        <div class="stat-value"><%= usersNumber %></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Categories</div>
+        <div class="stat-value"><%= categoriesNumber %></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Reviews</div>
+        <div class="stat-value"><%= reviewsNumber %></div>
+      </div>
+    </div>
+  </div>
   <% } %>
 
   <% if (currentSection === 'projects') { %>
-  <section style="margin-top:20px">
-    <h3>Projects</h3>
-    <p>Total projects: <strong><%= projectsNumber %></strong></p>
-    <h4>Latest projects</h4>
+  <div class="section-card">
+    <h2 class="section-title">
+      <i class="fas fa-project-diagram" style="color: #F0BB00;"></i>
+      Projects
+    </h2>
+    <p style="color: #4a5568; margin-bottom: 20px;">Total projects: <strong><%= projectsNumber %></strong> | Latest: <%= latestProjects ? latestProjects.length : 0 %></p>
+    
+    <h3 class="section-subtitle">Latest Projects</h3>
     <% if (latestProjects && latestProjects.length) { %>
-      <ul>
+      <ul class="item-list">
         <% latestProjects.forEach(function(p){ %>
-          <li id="proj-<%= p.id %>">
-            <strong><%= p.name %></strong> <% if (p.status) { %><span style="color:#666">(status: <%= p.status %>)</span><% } %>
-            <% if (p.description) { %> — <%= p.description %><% } %>
-            
-            <% if (currentUser) { %>
-              <% if (userBannedProjectIds && userBannedProjectIds.indexOf(p.id) !== -1) { %>
-                <button disabled style="margin-left:12px">Banned</button>
-              <% } else if (userRegisteredProjectIds && userRegisteredProjectIds.indexOf(p.id) !== -1) { %>
-                <button class="unregister-btn" data-project-id="<%= p.id %>" style="margin-left:12px">Unregister</button>
-              <% } else { %>
-                <button class="register-btn" data-project-id="<%= p.id %>" style="margin-left:12px">Register</button>
-              <% } %>
-            <% } else { %>
-              <a href="/login" style="margin-left:12px">Sign in to register</a>
+          <li class="item-list-item" id="proj-<%= p.id %>">
+            <div class="item-title"><%= p.name %></div>
+            <% if (p.status) { %>
+              <div class="item-meta">Status: <%= p.status %></div>
+            <% } %>
+            <% if (p.description) { %>
+              <div class="item-description"><%= p.description %></div>
             <% } %>
           </li>
         <% }) %>
       </ul>
     <% } else { %>
-      <p>No recent projects to display.</p>
+      <div class="empty-state">
+        <i class="fas fa-folder-open"></i>
+        <p>No recent projects to display.</p>
+      </div>
     <% } %>
-  </section>
+  </div>
   <% } %>
 
   <% if (currentSection === 'users') { %>
-  <section style="margin-top:20px">
-    <h3>Users</h3>
-    <p>Total users: <strong><%= usersNumber %></strong></p>
-    <h4>Latest users</h4>
+  <div class="section-card">
+    <h2 class="section-title">
+      <i class="fas fa-users" style="color: #F0BB00;"></i>
+      Users
+    </h2>
+    <p style="color: #4a5568; margin-bottom: 20px;">Total users: <strong><%= usersNumber %></strong> | Latest: <%= latestUsers ? latestUsers.length : 0 %></p>
+    
+    <h3 class="section-subtitle">Latest Users</h3>
     <% if (latestUsers && latestUsers.length) { %>
-      <ul>
+      <ul class="item-list">
         <% latestUsers.forEach(function(u){ %>
-          <li><strong><%= u.name %></strong> — <%= u.email || 'no-email' %> <span style="color:#666">(<%= u.role %>)</span></li>
+          <li class="item-list-item">
+            <div class="item-title"><%= u.name %></div>
+            <div class="item-meta"><%= u.email || 'no-email' %></div>
+            <div class="item-meta">Role: <%= u.role %></div>
+          </li>
         <% }) %>
       </ul>
     <% } else { %>
-      <p>No recent users to display.</p>
+      <div class="empty-state">
+        <i class="fas fa-users"></i>
+        <p>No recent users to display.</p>
+      </div>
     <% } %>
-  </section>
+  </div>
   <% } %>
 
   <% if (currentSection === 'categories') { %>
-  <section style="margin-top:20px">
-    <h3>Categories</h3>
+  <div class="section-card">
+    <h2 class="section-title">
+      <i class="fas fa-tags" style="color: #F0BB00;"></i>
+      Categories
+    </h2>
+    
     <% if (categories && categories.length) { %>
-      <ul>
+      <ul class="item-list">
         <% categories.forEach(function(c){ %>
-          <li><strong><%= c.name %></strong> <% if (c.description) { %> — <%= c.description %><% } %></li>
+          <li class="item-list-item">
+            <div class="item-title"><%= c.name %></div>
+            <% if (c.description) { %>
+              <div class="item-description"><%= c.description %></div>
+            <% } %>
+          </li>
         <% }) %>
       </ul>
     <% } else { %>
-      <p>No categories available (sample data)</p>
+      <div class="empty-state">
+        <i class="fas fa-tags"></i>
+        <p>No categories available</p>
+      </div>
     <% } %>
-  </section>
+  </div>
   <% } %>
 
   <% if (currentSection === 'reviews') { %>
-  <section style="margin-top:20px">
-    <h3>Reviews</h3>
+  <div class="section-card">
+    <h2 class="section-title">
+      <i class="fas fa-star" style="color: #F0BB00;"></i>
+      Reviews
+    </h2>
+    <p style="color: #4a5568; margin-bottom: 20px;">Total reviews: <%= reviews ? reviews.length : 0 %></p>
+    
     <% if (reviews && reviews.length) { %>
-      <ul>
+      <ul class="item-list">
         <% reviews.forEach(function(r){ %>
-          <li>
-            <%= r.content || ('Review #' + r.id) %>
-            <% if (r.date) { %> <span style="color:#666">— <%= new Date(r.date).toLocaleDateString() %></span><% } %>
+          <li class="item-list-item">
+            <div class="item-description"><%= r.content || ('Review #' + r.id) %></div>
+            <% if (r.date) { %>
+              <div class="item-meta"><%= new Date(r.date).toLocaleDateString() %></div>
+            <% } %>
           </li>
         <% }) %>
       </ul>
     <% } else { %>
-      <p>No reviews available (sample data)</p>
+      <div class="empty-state">
+        <i class="fas fa-star"></i>
+        <p>No reviews available</p>
+      </div>
     <% } %>
-  </section>
+  </div>
   <% } %>
 
   <% if (currentSection === 'contacts') { %>
-  <section style="margin-top:20px">
-    <h3>Contact messages</h3>
+  <div class="section-card">
+    <h2 class="section-title">
+      <i class="fas fa-exclamation-triangle" style="color: #F0BB00;"></i>
+      Incidents
+    </h2>
+    <p style="color: #4a5568; margin-bottom: 20px;">Total incidents: <%= contacts ? contacts.length : 0 %></p>
+    
     <% if (typeof contacts !== 'undefined' && contacts && contacts.length) { %>
-      <ul>
+      <ul class="item-list">
         <% contacts.forEach(function(c){ %>
-          <li><strong><%= c.name %></strong> — <%= c.email %> <% if (c.subject) { %> — <%= c.subject %><% } %>
-            <div style="color:#333; margin-top:4px"><%= c.message %></div>
+          <li class="item-list-item">
+            <div class="item-title"><%= c.name %></div>
+            <div class="item-meta"><%= c.email %><% if (c.subject) { %> — <%= c.subject %><% } %></div>
+            <div class="item-description"><%= c.message %></div>
           </li>
         <% }) %>
       </ul>
     <% } else { %>
-      <p>No contact messages yet</p>
+      <div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <p>No contact messages yet</p>
+      </div>
     <% } %>
-  </section>
+  </div>
   <% } %>
-
-</main>
 
 </body>
 </html>
-<script>
-  document.addEventListener('DOMContentLoaded', function(){
-    document.querySelectorAll('.register-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        const id = btn.getAttribute('data-project-id');
-        try {
-          const resp = await fetch(`/api/projects/${id}/register`, { method: 'POST', credentials: 'same-origin' });
-          if (!resp.ok) {
-            const err = await resp.json();
-            alert(err.message || 'Error registering');
-            return;
-          }
-          alert('Registered successfully');
-          location.reload();
-        } catch (err) { alert('Network error'); }
-      });
-    });
-    document.querySelectorAll('.unregister-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        const id = btn.getAttribute('data-project-id');
-        try {
-          const resp = await fetch(`/api/projects/${id}/unregister`, { method: 'POST', credentials: 'same-origin' });
-          if (!resp.ok) { const err = await resp.json(); alert(err.message || 'Error unregistering'); return; }
-          alert('Unregistered successfully');
-          location.reload();
-        } catch (err) { alert('Network error'); }
-      });
-    });
-  });
-</script>
+
+      </div>
+    </div>
+  </body>
+</html>

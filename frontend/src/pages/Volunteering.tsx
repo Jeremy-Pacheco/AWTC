@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import HeroImage from "../components/HeroImage";
+import AuthModal from "../components/AuthModal";
+import AlertModal from "../components/AlertModal";
 
 type Project = {
   id: number;
@@ -20,22 +22,52 @@ const IMAGE_URL = import.meta.env.VITE_IMAGE_URL || 'http://localhost:8080/image
 
 const Volunteering: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [showModal, setShowModal] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
-
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    start_date: "",
-    end_date: "",
-    location: "",
-    capacity: 0,
-    status: "active",
-    file: null as File | null,
-    categoryId: '' as number | ''
-  });
 
   const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  
+  // Alert Modal state
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  
+  // Auth modal state
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+  const [enrolledProjectIds, setEnrolledProjectIds] = useState<number[]>([]);
+  const [bannedProjectIds, setBannedProjectIds] = useState<number[]>([]);
+
+  const fetchEnrolledProjects = async () => {
+    const token = localStorage.getItem("jwtToken");
+    if (!token) {
+      setEnrolledProjectIds([]);
+      setBannedProjectIds([]);
+      return;
+    }
+
+    try {
+      // Fetch enrolled projects
+      const resProjects = await fetch(`${API_URL}/api/users/dashboard/projects`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (resProjects.ok) {
+        const data = await resProjects.json();
+        const projectIds = data.projects?.map((p: Project) => p.id) || [];
+        setEnrolledProjectIds(projectIds);
+      }
+
+      // Fetch banned projects
+      const resBans = await fetch(`${API_URL}/api/users/dashboard/bans`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (resBans.ok) {
+        const data = await resBans.json();
+        const bannedIds = data.projects?.map((p: { id: number }) => p.id) || [];
+        setBannedProjectIds(bannedIds);
+      }
+    } catch (err) {
+      console.error("Error fetching enrolled projects:", err);
+    }
+  };
 
   useEffect(() => {
     fetch(`${API_URL}/api/projects`)
@@ -46,125 +78,63 @@ const Volunteering: React.FC = () => {
     // fetch categories for filter and form
     fetch(`${API_URL}/api/categories`)
       .then(res => res.json())
-      .then((cats: any[]) => setCategories(cats || []))
+      .then((cats: { id: number; name: string }[]) => setCategories(cats || []))
       .catch(err => console.error('Error fetching categories:', err));
+
+    // fetch enrolled projects if logged in
+    fetchEnrolledProjects();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === "capacity" ? parseInt(value) : value
-    }));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData(prev => ({ ...prev, file: e.target.files![0] }));
+  const handleEnroll = async (projectId: number) => {
+    // Check if user is logged in
+    const token = localStorage.getItem("jwtToken");
+    
+    if (!token) {
+      // User is not logged in, open auth modal
+      setAuthMode("login");
+      setAuthOpen(true);
+      return;
     }
-  };
 
-  const openAddModal = () => {
-    setEditingProject(null);
-    setFormData({
-      name: "",
-      description: "",
-      start_date: "",
-      end_date: "",
-      location: "",
-      capacity: 0,
-      status: "active",
-      file: null,
-      categoryId: ''
-    });
-    setShowModal(true);
-  };
-
-  const openEditModal = (project: Project) => {
-    setEditingProject(project);
-    setFormData({
-      name: project.name || "",
-      description: project.description || "",
-      start_date: project.start_date ? project.start_date.split("T")[0] : "",
-      end_date: project.end_date ? project.end_date.split("T")[0] : "",
-      location: project.location || "",
-      capacity: project.capacity || 0,
-      status: project.status || "active",
-      file: null,
-      categoryId: project.categoryId ?? ''
-    });
-    setShowModal(true);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const data = new FormData();
-    data.append("name", formData.name);
-    data.append("description", formData.description);
-    data.append("start_date", formData.start_date);
-    data.append("end_date", formData.end_date);
-    data.append("location", formData.location);
-    data.append("capacity", formData.capacity.toString());
-    data.append("status", formData.status);
-    if (formData.categoryId !== '') data.append('categoryId', String(formData.categoryId));
-    if (formData.file) data.append("file", formData.file);
-
+    // User is logged in, proceed with enrollment
     try {
-      let url = `${API_URL}/api/projects`;
-      let method = "POST";
+      const res = await fetch(`${API_URL}/api/projects/${projectId}/register`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      if (editingProject) {
-        url += `/${editingProject.id}`;
-        method = "PUT";
-      }
+      const data = await res.json();
 
-      const res = await fetch(url, { method, body: data });
       if (!res.ok) {
-        const errData = await res.json();
-        alert("Error: " + JSON.stringify(errData));
+        if (res.status === 409) {
+          setAlertMessage("You are already enrolled in this project");
+          setAlertOpen(true);
+        } else if (res.status === 403) {
+          setAlertMessage("You cannot enroll in this project");
+          setAlertOpen(true);
+        } else {
+          setAlertMessage(data.message || "Error enrolling");
+          setAlertOpen(true);
+        }
         return;
       }
 
-      const savedProject = await res.json();
-
-      if (editingProject) {
-        setProjects(prev => prev.map(p => (p.id === savedProject.id ? savedProject : p)));
-      } else {
-        setProjects(prev => [...prev, savedProject]);
-      }
-
-      setShowModal(false);
-      setEditingProject(null);
-      setFormData({
-        name: "",
-        description: "",
-        start_date: "",
-        end_date: "",
-        location: "",
-        capacity: 0,
-        status: "active",
-        file: null,
-        categoryId: ''
-      });
+      setAlertMessage("You have successfully enrolled in the project");
+      setAlertOpen(true);
+      // Refresh enrolled projects
+      await fetchEnrolledProjects();
     } catch (err) {
       console.error(err);
-      alert("Network error: " + err);
+      setAlertMessage("Network error enrolling");
+      setAlertOpen(true);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this project?")) return;
-
-    try {
-      const res = await fetch(`${API_URL}/api/projects/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Delete failed");
-      setProjects(prev => prev.filter(p => p.id !== id));
-    } catch (err) {
-      console.error(err);
-      alert("Error deleting project");
-    }
-  };
+  const filteredProjects = selectedCategory
+    ? projects.filter(p => p.categoryId === Number(selectedCategory))
+    : projects;
 
   return (
     <>
@@ -177,147 +147,94 @@ const Volunteering: React.FC = () => {
 
       <div className="p-4">
         <div className="flex flex-col md:flex-row justify-between items-center mt-8 mb-6 px-4 md:px-16">
-        <div>
-          <h2 className="text-3xl font-bold">Active Projects</h2>
-          <p className="text-lg text-gray-600">Small actions, big impact.</p>
-        </div>
-        <div className="mt-4 md:mt-0 flex items-center gap-2">
-          <select className="border rounded p-2">
-            <option value="">All Categories</option>
-          </select>
-          <span>Filter by category</span>
-        </div>
-      </div>
+          <div>
+            <h2 className="text-3xl font-bold">Active Projects</h2>
+            <p className="text-lg text-gray-600">Small actions, big impact.</p>
+          </div>
+          <div className="mt-4 md:mt-0 flex items-center gap-2">
+                        <span>Filter by category</span>
+            <select
+              className="border rounded p-2"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+            >
+              <option value="">All Categories</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
 
-      <div className="px-4 md:px-16 mb-4 flex justify-end">
-        <button
-          className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-2xl font-semibold shadow"
-          onClick={openAddModal}
-        >
-          Add Project
-        </button>
-      </div>
+          </div>
+        </div>
 
-      <div className="flex flex-col gap-6 px-4 md:px-16">
-        {projects.map(proj => (
-          <div
-            key={proj.id}
-            className="flex flex-col md:flex-row bg-white rounded p-4 md:p-6 gap-4 shadow-lg"
-          >
-            {proj.filename && (
-              <img
-                src={`${IMAGE_URL}/${proj.filename}`}
-                alt={proj.name}
-                className="w-full md:w-48 h-48 object-cover rounded"
-              />
-            )}
-            <div className="flex flex-col justify-between">
-              <h3 className="text-2xl font-bold mb-2">{proj.name}</h3>
-              <p className="mb-4">{proj.description}</p>
-              <div className="flex gap-2">
-                <button
-                  className="bg-[#F0BB00] text-black px-4 py-2 rounded"
-                  onClick={() => openEditModal(proj)}
-                >
-                  Edit
-                </button>
-                <button
-                  className="bg-red-500 text-white px-4 py-2 rounded"
-                  onClick={() => handleDelete(proj.id)}
-                >
-                  Delete
-                </button>
+
+
+        <div className="flex flex-col gap-6 px-4 md:px-16 pb-16">
+          {filteredProjects.map(proj => (
+            <div
+              key={proj.id}
+              className="flex flex-col md:flex-row bg-white rounded p-4 md:p-6 gap-4 shadow-2xl"
+            >
+              {proj.filename && (
+                <img
+                  src={`${IMAGE_URL}/${proj.filename}`}
+                  alt={proj.name}
+                  className="w-full md:w-48 h-48 object-cover rounded"
+                />
+              )}
+              <div className="flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="text-2xl font-bold">{proj.name}</h3>
+                    {proj.category && (
+                      <span className="bg-[#1f2124] text-white px-3 py-1 rounded-full text-xs font-bold">
+                        {proj.category.name}
+                      </span>
+                    )}
+                  </div>
+                  <p className="mb-4">{proj.description}</p>
+                </div>
+                {bannedProjectIds.includes(proj.id) ? (
+                  <button
+                    disabled
+                    className="bg-[#B33A3A] text-white px-4 py-2 rounded-3xl font-semibold cursor-not-allowed w-fit"
+                  >
+                    Not Available
+                  </button>
+                ) : enrolledProjectIds.includes(proj.id) ? (
+                  <button
+                    disabled
+                    className="bg-gray-400 text-white px-4 py-2 rounded-3xl font-semibold cursor-not-allowed w-fit"
+                  >
+                    Already Enrolled
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleEnroll(proj.id)}
+                    className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-3xl font-semibold transition-colors w-fit"
+                  >
+                    Enroll
+                  </button>
+                )}
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded p-6 w-full max-w-md">
-            <h2 className="text-2xl font-bold mb-4">{editingProject ? "Edit Project" : "Add Project"}</h2>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-              <input
-                type="text"
-                name="name"
-                placeholder="Project Name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-                className="border p-2 rounded"
-              />
-              <textarea
-                name="description"
-                placeholder="Description"
-                value={formData.description}
-                onChange={handleInputChange}
-                required
-                className="border p-2 rounded"
-              />
-              <input
-                type="date"
-                name="start_date"
-                value={formData.start_date}
-                onChange={handleInputChange}
-                required
-                className="border p-2 rounded"
-              />
-              <input
-                type="date"
-                name="end_date"
-                value={formData.end_date}
-                onChange={handleInputChange}
-                required
-                className="border p-2 rounded"
-              />
-              <input
-                type="text"
-                name="location"
-                placeholder="Location"
-                value={formData.location}
-                onChange={handleInputChange}
-                required
-                className="border p-2 rounded"
-              />
-              <input
-                type="number"
-                name="capacity"
-                placeholder="Capacity"
-                value={formData.capacity}
-                onChange={handleInputChange}
-                required
-                className="border p-2 rounded"
-              />
-              <input
-                type="file"
-                name="file"
-                onChange={handleFileChange}
-                className="border p-2 rounded"
-              />
-              <select
-                name="categoryId"
-                value={formData.categoryId}
-                onChange={e => setFormData(prev => ({ ...prev, categoryId: e.target.value === '' ? '' : Number(e.target.value) }))}
-                className="border p-2 rounded"
-              >
-                <option value="">-- No category --</option>
-                {categories.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-              <div className="flex justify-end gap-2 mt-2">
-                <button type="button" className="bg-gray-300 px-4 py-2 rounded" onClick={() => setShowModal(false)}>
-                  Cancel
-                </button>
-                <button type="submit" className="bg-[#F0BB00] px-4 py-2 rounded">
-                  {editingProject ? "Save Changes" : "Add"}
-                </button>
-              </div>
-            </form>
-          </div>
+          ))}
         </div>
-      )}
+
+        {/* Auth Modal */}
+        <AuthModal 
+          open={authOpen} 
+          onClose={() => {
+            setAuthOpen(false);
+            // Refresh enrolled projects
+            fetchEnrolledProjects();
+          }} 
+          mode={authMode} 
+        />
+
+        <AlertModal open={alertOpen} message={alertMessage} onAccept={() => setAlertOpen(false)} />
       </div>
     </>
   );
