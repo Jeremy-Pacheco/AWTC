@@ -3,12 +3,12 @@
 module.exports = {
   async up (queryInterface, Sequelize) {
     // Adding the userId column to the Reviews table
-    const table = await queryInterface.describeTable('reviews');
+    const table = await queryInterface.describeTable('Reviews');
     if (!table.userId) {
-      await queryInterface.addColumn('reviews', 'userId', {
+      await queryInterface.addColumn('Reviews', 'userId', {
         type: Sequelize.INTEGER,
         references: {
-          model: 'users',  //Name of the users table
+          model: 'Users',  //Name of the users table
           key: 'id',
         },
         onUpdate: 'CASCADE',
@@ -18,9 +18,9 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
-    const table = await queryInterface.describeTable('reviews');
+    const table = await queryInterface.describeTable('Reviews');
     if (table.userId) {
-      await queryInterface.removeColumn('reviews', 'userId');
+      await queryInterface.removeColumn('Reviews', 'userId');
     }
   }
 };
