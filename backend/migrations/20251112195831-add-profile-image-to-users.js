@@ -3,13 +3,19 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-await queryInterface.addColumn('Users', 'profileImage', {
-      type: Sequelize.STRING,
-      allowNull: true,
-    });
+    const table = await queryInterface.describeTable('Users');
+    if (!table.profileImage) {
+      await queryInterface.addColumn('Users', 'profileImage', {
+        type: Sequelize.STRING,
+        allowNull: true,
+      });
+    }
   },
 
   async down (queryInterface, Sequelize) {
-await queryInterface.removeColumn('Users', 'profileImage');
+    const table = await queryInterface.describeTable('Users');
+    if (table.profileImage) {
+      await queryInterface.removeColumn('Users', 'profileImage');
+    }
   }
 };

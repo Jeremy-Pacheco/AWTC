@@ -19,10 +19,8 @@ app.use('/images', express.static(path.join(__dirname, 'public/images')));
 app.use(cors({
   origin: (origin, callback) => {
     const allowedOrigins = [
-      "https://awtc.netlify.app",
       "http://localhost:5173",
       "http://localhost:8080",
-      "http://167.172.58.2:5173",
       "http://209.97.187.131:5173",
       "http://209.97.187.131:8080"
     ];
@@ -64,7 +62,9 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    // secure: process.env.NODE_ENV === 'production',
+    secure: false, // Set to false for local testing over HTTP
+    sameSite: 'lax',
     maxAge: 24 * 60 * 60 * 1000 //1 day
   }
 }));

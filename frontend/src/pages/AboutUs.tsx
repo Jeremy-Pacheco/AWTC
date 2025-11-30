@@ -28,7 +28,7 @@ const AboutUs: React.FC = () => {
       <main className="max-w-6xl mx-auto px-6 py-12 space-y-16">
         {/* About Us */}
         <section>
-          <h2 className="text-2xl md:text-3xl font-bold mb-6">About Us</h2>
+          <h2 className="text-3xl font-bold mb-6">About Us</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
             <img
@@ -57,7 +57,7 @@ const AboutUs: React.FC = () => {
 
         {/* Our mission */}
         <section>
-          <h2 className="text-2xl md:text-3xl font-bold mb-6">Our mission</h2>
+          <h2 className="text-3xl font-bold mb-6">Our mission</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
             <img
@@ -85,7 +85,7 @@ const AboutUs: React.FC = () => {
       {/* Wanna join our team (styled same as Contact us) */}
       <div className="max-w-6xl mx-auto px-6 py-12">
         <section className="bg-white p-8 rounded-lg text-center">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">Wanna join our team?</h2>
+          <h2 className="text-3xl font-bold mb-6">Wanna join our team?</h2>
           <p className="mb-6 text-gray-700">
             Become part of AWTC and contribute to projects that create real, measurable
             impact. Your time matters — and change begins when you decide to take action.

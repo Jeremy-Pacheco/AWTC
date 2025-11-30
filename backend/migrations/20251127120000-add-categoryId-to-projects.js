@@ -19,7 +19,7 @@ module.exports = {
         type: 'foreign key',
         name: 'fk_projects_categoryId',
         references: {
-          table: 'categories',
+          table: 'Categories',
           field: 'id'
         },
         onDelete: 'SET NULL',
