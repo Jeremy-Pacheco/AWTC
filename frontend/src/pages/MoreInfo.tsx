@@ -12,8 +12,8 @@ function MoreInfo() {
 
       <main className="max-w-6xl mx-auto px-6 py-12">
         <div className="mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Explore More Opportunities</h2>
-          <p className="text-gray-700 text-lg">
+          <h2 className="text-3xl font-bold">Explore More Opportunities</h2>
+          <p className="text-lg text-gray-600">
             Discover volunteer opportunities from external platforms. Find projects that match your interests and availability.
           </p>
         </div>
