@@ -10,7 +10,9 @@
     "seed:prod": "cross-env NODE_ENV=production npx sequelize-cli db:seed:all",
     "start": "node index.js",
     "start:prod": "cross-env NODE_ENV=production node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "dns": "node dns-server/dns-server.js",
+    "dns:prod": "cross-env DNS_PORT=53 node dns-server/dns-server.js"
   },
   "author": "",
   "license": "ISC",
@@ -21,6 +23,7 @@
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
     "d3": "^7.9.0",
+    "dns2": "^2.1.0",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
