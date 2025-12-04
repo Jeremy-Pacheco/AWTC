@@ -19,7 +19,6 @@ async function initAdmin() {
       });
       console.log(`Admin account created: ${adminEmail} with profileImage: ${defaultProfileImage}`);
     } else {
-      // Actualizar password, role y profileImage
       existingAdmin.password = adminPass;
       existingAdmin.role = 'admin';
       existingAdmin.profileImage = defaultProfileImage;
