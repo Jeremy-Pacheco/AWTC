@@ -111,8 +111,8 @@ function AboutSection() {
         alt="Volunteers"
         className="w-full md:w-auto md:max-w-sm h-auto rounded"
       />
-      <div className="flex-1 pl-0 md:pl-8 mt-4 md:mt-0">
-        <p className="mb-6 md:mb-4">
+      <div >
+        <p className="mb-6 md:mb-4 text-gray-700">
           Our mission is to make joining social and environmental projects
           simple, safe, and meaningful, connecting volunteers with opportunities
           that create real impact and strengthen communities. We provide
@@ -671,11 +671,11 @@ function Home() {
       />
 
       <main className="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12">
-        <h2>Newest Projects</h2>
+        <h2 className="text-3xl font-bold">Newest Projects</h2>
         <p className="text-lg text-gray-600">Discover volunteer projects and make an impact.</p>
         <Carousel />
 
-        <h2>About Us</h2>
+        <h2 className="text-3xl font-bold">About Us</h2>
         <p className="text-lg text-gray-600">At our platform, we believe that everyone can make a difference</p>
         <AboutSection />
         <ReviewsSection

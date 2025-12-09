@@ -6,6 +6,7 @@ module.exports = {
     await queryInterface.bulkInsert('Reviews', [{
       content: 'Great experience volunteering here!',
       date: new Date(),
+      userId: 1,
       createdAt: new Date(),
       updatedAt: new Date()
     }], {});
