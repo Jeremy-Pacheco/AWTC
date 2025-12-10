@@ -1,6 +1,7 @@
 const { Project } = require('../models');
 const db = require('../models');
 const { User } = db;
+const logger = require('../utils/logger');
 
 // Create a new project
 exports.createProject = async (req, res) => {
@@ -20,10 +21,13 @@ exports.createProject = async (req, res) => {
       categoryId
     });
 
+    logger.info(`Project created: ${project.name} (ID: ${project.id})`);
+
     // Return the created project including its category
     const created = await Project.findByPk(project.id, { include: [{ model: db.Category, as: 'category' }] });
     res.status(201).json(created);
   } catch (error) {
+    logger.error(`Failed to create project: ${error.message}`);
     console.error(error);
     res.status(400).json({ message: 'Error creating project', error });
   }
