@@ -114,8 +114,6 @@ app.get('/debug-models', async (req, res) => {
   res.json({ models: keys, samples });
 });
 
-const initAdmin = require("./config/initAdmin");
-
 // Auth middleware that supports Bearer/Basic headers (keeps API auth intact)
 const authMiddleware = require("./middlewares/auth.middlewares");
 app.use(authMiddleware);
@@ -138,8 +136,6 @@ db.sequelize
   .sync({ force: false })
   .then(async () => {
     console.log("Database synced!");
-    console.log("Initializing admin user...");
-    await initAdmin();
   })
   .catch((err) => console.error("DB Error: " + err.message));
 

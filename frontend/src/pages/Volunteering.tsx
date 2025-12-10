@@ -81,6 +81,9 @@ const Volunteering: React.FC = () => {
         // Scroll to specific project if ID in URL
         const projectId = searchParams.get("project");
         if (projectId) {
+          // Clear any category filter to ensure the project is visible
+          setSelectedCategory("");
+          
           setTimeout(() => {
             const element = projectRefs.current[Number(projectId)];
             if (element) {
@@ -196,7 +199,9 @@ const Volunteering: React.FC = () => {
           {filteredProjects.map(proj => (
             <div
               key={proj.id}
-              ref={(el) => (projectRefs.current[proj.id] = el)}
+              ref={(el) => {
+                if (el) projectRefs.current[proj.id] = el;
+              }}
               className="flex flex-col md:flex-row bg-white rounded p-4 md:p-6 gap-4 shadow-2xl transition-all duration-300"
             >
               {proj.filename && (
@@ -216,6 +221,7 @@ const Volunteering: React.FC = () => {
                       </span>
                     )}
                   </div>
+                  <p className="text-sm text-gray-600 mb-3">📍 {proj.location}</p>
                   <p className="mb-4">{proj.description}</p>
                 </div>
                 {bannedProjectIds.includes(proj.id) ? (
