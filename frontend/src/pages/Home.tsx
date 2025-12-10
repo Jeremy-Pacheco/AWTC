@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import AuthModal from "../components/AuthModal";
 import HeroImage from "../components/HeroImage";
 import AlertModal from "../components/AlertModal";
-import logo4 from "../../public/home/charity.png";
+import logo4 from "../../../frontend/public/home/aboutUs-image.png";
 import { NavLink, useNavigate } from "react-router-dom";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
