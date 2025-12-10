@@ -146,12 +146,14 @@ const categoryRoutes = require("./routes/category.routes");
 const userRoutes = require("./routes/user.routes");
 const contactRoutes = require("./routes/contact.routes");
 const sessionRoutes = require("./routes/session.routes");
+const externalRoutes = require("./routes/external.routes");
 
 app.use("/api/projects", projectRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/contacts", contactRoutes);
+app.use("/api/external", externalRoutes);
 app.use('/', sessionRoutes);
 
 // Simple EJS dashboard routes (demo)
