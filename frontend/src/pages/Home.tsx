@@ -20,7 +20,7 @@ function Carousel() {
       .then((data: any[]) => {
         // Take exactly 3 projects with images
         const projectsWithImages = data.filter((p) => p.filename).slice(0, 3);
-        
+
         // Only show carousel if we have at least 3 projects
         if (projectsWithImages.length >= 3) {
           setProjects(projectsWithImages);
