@@ -412,12 +412,12 @@ Together, they form a complete DNS infrastructure that is both user-friendly and
 
 This project successfully implemented a fully functional DNS server using Node.js:
 
-✅ **dns2 Library Installation:** Successfully installed and configured the dns2 package for DNS protocol handling  
-✅ **Forward Zone Configuration:** Implemented 8 A records, 4 CNAME records, and 2 MX records  
-✅ **Reverse Zone Configuration:** Configured PTR record for reverse IP-to-name resolution  
-✅ **Forward Lookup Testing:** All forward queries (A, CNAME, MX) resolve correctly using dig  
-✅ **Reverse Lookup Testing:** PTR queries successfully resolve IP addresses to domain names  
-✅ **Complete Documentation:** Comprehensive documentation with concept explanations and test evidence  
+- **dns2 Library Installation:** Successfully installed and configured the dns2 package for DNS protocol handling  
+- **Forward Zone Configuration:** Implemented 8 A records, 4 CNAME records, and 2 MX records  
+- **Reverse Zone Configuration:** Configured PTR record for reverse IP-to-name resolution  
+- **Forward Lookup Testing:** All forward queries (A, CNAME, MX) resolve correctly using dig  
+- **Reverse Lookup Testing:** PTR queries successfully resolve IP addresses to domain names  
+- **Complete Documentation:** Comprehensive documentation with concept explanations and test evidence  
 
 ### 8.2. Technical learnings
 
@@ -451,22 +451,6 @@ Future enhancements could include:
 6. **Database Backend:** Store records in a database instead of a JavaScript file
 7. **Load Balancing:** Support multiple A records for the same hostname
 8. **DNSSEC:** Implement DNS Security Extensions for cryptographic verification
-
-### 8.5. Project evaluation
-
-According to the UT06.1 rubric criteria:
-
-| Criterion                          | Score | Evidence                              |
-|------------------------------------|-------|---------------------------------------|
-| Bind9 Installation (dns2)          | 10/10 | Package installed and server running  |
-| Forward Zone Configuration         | 10/10 | All A, CNAME, MX records configured   |
-| Reverse Zone Configuration (PTR)   | 10/10 | PTR records working correctly         |
-| Forward Lookup Tests               | 10/10 | All dig queries resolve successfully  |
-| Reverse Lookup Tests               | 10/10 | PTR queries working with dig -x       |
-| Documentation and Screenshots      | 10/10 | Complete documentation with evidence  |
-| Concepts Explanation               | 10/10 | Detailed Forward/Reverse explanation  |
-
-**Expected Final Score: 10/10** 🌟
 
 ---
 
