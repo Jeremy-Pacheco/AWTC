@@ -8,37 +8,49 @@ Connect via SSH to your Droplet:
 ssh root@your_server_ip
 ```
 
-## 2. Deploy OpenLDAP Container
-We need to run a persistent OpenLDAP container.
+## 2. Install OpenLDAP (Native)
+Instead of Docker, we will install OpenLDAP directly on the server (assuming Ubuntu/Debian).
 
-1.  **Create Docker Volumes** (for data persistence):
+1.  **Install packages**:
     ```bash
-    docker volume create ldap_data
-    docker volume create ldap_config
+    sudo apt update
+    sudo apt install slapd ldap-utils
     ```
 
-2.  **Start the Container**:
-    *Replace `YOUR_SECURE_PASSWORD` with a strong password.*
+2.  **Configure OpenLDAP**:
+    Run the configuration wizard:
     ```bash
-    docker run --name openldap-server \
-      -p 389:389 \
-      --env LDAP_ORGANISATION="AWTC" \
-      --env LDAP_DOMAIN="awtc.com" \
-      --env LDAP_ADMIN_PASSWORD="YOUR_SECURE_PASSWORD" \
-      --env LDAP_CONFIG_PASSWORD="YOUR_SECURE_PASSWORD" \
-      -v ldap_data:/var/lib/ldap \
-      -v ldap_config:/etc/ldap/slapd.d \
-      --detach --restart unless-stopped \
-      osixia/openldap:1.5.0
+    sudo dpkg-reconfigure slapd
     ```
+    Answer the prompts as follows:
+    *   **Omit OpenLDAP server configuration?**: No
+    *   **DNS domain name**: `awtc.com`
+    *   **Organization name**: `AWTC`
+    *   **Administrator password**: (Choose a secure password)
+    *   **Confirm password**: (Repeat password)
+    *   **Database backend**: MDB
+    *   **Remove the database when slapd is purged?**: No
+    *   **Move old database?**: Yes
 
 ## 3. Initialize LDAP Structure
-Create the `ou=users` organizational unit.
+We need to create the `ou=users` group where users will be stored.
 
-Run this command (using the password from step 2):
-```bash
-echo -e "dn: ou=users,dc=awtc,dc=com\nobjectClass: organizationalUnit\nou: users" | docker exec -i openldap-server ldapadd -x -D "cn=admin,dc=awtc,dc=com" -w YOUR_SECURE_PASSWORD
-```
+1.  **Create an LDIF file**:
+    ```bash
+    nano users.ldif
+    ```
+    Paste this content:
+    ```ldif
+    dn: ou=users,dc=awtc,dc=com
+    objectClass: organizationalUnit
+    ou: users
+    ```
+
+2.  **Apply the configuration**:
+    ```bash
+    ldapadd -x -D "cn=admin,dc=awtc,dc=com" -W -f users.ldif
+    ```
+    *Enter the administrator password you set in step 2.*
 
 ## 4. Update Backend Code
 Navigate to your project folder:
