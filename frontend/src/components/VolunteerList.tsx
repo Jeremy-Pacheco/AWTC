@@ -14,13 +14,15 @@ type Opportunity = {
   dates?: string;
 };
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 function VolunteerList() {
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("https://www.volunteerconnector.org/api/search/")
+    fetch(`${API_URL}/api/external/volunteering`)
       .then((response) => {
         if (!response.ok) throw new Error("HTTP error: " + response.status);
         return response.json();
