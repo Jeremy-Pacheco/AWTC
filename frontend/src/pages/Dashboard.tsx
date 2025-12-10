@@ -22,7 +22,7 @@ const modalVariants = {
 const Dashboard: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "profile" | "myprojects" | "projects" | "users" | "contacts" | "categories"
+    "profile" | "myprojects" | "projects" | "users" | "contacts" | "categories" | "reviews"
   >("profile");
   const [showEditModal, setShowEditModal] = useState(false);
   const [confirmModal, setConfirmModal] = useState<{ open: boolean; title?: string; message?: string; onConfirm?: (() => void) | null; danger?: boolean }>({ open: false, title: '', message: '', onConfirm: null, danger: false });
@@ -56,6 +56,7 @@ const Dashboard: React.FC = () => {
   // old inline project creation state removed; using modal projectForm/projectFile
   const [contacts, setContacts] = useState<any[]>([]);
   const [contactsFilter, setContactsFilter] = useState<'open'|'closed'|'all'>('open');
+  const [reviews, setReviews] = useState<any[]>([]);
 
   // Load token and fetch user data from backend
   // Load user from backend or localStorage
@@ -120,6 +121,19 @@ const Dashboard: React.FC = () => {
       }
     }
     fetchMyProjects();
+
+    // fetch reviews
+    async function fetchReviews() {
+      try {
+        const res = await fetch(`${API_URL}/api/reviews`);
+        if (!res.ok) throw new Error('Failed to fetch reviews');
+        const data = await res.json();
+        setReviews(data || []);
+      } catch (err) {
+        console.error('Error fetching reviews', err);
+      }
+    }
+    fetchReviews();
 
     // fetch contacts if admin
     async function fetchContacts() {
@@ -346,20 +360,30 @@ const Dashboard: React.FC = () => {
         {([
           "profile",
           "myprojects",
+          "reviews",
           ...(user && (user.role === 'admin' || user.role === 'coordinator') ? ["projects", "categories"] : []),
-          ...(user && user.role === 'admin' ? ["users", "contacts"] : []),
+          ...(user && user.role === 'admin' ? ["users", "contacts", "analytics"] : []),
         ] as const).map((tab) => (
           <button
             key={tab}
             className={`px-3 md:px-4 py-2 rounded-3xl font-semibold transition text-sm md:text-base ${
               activeTab === tab ? "bg-[#F0BB00] text-black" : "bg-gray-200 hover:bg-[#1f2124] hover:text-white"
             }`}
-            onClick={() => setActiveTab(tab as 'profile' | 'myprojects' | 'projects' | 'users' | 'contacts' | 'categories')}
+            onClick={() => {
+              if (tab === "analytics") {
+                const backendUrl = API_URL.replace('/api', '');
+                window.open(backendUrl, '_blank');
+              } else {
+                setActiveTab(tab as 'profile' | 'myprojects' | 'projects' | 'users' | 'contacts' | 'categories' | 'reviews');
+              }
+            }}
           >
             {tab === "profile"
               ? "Profile"
               : tab === "myprojects"
               ? "My Projects"
+              : tab === "reviews"
+              ? "Reviews"
               : tab === "projects"
               ? "Projects"
               : tab === "contacts"
@@ -368,6 +392,8 @@ const Dashboard: React.FC = () => {
               ? "Users"
               : tab === "categories"
               ? "Categories"
+              : tab === "analytics"
+              ? "Analytics"
               : ""}
           </button>
         ))}
@@ -449,6 +475,64 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+        {activeTab === 'reviews' && (
+          <div>
+            <h3 className="font-bold mb-2">Reviews</h3>
+            <div>
+              {reviews.length === 0 ? (
+                <p className="text-gray-500 text-center py-4">No reviews yet</p>
+              ) : (
+                reviews.map(r => (
+                  <div key={r.id} className="border p-4 mb-3 rounded bg-white shadow-sm">
+                    <div className="flex flex-col md:flex-row justify-between md:items-start gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <strong className="text-sm md:text-base">{r.user?.name || r.user?.email || 'Anonymous'}</strong>
+                          <span className="text-xs text-gray-500">{new Date(r.date).toLocaleDateString()}</span>
+                        </div>
+                        <p className="text-sm text-gray-700 mb-2">{r.content}</p>
+                        {r.image && (
+                          <img 
+                            src={`${API_URL}${r.image}`} 
+                            alt="Review" 
+                            className="mt-2 max-w-xs rounded border"
+                          />
+                        )}
+                      </div>
+                      {user && user.role === 'admin' && (
+                        <div className="flex gap-2 flex-wrap md:flex-nowrap">
+                          <button 
+                            className="bg-[#B33A3A] text-white hover:bg-[#1f2124] hover:text-white transition px-3 py-1 rounded-3xl text-sm" 
+                            onClick={() => openConfirm('Delete Review', 'Are you sure you want to delete this review?', async () => {
+                              closeConfirm();
+                              try {
+                                const res = await fetch(`${API_URL}/api/reviews/${r.id}`, {
+                                  method: 'DELETE',
+                                  headers: { Authorization: `Bearer ${token}` }
+                                });
+                                if (!res.ok) {
+                                  const err = await res.json();
+                                  return setStatusMessage({ type: 'error', text: err.message || 'Error deleting review' });
+                                }
+                                setReviews(prev => prev.filter(x => x.id !== r.id));
+                                setStatusMessage({ type: 'success', text: 'Review deleted successfully' });
+                              } catch (err) {
+                                console.error(err);
+                                setStatusMessage({ type: 'error', text: 'Error deleting review' });
+                              }
+                            }, true)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}
