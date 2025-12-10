@@ -72,10 +72,18 @@ const options = {
           type: 'object',
           properties: {
             id: { type: 'integer', example: 1 },
-            rating: { type: 'integer', minimum: 1, maximum: 5 },
-            comment: { type: 'string' },
-            userId: { type: 'integer' },
-            projectId: { type: 'integer' },
+            content: { type: 'string', example: 'Great experience volunteering here!' },
+            date: { type: 'string', format: 'date-time' },
+            image: { type: 'string', nullable: true, example: '/images/review-image.jpg' },
+            userId: { type: 'integer', example: 1 },
+            user: {
+              type: 'object',
+              properties: {
+                id: { type: 'integer', example: 1 },
+                name: { type: 'string', example: 'Admin' },
+                email: { type: 'string', format: 'email', example: 'admin@awtc.es' }
+              }
+            },
             createdAt: { type: 'string', format: 'date-time' },
             updatedAt: { type: 'string', format: 'date-time' }
           }
