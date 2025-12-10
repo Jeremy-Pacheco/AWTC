@@ -8,7 +8,7 @@ function Footer() {
 
   const handleContactClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
-    window.location.href = "/AboutUs#contact-section";
+    window.location.href = "/aboutus#contact-section";
   };
   return (
     <footer className="bg-[#fcfcfc] text-gray-800" style={{ boxShadow: '0 -8px 24px rgba(0,0,0,0.06)' }}>
@@ -37,13 +37,13 @@ function Footer() {
               <h3 className="footer-title mb-3">Explore</h3>
               <ul className="space-y-2">
                 <li>
-                  <NavLink to="/Home" className="body-small hover:underline" onClick={handleNavClick}>Home</NavLink>
+                  <NavLink to="/home" className="body-small hover:underline" onClick={handleNavClick}>Home</NavLink>
                 </li>
                 <li>
-                  <NavLink to="/Volunteering" className="body-small hover:underline" onClick={handleNavClick}>Volunteering</NavLink>
+                  <NavLink to="/volunteering" className="body-small hover:underline" onClick={handleNavClick}>Volunteering</NavLink>
                 </li>
                 <li>
-                  <NavLink to="/MoreInfo" className="body-small hover:underline" onClick={handleNavClick}>Info</NavLink>
+                  <NavLink to="/moreinfo" className="body-small hover:underline" onClick={handleNavClick}>Info</NavLink>
                 </li>
               </ul>
             </div>
@@ -52,10 +52,10 @@ function Footer() {
               <h3 className="footer-title mb-3">Company</h3>
               <ul className="space-y-2">
                 <li>
-                  <NavLink to="/AboutUs" className="body-small hover:underline" onClick={handleNavClick}>About Us</NavLink>
+                  <NavLink to="/aboutus" className="body-small hover:underline" onClick={handleNavClick}>About Us</NavLink>
                 </li>
                 <li>
-                  <a href="/AboutUs#contact-section" className="body-small hover:underline" onClick={handleContactClick}>Contact</a>
+                  <a href="/aboutus#contact-section" className="body-small hover:underline" onClick={handleContactClick}>Contact</a>
                 </li>
               </ul>
             </div>
