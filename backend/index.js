@@ -5,6 +5,8 @@ const dotenv = require("dotenv");
 const swaggerUI = require("swagger-ui-express");
 const swaggerSpecs = require("./swagger");
 const { isAdmin } = require('./middlewares/role.middlewares');
+const morgan = require('morgan');
+const logger = require('./utils/logger');
 
 const env = process.env.NODE_ENV || 'development';
 const envPath = path.resolve(__dirname, `.env.${env}`);
@@ -13,6 +15,24 @@ dotenv.config({ path: envPath });
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 const app = express();
+
+// Use morgan to log HTTP requests via winston
+const morganFormat = ":method :url :status :response-time ms";
+app.use(
+  morgan(morganFormat, {
+    stream: {
+      write: (message) => {
+        const logObject = {
+          method: message.split(" ")[0],
+          url: message.split(" ")[1],
+          status: message.split(" ")[2],
+          responseTime: message.split(" ")[3],
+        };
+        logger.info(JSON.stringify(logObject));
+      },
+    },
+  })
+);
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
