@@ -7,6 +7,7 @@ module.exports = {
       content: 'Great experience volunteering here!',
       date: new Date(),
       userId: 1,
+      image: '/images/beach-cleanup.png',
       createdAt: new Date(),
       updatedAt: new Date()
     }], {});
