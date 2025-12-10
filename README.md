@@ -36,7 +36,7 @@ The application is designed to be cross-platform, responsive, and accessible, wi
 ---
 
 ## ✅ Fully Implemented Features
-- **User Management**: Registration, login, profile editing with image upload, password hashing (bcrypt)
+- **User Management**: Registration, login, profile editing with image upload, authentication via OpenLDAP
 - **Project Management**: Full CRUD for projects with categories, descriptions, dates, locations, and images
 - **Project Enrollments**: Users can enroll/volunteer for projects with status tracking (pending, accepted, rejected, completed)
 - **Reviews & Ratings**: Users can leave reviews with images for completed projects
@@ -46,7 +46,7 @@ The application is designed to be cross-platform, responsive, and accessible, wi
 - **Dashboard**: Admin dashboard with statistics and data overview
 - **API Documentation**: Swagger/OpenAPI documentation at `/api-docs`
 - **Session Management**: Express session with secure cookies
-- **Authentication**: JWT and session-based authentication with role middleware
+- **Authentication**: JWT and session-based authentication with OpenLDAP integration
 - **File Uploads**: Multer integration for profile images and project/review images
 
 ---
@@ -78,7 +78,7 @@ The application is designed to be cross-platform, responsive, and accessible, wi
 - **Sequelize** 6.37.7 ORM for MySQL
 - **MySQL2** 3.15.3 database driver
 - **JWT** (jsonwebtoken 9.0.2) for token-based authentication
-- **Bcrypt** 6.0.0 for password hashing
+- **OpenLDAP** & **ldapjs** for authentication
 - **Multer** 2.0.2 for file uploads
 - **Express Session** 1.18.2 for session management
 - **Swagger** (swagger-jsdoc, swagger-ui-express) for API documentation
@@ -97,13 +97,18 @@ The application is designed to be cross-platform, responsive, and accessible, wi
 
 ### Backend Setup
 
-1. Navigate to backend folder:
+1. Start LDAP Service (Docker):
 ```bash
 cd backend
+docker-compose up -d
+```
+
+2. Navigate to backend folder and install dependencies:
+```bash
 npm install
 ```
 
-2. Configure environment and database:
+3. Configure environment and database:
    - Create `.env.development` file in backend folder with:
 ```
 DB_HOST=localhost
@@ -114,24 +119,30 @@ DB_PORT=3306
 NODE_ENV=development
 PORT=8080
 SESSION_SECRET=your_session_secret
+LDAP_URL=ldap://localhost:389
+LDAP_BASE_DN=dc=awtc,dc=com
+LDAP_ADMIN_DN=cn=admin,dc=awtc,dc=com
+LDAP_ADMIN_PASSWORD=<hidden_for_security_reasons>
 ```
    - Update `config/config.json` with your MySQL credentials
 
-3. Run migrations and seeders:
+4. Run migrations and seeders:
 ```bash
 npm run migrate
 npm run seed
+# Sync initial users to LDAP
+node scripts/sync-ldap-users.js
 ```
 
-4. Start the server:
+5. Start the server:
 ```bash
 npm run dev    # Development mode with nodemon
 npm start      # Production mode
 ```
 
-Server runs at: **http://localhost:8080/**
-- API Documentation: http://localhost:8080/api-docs
-- Dashboard: http://localhost:8080/ (requires login)
+Server runs at: **http://209.97.187.131:8080/**
+- API Documentation: http://209.97.187.131:8080/api-docs
+- Dashboard: http://209.97.187.131:8080/ (requires login)
 
 ### Frontend Setup
 
@@ -146,7 +157,7 @@ npm install
 npm run dev
 ```
 
-Frontend runs at: **http://localhost:5173/**
+Frontend runs at: **http://209.97.187.131:5173/**
 
 3. Build for production:
 ```bash
@@ -156,9 +167,9 @@ npm run build
 **Important**: Make sure the backend server is running on port 8080 so the frontend can fetch data from the API.
 
 ### Default Credentials
-After running seeders, an admin user is automatically created:
-- **Email**: admin@awtc.com
-- **Password**: adminawtc1234
+After running seeders and LDAP sync, an admin user is automatically created:
+- **Email**: admin@awtc.es
+- **Password**: (Check with administrator)
 
 ---
 
@@ -308,7 +319,7 @@ AWTC/
 - **Session-based** authentication for EJS views (dashboard)
 - **JWT + Bearer tokens** for API endpoints
 - Role-based access control: `Admin`, `Coordinator`, `Volunteer`
-- Passwords are hashed with bcrypt for security
+- **Authentication is handled by OpenLDAP** (passwords are not stored in MySQL)
 
 ### File Uploads
 - Profile images stored in `backend/public/images/`
@@ -324,7 +335,7 @@ AWTC/
 
 ### CORS Configuration
 - Allowed origins configured in backend/index.js
-- Default: localhost:5173, localhost:8080, and production URLs
+- Default: http://209.97.187.131:5173, http://209.97.187.131:8080, and production URLs
 - Add new URLs if deploying to different servers
 
 ### Backend Scripts

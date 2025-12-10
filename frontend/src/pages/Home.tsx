@@ -37,7 +37,7 @@ function Carousel() {
   const next = () => setCurrent((c) => (c === projects.length - 1 ? 0 : c + 1));
 
   const handleImageClick = (projectId: number) => {
-    navigate(`/Volunteering?project=${projectId}`);
+    navigate(`/volunteering?project=${projectId}`);
   };
 
   if (projects.length === 0) {
@@ -119,7 +119,7 @@ function AboutSection() {
           support, guidance, and a network where everyone can contribute, learn,
           and grow.
         </p>
-        <NavLink to="/AboutUs">
+        <NavLink to="/aboutus">
           <button className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-5 py-2 rounded-3xl font-semibold shadow text-sm md:text-base w-full md:w-auto text-center transition-colors duration-300">
             Read more
           </button>

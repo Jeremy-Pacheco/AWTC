@@ -1,5 +1,5 @@
-const bcrypt = require('bcrypt');
 const { User } = require('../models');
+const ldapUtil = require('../utils/ldap.util');
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
@@ -18,14 +18,16 @@ exports.login = async (req, res) => {
       return res.render('login', { error: 'Email and password are required', email: email || '' });
     }
 
-    const user = await User.findOne({ where: { email } });
-    if (!user) {
+    // Authenticate against LDAP
+    const isAuthenticated = await ldapUtil.authenticate(email, password);
+    if (!isAuthenticated) {
       return res.render('login', { error: 'Invalid credentials', email, frontendUrl: FRONTEND_URL });
     }
 
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-      return res.render('login', { error: 'Invalid credentials', email, frontendUrl: FRONTEND_URL });
+    // Find user in DB to get role and ID
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.render('login', { error: 'User not found in local database', email, frontendUrl: FRONTEND_URL });
     }
 
     // Save user id in session cookie (server-side session)

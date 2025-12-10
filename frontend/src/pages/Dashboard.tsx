@@ -267,7 +267,7 @@ const Dashboard: React.FC = () => {
       localStorage.removeItem('userEmail');
       localStorage.removeItem('userProfileImage');
       setStatusMessage({ type: 'success', text: 'Your account has been deleted' });
-      navigate('/Home');
+      navigate('/home');
     } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: 'Error deleting account' }); }
   };
 

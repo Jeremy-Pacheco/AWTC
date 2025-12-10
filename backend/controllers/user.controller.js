@@ -1,6 +1,6 @@
 const { User } = require("../models");
-const bcrypt = require("bcrypt");
 const utils = require("../utils/utils");
+const ldapUtil = require("../utils/ldap.util");
 
 // Create user (registration)
 exports.createUser = async (req, res) => {
@@ -16,10 +16,17 @@ exports.createUser = async (req, res) => {
       return res.status(400).json({ message: "Email is already registered" });
     }
 
+    // Add to LDAP
+    try {
+      await ldapUtil.addUser(name, email, password);
+    } catch (ldapErr) {
+      console.error("LDAP Error:", ldapErr);
+      return res.status(500).json({ message: "Error creating user in directory" });
+    }
+
     const user = await User.create({
       name,
       email,
-      password,
       role: "volunteer",
     });
 
@@ -51,11 +58,14 @@ exports.login = async (req, res) => {
     );
     const [email, password] = credentials.split(":");
 
-    const user = await User.findOne({ where: { email } });
-    if (!user) return res.status(404).json({ message: "User not found" });
+    // Authenticate with LDAP
+    const isAuthenticated = await ldapUtil.authenticate(email, password);
+    if (!isAuthenticated) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
 
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(401).json({ message: "Invalid credentials" });
+    const user = await User.findOne({ where: { email } });
+    if (!user) return res.status(404).json({ message: "User not found in database" });
 
     const token = utils.generateToken(user);
     const cleanUser = utils.getCleanUser(user);
@@ -81,10 +91,17 @@ exports.createCoordinator = async (req, res) => {
       return res.status(400).json({ message: "Email is already registered" });
     }
 
+    // Add to LDAP
+    try {
+      await ldapUtil.addUser(name, email, password);
+    } catch (ldapErr) {
+      console.error("LDAP Error:", ldapErr);
+      return res.status(500).json({ message: "Error creating user in directory" });
+    }
+
     const user = await User.create({
       name,
       email,
-      password,
       role: "coordinator",
     });
 

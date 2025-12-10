@@ -12,10 +12,6 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       validate: { isEmail: true },
     },
-    password: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     role: {
       type: DataTypes.ENUM('volunteer', 'coordinator', 'admin'),
       defaultValue: 'volunteer',
@@ -26,20 +22,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
     }
   }, {
-    hooks: {
-      beforeCreate: async (user) => {
-        if (user.password) {
-          const saltRounds = 10;
-          user.password = await bcrypt.hash(user.password, saltRounds);
-        }
-      },
-      beforeUpdate: async (user) => {
-        if (user.changed('password')) {
-          const saltRounds = 10;
-          user.password = await bcrypt.hash(user.password, saltRounds);
-        }
-      }
-    }
+    hooks: {}
   });
   User.associate = (models) => {
     User.hasMany(models.Reviews, {

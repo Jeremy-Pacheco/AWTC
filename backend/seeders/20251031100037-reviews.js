@@ -10,7 +10,9 @@ module.exports = {
       image: '/images/beach-cleanup.png',
       createdAt: new Date(),
       updatedAt: new Date()
-    }], {});
+    }], {
+      ignoreDuplicates: true
+    });
   },
 
   async down (queryInterface, Sequelize) {
