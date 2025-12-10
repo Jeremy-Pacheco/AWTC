@@ -6,9 +6,13 @@ module.exports = {
     await queryInterface.bulkInsert('Reviews', [{
       content: 'Great experience volunteering here!',
       date: new Date(),
+      userId: 1,
+      image: '/images/beach-cleanup.png',
       createdAt: new Date(),
       updatedAt: new Date()
-    }], {});
+    }], {
+      ignoreDuplicates: true
+    });
   },
 
   async down (queryInterface, Sequelize) {

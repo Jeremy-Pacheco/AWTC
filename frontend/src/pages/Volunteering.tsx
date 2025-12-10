@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import HeroImage from "../components/HeroImage";
 import AuthModal from "../components/AuthModal";
 import AlertModal from "../components/AlertModal";
+import { useSearchParams } from "react-router-dom";
 
 type Project = {
   id: number;
@@ -22,6 +23,8 @@ const IMAGE_URL = import.meta.env.VITE_IMAGE_URL || 'http://localhost:8080/image
 
 const Volunteering: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [searchParams] = useSearchParams();
+  const projectRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 
   const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -72,7 +75,28 @@ const Volunteering: React.FC = () => {
   useEffect(() => {
     fetch(`${API_URL}/api/projects`)
       .then(res => res.json())
-      .then((data: Project[]) => setProjects(data))
+      .then((data: Project[]) => {
+        setProjects(data);
+        
+        // Scroll to specific project if ID in URL
+        const projectId = searchParams.get("project");
+        if (projectId) {
+          // Clear any category filter to ensure the project is visible
+          setSelectedCategory("");
+          
+          setTimeout(() => {
+            const element = projectRefs.current[Number(projectId)];
+            if (element) {
+              element.scrollIntoView({ behavior: "smooth", block: "center" });
+              // Add highlight effect
+              element.classList.add("ring-4", "ring-yellow-400");
+              setTimeout(() => {
+                element.classList.remove("ring-4", "ring-yellow-400");
+              }, 2000);
+            }
+          }, 300);
+        }
+      })
       .catch(err => console.error("Error fetching projects:", err));
 
     // fetch categories for filter and form
@@ -83,7 +107,7 @@ const Volunteering: React.FC = () => {
 
     // fetch enrolled projects if logged in
     fetchEnrolledProjects();
-  }, []);
+  }, [searchParams]);
 
   const handleEnroll = async (projectId: number) => {
     // Check if user is logged in
@@ -175,7 +199,10 @@ const Volunteering: React.FC = () => {
           {filteredProjects.map(proj => (
             <div
               key={proj.id}
-              className="flex flex-col md:flex-row bg-white rounded p-4 md:p-6 gap-4 shadow-2xl"
+              ref={(el) => {
+                if (el) projectRefs.current[proj.id] = el;
+              }}
+              className="flex flex-col md:flex-row bg-white rounded p-4 md:p-6 gap-4 shadow-2xl transition-all duration-300"
             >
               {proj.filename && (
                 <img
@@ -194,6 +221,7 @@ const Volunteering: React.FC = () => {
                       </span>
                     )}
                   </div>
+                  <p className="text-sm text-gray-600 mb-3">📍 {proj.location}</p>
                   <p className="mb-4">{proj.description}</p>
                 </div>
                 {bannedProjectIds.includes(proj.id) ? (

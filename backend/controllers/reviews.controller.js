@@ -35,7 +35,7 @@ exports.createReview = async (req, res) => {
 exports.getAllReviews = async (req, res) => {
   try {
     const reviews = await Reviews.findAll({
-      include: [{ model: User, as: "user", attributes: ["id", "email"] }],
+      include: [{ model: User, as: "user", attributes: ["id", "email", "name"] }],
       order: [["date", "DESC"]],
     });
     res.status(200).json(reviews);
@@ -89,7 +89,8 @@ exports.deleteReview = async (req, res) => {
 
     if (!review) return res.status(404).json({ message: "Review not found" });
 
-    if (review.userId !== req.user.id) {
+    // Allow admins to delete any review, or users to delete their own
+    if (review.userId !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ message: "No tienes permiso." });
     }
 

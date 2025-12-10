@@ -2,20 +2,51 @@ import React, { useState, useEffect } from "react";
 import AuthModal from "../components/AuthModal";
 import HeroImage from "../components/HeroImage";
 import AlertModal from "../components/AlertModal";
-import logo1 from "../assets/home/medioambiente.png";
-import logo2 from "../assets/home/rd.png";
-import logo3 from "../assets/home/salud.png";
-import logo4 from "../assets/home/charity.png";
-import { NavLink } from "react-router-dom";
+import logo4 from "../../../frontend/public/home/aboutUs-image.png";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
-const images: string[] = [logo1, logo2, logo3];
+const IMAGE_URL = import.meta.env.VITE_IMAGE_URL || "http://localhost:8080/images";
 
 // --- CAROUSEL ---
 function Carousel() {
   const [current, setCurrent] = useState<number>(0);
-  const prev = () => setCurrent((c) => (c === 0 ? images.length - 1 : c - 1));
-  const next = () => setCurrent((c) => (c === images.length - 1 ? 0 : c + 1));
+  const [projects, setProjects] = useState<any[]>([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/projects`)
+      .then((res) => res.json())
+      .then((data: any[]) => {
+        // Take exactly 3 projects with images
+        const projectsWithImages = data.filter((p) => p.filename).slice(0, 3);
+
+        // Only show carousel if we have at least 3 projects
+        if (projectsWithImages.length >= 3) {
+          setProjects(projectsWithImages);
+        } else {
+          setProjects([]);
+        }
+      })
+      .catch((err) =>
+        console.error("Error fetching projects for carousel:", err)
+      );
+  }, []);
+
+  const prev = () => setCurrent((c) => (c === 0 ? projects.length - 1 : c - 1));
+  const next = () => setCurrent((c) => (c === projects.length - 1 ? 0 : c + 1));
+
+  const handleImageClick = (projectId: number) => {
+    navigate(`/volunteering?project=${projectId}`);
+  };
+
+  if (projects.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-400">
+        Not enough projects available for carousel
+      </div>
+    );
+  }
 
   return (
     <div className="flex justify-center items-center my-4 md:my-8 space-x-2 md:space-x-4 px-2">
@@ -27,19 +58,38 @@ function Carousel() {
       </button>
       <div className="flex space-x-3 md:space-x-6 items-center justify-center overflow-hidden">
         <img
-          src={images[(current - 1 + images.length) % images.length]}
-          className="hidden sm:block w-20 md:w-32 h-28 md:h-44 object-cover rounded opacity-50"
-          alt=""
+          src={`${
+            IMAGE_URL
+          }/${projects[(current - 1 + projects.length) % projects.length].filename}`}
+          className="hidden sm:block w-24 md:w-40 h-32 md:h-52 object-cover rounded opacity-50 cursor-pointer hover:opacity-70 transition-opacity"
+          alt={
+            projects[(current - 1 + projects.length) % projects.length].name
+          }
+          onClick={() =>
+            handleImageClick(
+              projects[(current - 1 + projects.length) % projects.length].id
+            )
+          }
         />
         <img
-          src={images[current]}
-          className="w-48 md:w-80 h-36 md:h-64 object-cover rounded shadow-lg shrink-0"
-          alt=""
+          src={`${IMAGE_URL}/${projects[current].filename}`}
+          className="w-56 md:w-96 h-40 md:h-72 object-cover rounded shadow-lg shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
+          alt={projects[current].name}
+          onClick={() => handleImageClick(projects[current].id)}
         />
         <img
-          src={images[(current + 1) % images.length]}
-          className="hidden sm:block w-20 md:w-32 h-28 md:h-44 object-cover rounded opacity-50"
-          alt=""
+          src={`${
+            IMAGE_URL
+          }/${projects[(current + 1) % projects.length].filename}`}
+          className="hidden sm:block w-24 md:w-40 h-32 md:h-52 object-cover rounded opacity-50 cursor-pointer hover:opacity-70 transition-opacity"
+          alt={
+            projects[(current + 1) % projects.length].name
+          }
+          onClick={() =>
+            handleImageClick(
+              projects[(current + 1) % projects.length].id
+            )
+          }
         />
       </div>
       <button
@@ -61,15 +111,15 @@ function AboutSection() {
         alt="Volunteers"
         className="w-full md:w-auto md:max-w-sm h-auto rounded"
       />
-      <div className="flex-1 pl-0 md:pl-8 mt-4 md:mt-0">
-        <p>
+      <div >
+        <p className="mb-6 md:mb-4 text-gray-700">
           Our mission is to make joining social and environmental projects
           simple, safe, and meaningful, connecting volunteers with opportunities
           that create real impact and strengthen communities. We provide
           support, guidance, and a network where everyone can contribute, learn,
           and grow.
         </p>
-        <NavLink to="/AboutUs">
+        <NavLink to="/aboutus">
           <button className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-5 py-2 rounded-3xl font-semibold shadow text-sm md:text-base w-full md:w-auto text-center transition-colors duration-300">
             Read more
           </button>
@@ -109,18 +159,15 @@ function ReviewsSection({
   const [editSelectedFile, setEditSelectedFile] = useState<File | null>(null);
   const [editRemoveImage, setEditRemoveImage] = useState(false);
 
-  // Alert modal state
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
 
-  // Auth reactivo
   const [token, setToken] = useState<string | null>(() =>
     localStorage.getItem("jwtToken")
   );
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const isLoggedIn = !!token;
 
-  // Escuchar cambios de autenticación
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
       if (e.key === "jwtToken") {
@@ -141,7 +188,6 @@ function ReviewsSection({
     };
   }, []);
 
-  // Decodificar token
   useEffect(() => {
     if (!token) {
       setCurrentUserId(null);
@@ -163,7 +209,12 @@ function ReviewsSection({
         return res.json();
       })
       .then((data) => {
-        if (Array.isArray(data)) setReviews(data);
+        if (Array.isArray(data)) {
+          const validReviews = data.filter(
+            (review) => review.user && (review.user.name || review.user.email)
+          );
+          setReviews(validReviews);
+        }
       })
       .catch((err) => console.error(err));
   }, [refreshTrigger]);
@@ -218,7 +269,6 @@ function ReviewsSection({
   const saveEdit = async (id: number) => {
     try {
       let res;
-      // Si hay archivo nuevo o se solicita quitar imagen, usar FormData
       if (editSelectedFile || editRemoveImage) {
         const formData = new FormData();
         formData.append("content", editContent);
@@ -231,7 +281,6 @@ function ReviewsSection({
           body: formData,
         });
       } else {
-        // Solo texto -> JSON
         res = await fetch(`${API_BASE_URL}/api/reviews/${id}`, {
           method: "PUT",
           headers: {
@@ -270,14 +319,13 @@ function ReviewsSection({
   const getUserDisplayName = (user?: { email?: string; name?: string }) => {
     if (user?.name) return user.name;
     if (user?.email) return user.email.split("@")[0];
-    return "Anonymous";
+    return "User";
   };
 
   return (
     <>
       <section className="my-12 px-4 md:px-0">
       <div className="flex flex-col md:flex-row gap-8 items-start">
-        {/* --- LISTA DE RESEÑAS --- */}
         <div className="flex-1 w-full">
           <div className="flex justify-between items-baseline mb-6 border-b pb-2">
             <h5 className="text-xl font-bold text-gray-800">Reviews</h5>
@@ -356,7 +404,6 @@ function ReviewsSection({
                         className="w-full border border-gray-200 p-3 rounded-xl text-sm focus:ring-2 focus:ring-yellow-400 outline-none resize-none bg-gray-50"
                       />
 
-                      {/* Preview imagen actual (si existe y no se marca para eliminar) */}
                       {review.image && !editRemoveImage && !editSelectedFile && (
                         <div className="mt-3 mb-2">
                           <img
@@ -367,7 +414,6 @@ function ReviewsSection({
                         </div>
                       )}
 
-                      {/* Preview imagen nueva seleccionada */}
                       {editSelectedFile && (
                         <div className="mt-3 mb-2">
                           <img
@@ -468,17 +514,10 @@ function ReviewsSection({
           </div>
         </div>
 
-        {/* --- PANEL LATERAL --- */}
         <div className="md:w-1/4 flex flex-col items-center sticky top-8">
           {isLoggedIn ? (
             <div className="w-full bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
               <div className="mb-4">
-                <p className="text-sm text-gray-500">Logged in as</p>
-                <p className="font-semibold text-gray-900 truncate px-2 capitalize">
-                  {getUserDisplayName({
-                    name: localStorage.getItem("userName") || "",
-                  })}
-                </p>
               </div>
 
               <button
@@ -632,12 +671,12 @@ function Home() {
       />
 
       <main className="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12">
-        <h3>Newest Projects</h3>
-        <h4>Discover volunteer projects and make an impact.</h4>
+        <h2 className="text-3xl font-bold">Newest Projects</h2>
+        <p className="text-lg text-gray-600">Discover volunteer projects and make an impact.</p>
         <Carousel />
 
-        <h3>About Us</h3>
-        <h4>At our platform, we believe that everyone can make a difference</h4>
+        <h2 className="text-3xl font-bold">About Us</h2>
+        <p className="text-lg text-gray-600">At our platform, we believe that everyone can make a difference</p>
         <AboutSection />
         <ReviewsSection
           onOpenSignup={handleOpenSignup}

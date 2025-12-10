@@ -69,14 +69,14 @@ function NavBar() {
   return (
     <nav className="bg-white shadow-md relative z-30">
       <div className="mx-auto px-4 flex justify-between items-center h-16">
-        <NavLink to="/Home" className="flex items-center">
+        <NavLink to="/home" className="flex items-center">
           <img src={Logo} alt="Logo AWTC" className="h-10 w-10 mr-2" />
         </NavLink>
 
         {/* desktop/tablet */}
         <div className="hidden md:flex items-center space-x-4">
           <NavLink
-  to="/Home"
+  to="/home"
   className={({ isActive }) =>
     `text-gray-800 transition-all duration-200 ${isActive ? "font-bold" : ""}`
   }
@@ -85,7 +85,7 @@ function NavBar() {
 </NavLink>
 
 <NavLink
-  to="/Volunteering"
+  to="/volunteering"
   className={({ isActive }) =>
     `text-gray-800 transition-all duration-200 ${isActive ? "font-bold" : ""}`
   }
@@ -94,7 +94,7 @@ function NavBar() {
 </NavLink>
 
 <NavLink
-  to="/MoreInfo"
+  to="/moreinfo"
   className={({ isActive }) =>
     `text-gray-800 transition-all duration-200 ${isActive ? "font-bold" : ""}`
   }
@@ -103,7 +103,7 @@ function NavBar() {
 </NavLink>
 
 <NavLink
-  to="/AboutUs"
+  to="/aboutus"
   className={({ isActive }) =>
     `text-gray-800 transition-all duration-200 ${isActive ? "font-bold" : ""}`
   }
@@ -157,30 +157,96 @@ function NavBar() {
       </div>
 
       {/* Drawer phone */}
+      {/* Overlay */}
+      {menuOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={() => setMenuOpen(false)}
+        ></div>
+      )}
+
       <div
-        className={`fixed top-0 right-0 h-full w-2/3 max-w-xs bg-white shadow-lg z-30
+        className={`fixed inset-0 bg-white z-50
         transform transition-transform duration-300 ease-in-out
         ${menuOpen ? "translate-x-0" : "translate-x-full"}
-        flex flex-col p-8 pt-24`}
+        flex flex-col p-6 pt-20 space-y-6 overflow-y-auto`}
       >
         <button
-          className="absolute top-6 right-6 text-2xl"
+          className="absolute top-5 right-5 text-gray-600 hover:text-black transition-colors"
           onClick={() => setMenuOpen(false)}
           aria-label="Close menu"
         >
-          ✕
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
-        <NavLink to="/Home" onClick={() => setMenuOpen(false)}>Home</NavLink>
-        <NavLink to="/Volunteering" onClick={() => setMenuOpen(false)}>Volunteering</NavLink>
-        <NavLink to="/Reviews" onClick={() => setMenuOpen(false)}>Reviews</NavLink>
-        <NavLink to="/MoreInfo" onClick={() => setMenuOpen(false)}>Info</NavLink>
-        <NavLink to="/AboutUs" onClick={() => setMenuOpen(false)}>About Us</NavLink>
-        {isLoggedIn && (
-          <>
-            <button onClick={() => {navigate("/dashboard"); setMenuOpen(false)}} className="mt-4 text-left bg-[#F0BB00] text-black px-2 py-1 rounded">Profile</button>
-            <button onClick={() => {handleLogout(); setMenuOpen(false)}} className="mt-2 text-left bg-[#B33A3A] text-white px-2 py-1 rounded hover:bg-[#992F2F]">Log Out</button>
-          </>
-        )}
+
+        <div className="flex flex-col space-y-4">
+          <NavLink 
+            to="/home" 
+            onClick={() => setMenuOpen(false)}
+            className={({ isActive }) => `text-lg font-medium transition-colors ${isActive ? "text-[#F0BB00]" : "text-gray-800 hover:text-[#F0BB00]"}`}
+          >
+            Home
+          </NavLink>
+          <NavLink 
+            to="/volunteering" 
+            onClick={() => setMenuOpen(false)}
+            className={({ isActive }) => `text-lg font-medium transition-colors ${isActive ? "text-[#F0BB00]" : "text-gray-800 hover:text-[#F0BB00]"}`}
+          >
+            Volunteering
+          </NavLink>
+          <NavLink 
+            to="/moreinfo" 
+            onClick={() => setMenuOpen(false)}
+            className={({ isActive }) => `text-lg font-medium transition-colors ${isActive ? "text-[#F0BB00]" : "text-gray-800 hover:text-[#F0BB00]"}`}
+          >
+            Info
+          </NavLink>
+          <NavLink 
+            to="/aboutus" 
+            onClick={() => setMenuOpen(false)}
+            className={({ isActive }) => `text-lg font-medium transition-colors ${isActive ? "text-[#F0BB00]" : "text-gray-800 hover:text-[#F0BB00]"}`}
+          >
+            About Us
+          </NavLink>
+        </div>
+
+        <div className="h-px bg-gray-200 w-full my-4"></div>
+
+        <div className="flex flex-col space-y-3">
+          {isLoggedIn ? (
+            <>
+              <button 
+                onClick={() => {navigate("/dashboard"); setMenuOpen(false)}} 
+                className="w-full px-4 py-2 rounded-3xl border border-[#767676] text-center hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
+              >
+                Profile
+              </button>
+              <button 
+                onClick={() => {handleLogout(); setMenuOpen(false)}} 
+                className="w-full px-4 py-2 rounded-3xl bg-[#B33A3A] text-white text-center hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
+              >
+                Log Out
+              </button>
+            </>
+          ) : (
+            <>
+              <button 
+                onClick={() => {openAuth("login"); setMenuOpen(false)}} 
+                className="w-full px-4 py-2 rounded-3xl border border-[#767676] text-center hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
+              >
+                Log In
+              </button>
+              <button 
+                onClick={() => {openAuth("signup"); setMenuOpen(false)}} 
+                className="w-full px-4 py-2 rounded-3xl bg-[#F0BB00] text-black text-center hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
+              >
+                Sign Up
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Popup Auth */}
