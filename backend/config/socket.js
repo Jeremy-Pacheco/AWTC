@@ -1,5 +1,6 @@
 const socketIO = require('socket.io');
 const db = require('../models');
+const { sendNotificationToUser } = require('../controllers/subscription.controller');
 
 let io;
 
@@ -111,8 +112,32 @@ function initializeSocketIO(server) {
 
         // Emit to receiver if connected
         const receiverSocketId = userSockets.get(parseInt(receiverId));
+        const isReceiverOnline = !!receiverSocketId;
+        
         if (receiverSocketId) {
           io.to(receiverSocketId).emit('receive_message', fullMessage);
+        }
+
+        // Send push notification if receiver is not connected
+        // or if they are connected but might not be on messages page
+        if (!isReceiverOnline) {
+          try {
+            // Send push notification to receiver
+            await sendNotificationToUser(parseInt(receiverId), {
+              title: `New message from ${socket.userName}`,
+              body: content.length > 100 ? content.substring(0, 100) + '...' : content,
+              icon: '/logo.png',
+              tag: `message-${message.id}`,
+              data: {
+                url: '/messages',
+                messageId: message.id,
+                senderId: socket.userId
+              }
+            });
+            console.log(`Push notification sent to user ${receiverId}`);
+          } catch (error) {
+            console.error('Error sending push notification:', error);
+          }
         }
 
         console.log(`Message from ${socket.userName} to user ${receiverId}: ${content.substring(0, 50)}...`);
