@@ -17,10 +17,21 @@ webPush.setVapidDetails(
 const subscribe = async (req, res) => {
   try {
     const { endpoint, expirationTime, keys } = req.body;
-    const userId = req.user.id; // From auth middleware
+    
+    // Check if user is authenticated
+    if (!req.user || !req.user.id) {
+      console.error('Subscribe error: User not authenticated', req.user);
+      return res.status(401).json({
+        message: 'User not authenticated'
+      });
+    }
+    
+    const userId = req.user.id;
+    console.log('Subscribing user:', userId, 'to endpoint:', endpoint?.substring(0, 50) + '...');
 
     // Validate required fields
     if (!endpoint || !keys || !keys.p256dh || !keys.auth) {
+      console.error('Subscribe error: Missing fields', { endpoint: !!endpoint, keys: !!keys });
       return res.status(400).json({
         message: 'Missing required subscription fields'
       });
@@ -139,10 +150,14 @@ const getUserSubscriptions = async (req, res) => {
  */
 const sendNotificationToUser = async (userId, payload) => {
   try {
+    console.log(`📬 Sending notification to user ${userId}:`, payload);
+    
     // Find all subscriptions for the user
     const subscriptions = await Subscription.findAll({
       where: { userId }
     });
+
+    console.log(`   Found ${subscriptions.length} subscription(s) for user ${userId}`);
 
     if (subscriptions.length === 0) {
       return {
@@ -170,25 +185,29 @@ const sendNotificationToUser = async (userId, payload) => {
           JSON.stringify(payload)
         );
 
+        console.log(`   ✅ Notification sent successfully to endpoint: ${subscription.endpoint.substring(0, 50)}...`);
         results.sent++;
       } catch (error) {
-        console.error('Error sending notification to endpoint:', error);
+        console.error(`   ❌ Error sending notification to endpoint:`, error.message);
         results.failed++;
         results.errors.push(error.message);
 
         // If subscription is invalid (410 Gone), delete it
         if (error.statusCode === 410) {
+          console.log(`   🗑️  Deleting invalid subscription (410 Gone)`);
           await subscription.destroy();
         }
       }
     }
+
+    console.log(`   📊 Results: ${results.sent} sent, ${results.failed} failed`);
 
     return {
       success: results.sent > 0,
       ...results
     };
   } catch (error) {
-    console.error('Error in sendNotificationToUser:', error);
+    console.error('❌ Error in sendNotificationToUser:', error);
     return {
       success: false,
       message: error.message
@@ -201,47 +220,9 @@ const sendNotificationToUser = async (userId, payload) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-const testNotification = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const { title, body, icon, tag } = req.body;
-
-    const payload = {
-      title: title || 'Test Notification',
-      body: body || 'This is a test notification from AWTC',
-      icon: icon || '/logo.png',
-      tag: tag || 'test-notification',
-      data: {
-        url: '/messages'
-      }
-    };
-
-    const result = await sendNotificationToUser(userId, payload);
-
-    if (result.success) {
-      res.status(200).json({
-        message: 'Test notification sent successfully',
-        ...result
-      });
-    } else {
-      res.status(400).json({
-        message: 'Failed to send test notification',
-        ...result
-      });
-    }
-  } catch (error) {
-    console.error('Error sending test notification:', error);
-    res.status(500).json({
-      message: 'Error sending test notification',
-      error: error.message
-    });
-  }
-};
-
 module.exports = {
   subscribe,
   unsubscribe,
   getUserSubscriptions,
-  sendNotificationToUser,
-  testNotification
+  sendNotificationToUser
 };

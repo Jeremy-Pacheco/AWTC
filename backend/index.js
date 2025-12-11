@@ -57,9 +57,10 @@ app.use(cors({
       callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: false,
-  optionsSuccessStatus: 200
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204
 }));
 
 app.use(express.json());
@@ -376,37 +377,57 @@ if (USE_HTTPS) {
       cert: fs.readFileSync(sslCertPath)
     };
     
-    server = https.createServer(httpsOptions, app);
+    // Create HTTPS server
+    const httpsServer = https.createServer(httpsOptions, app);
     
-    // Also create HTTP server to redirect to HTTPS
-    const httpApp = express();
-    httpApp.use((req, res) => {
-      res.redirect(301, `https://${req.headers.host.replace(PORT, HTTPS_PORT)}${req.url}`);
-    });
-    const httpServer = http.createServer(httpApp);
+    // Create HTTP server (without redirect, serve the app directly)
+    const httpServer = http.createServer(app);
+    
+    // Initialize Socket.IO on HTTPS server (primary)
+    const { initializeSocketIO } = require('./config/socket');
+    initializeSocketIO(httpsServer);
+    
+    // Start both servers
     httpServer.listen(PORT, () => {
-      console.log(`HTTP server running on port ${PORT} (redirecting to HTTPS)`);
+      console.log(`🌐 HTTP server running on http://localhost:${PORT}`);
     });
     
-    console.log('🔐 HTTPS mode enabled');
+    httpsServer.listen(HTTPS_PORT, () => {
+      console.log(`🔐 HTTPS server running on https://localhost:${HTTPS_PORT}`);
+      console.log(`📚 Swagger docs available at https://localhost:${HTTPS_PORT}/api-docs`);
+      console.log(`💬 WebSocket server initialized for messaging`);
+    });
+    
+    console.log('✅ Dual mode: Both HTTP and HTTPS servers running');
+    console.log('   - HTTP (for push notifications): http://localhost:8080');
+    console.log('   - HTTPS (for secure features): https://localhost:8443');
+    
   } else {
     console.warn('⚠️  SSL certificates not found. Run: node scripts/generate-ssl-cert.js');
     console.warn('   Falling back to HTTP mode...');
+    
     server = http.createServer(app);
+    
+    // Initialize Socket.IO
+    const { initializeSocketIO } = require('./config/socket');
+    initializeSocketIO(server);
+    
+    server.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+      console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
+      console.log(`WebSocket server initialized for messaging`);
+    });
   }
 } else {
   server = http.createServer(app);
+  
+  // Initialize Socket.IO
+  const { initializeSocketIO } = require('./config/socket');
+  initializeSocketIO(server);
+  
+  server.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
+    console.log(`WebSocket server initialized for messaging`);
+  });
 }
-
-// Initialize Socket.IO
-const { initializeSocketIO } = require('./config/socket');
-initializeSocketIO(server);
-
-const serverPort = USE_HTTPS && fs.existsSync(path.join(__dirname, 'ssl', 'key.pem')) ? HTTPS_PORT : PORT;
-const protocol = USE_HTTPS && fs.existsSync(path.join(__dirname, 'ssl', 'key.pem')) ? 'https' : 'http';
-
-server.listen(serverPort, () => {
-  console.log(`Server running on ${protocol}://localhost:${serverPort}`);
-  console.log(`Swagger docs available at ${protocol}://localhost:${serverPort}/api-docs`);
-  console.log(`WebSocket server initialized for messaging`);
-});

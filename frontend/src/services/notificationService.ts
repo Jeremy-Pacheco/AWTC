@@ -54,15 +54,29 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
     return 'denied';
   }
 
+  // Check if we're in a secure context (required for Edge and some browsers)
+  if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+    console.warn('Notifications require HTTPS');
+    return 'denied';
+  }
+
   if (Notification.permission === 'granted') {
     return 'granted';
   }
 
   if (Notification.permission !== 'denied') {
-    const permission = await Notification.requestPermission();
-    return permission;
+    try {
+      // Use the Promise-based API (better for Edge compatibility)
+      const permission = await Notification.requestPermission();
+      console.log('Notification permission result:', permission);
+      return permission;
+    } catch (error) {
+      console.error('Error requesting notification permission:', error);
+      return 'denied';
+    }
   }
 
+  console.warn('Notification permission was previously denied');
   return Notification.permission;
 }
 
@@ -75,10 +89,24 @@ async function registerServiceWorker(): Promise<ServiceWorkerRegistration> {
     throw new Error('Service workers not supported');
   }
 
+  // Check for secure context
+  if (!window.isSecureContext) {
+    throw new Error('Service workers require a secure context (HTTPS)');
+  }
+
   try {
+    // Check if service worker is already registered
+    const existingRegistration = await navigator.serviceWorker.getRegistration('/');
+    if (existingRegistration) {
+      console.log('Service Worker already registered:', existingRegistration);
+      await navigator.serviceWorker.ready;
+      return existingRegistration;
+    }
+
     // Register the service worker
     const registration = await navigator.serviceWorker.register('/sw.js', {
-      scope: '/'
+      scope: '/',
+      type: 'classic' // Use classic for better compatibility
     });
 
     console.log('Service Worker registered successfully:', registration);
@@ -127,14 +155,25 @@ export async function subscribeUserToPush(token: string): Promise<PushSubscripti
       console.log('Already subscribed to push notifications');
       // Still send to server in case it's not stored there
     } else {
-      // Subscribe to push notifications
-      const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
-      subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey
-      });
+      try {
+        // Subscribe to push notifications
+        const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey
+        });
 
-      console.log('New push subscription created');
+        console.log('New push subscription created');
+      } catch (pushError: any) {
+        // Handle specific push subscription errors
+        if (pushError.name === 'AbortError' || pushError.message?.includes('push service error')) {
+          console.warn('⚠️ Push subscription failed - this is common with self-signed certificates');
+          console.warn('Push notifications will work in production with valid SSL certificates');
+          console.warn('For now, notifications are disabled in development');
+          return null;
+        }
+        throw pushError; // Re-throw other errors
+      }
     }
 
     // Send subscription to backend
