@@ -167,6 +167,7 @@ const userRoutes = require("./routes/user.routes");
 const contactRoutes = require("./routes/contact.routes");
 const sessionRoutes = require("./routes/session.routes");
 const externalRoutes = require("./routes/external.routes");
+const messageRoutes = require("./routes/message.routes");
 
 app.use("/api/projects", projectRoutes);
 app.use("/api/reviews", reviewRoutes);
@@ -174,6 +175,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/contacts", contactRoutes);
 app.use("/api/external", externalRoutes);
+app.use("/api/messages", messageRoutes);
 app.use('/', sessionRoutes);
 
 // Simple EJS dashboard routes (demo)
@@ -346,7 +348,16 @@ app.use((req, res, next) => {
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
+
+// Create HTTP server and initialize Socket.IO
+const http = require('http');
+const server = http.createServer(app);
+const { initializeSocketIO } = require('./config/socket');
+
+initializeSocketIO(server);
+
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
+  console.log(`WebSocket server initialized for messaging`);
 });

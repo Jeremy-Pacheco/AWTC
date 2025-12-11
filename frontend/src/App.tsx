@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import NavBar from "./components/NavBar";
 import Footer from "./components/Footer";
+import FloatingMessageButton from "./components/FloatingMessageButton";
 import Home from "./pages/Home";
 import Volunteering from "./pages/Volunteering";
 import MoreInfo from "./pages/MoreInfo";
@@ -8,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import AboutUs from "./pages/AboutUs";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import Messages from "./pages/Messages";
 
 //TODO: Import other pages when you have them
 function App() {
@@ -23,8 +25,10 @@ function App() {
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/messages" element={<Messages />} />
       </Routes>
       <Footer />
+      <FloatingMessageButton />
     </BrowserRouter>
   );
 }

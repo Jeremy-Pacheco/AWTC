@@ -10,21 +10,25 @@ function NavBar() {
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     // Initialize
     setIsLoggedIn(!!localStorage.getItem("jwtToken"));
+    setUserRole(localStorage.getItem("userRole"));
 
     const onStorage = (e: StorageEvent) => {
-      if (e.key === "jwtToken" || e.key === "__auth_last_update") {
+      if (e.key === "jwtToken" || e.key === "__auth_last_update" || e.key === "userRole") {
         setIsLoggedIn(!!localStorage.getItem("jwtToken"));
+        setUserRole(localStorage.getItem("userRole"));
       }
     };
 
     const onAuthChanged = () => {
       setIsLoggedIn(!!localStorage.getItem("jwtToken"));
+      setUserRole(localStorage.getItem("userRole"));
     };
 
     window.addEventListener("storage", onStorage);
@@ -58,6 +62,7 @@ function NavBar() {
     localStorage.removeItem("userName");
     localStorage.removeItem("userRole");
     setIsLoggedIn(false);
+    setUserRole(null);
 
     // Notify other components
     window.dispatchEvent(new CustomEvent("authChanged", { detail: { loggedIn: false } }));
