@@ -16,30 +16,32 @@ const requireMessagingRole = (req, res, next) => {
   next();
 };
 
-// All routes require authentication and appropriate role
+// All routes require authentication
 router.use(requireAuth);
-router.use(requireMessagingRole);
 
 /**
  * @route POST /api/subscriptions/subscribe
  * @desc Subscribe user to push notifications
- * @access Private (Admin/Coordinator only)
+ * @access Private (All authenticated users)
  */
 router.post('/subscribe', subscriptionController.subscribe);
 
 /**
  * @route POST /api/subscriptions/unsubscribe
  * @desc Unsubscribe user from push notifications
- * @access Private (Admin/Coordinator only)
+ * @access Private (All authenticated users)
  */
 router.post('/unsubscribe', subscriptionController.unsubscribe);
 
 /**
  * @route GET /api/subscriptions
  * @desc Get current user's subscriptions
- * @access Private (Admin/Coordinator only)
+ * @access Private (All authenticated users)
  */
 router.get('/', subscriptionController.getUserSubscriptions);
+
+// Routes requiring admin/coordinator role
+router.use(requireMessagingRole);
 
 /**
  * @route POST /api/subscriptions/test
