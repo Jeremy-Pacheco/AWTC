@@ -22,8 +22,7 @@ module.exports = {
       },
       endpoint: {
         type: Sequelize.TEXT,
-        allowNull: false,
-        unique: true
+        allowNull: false
       },
       expirationTime: {
         type: Sequelize.BIGINT,
@@ -47,6 +46,13 @@ module.exports = {
 
     // Add index on userId for faster queries
     await queryInterface.addIndex('Subscriptions', ['userId']);
+    
+    // Add unique constraint on endpoint with specified length for TEXT column
+    await queryInterface.addIndex('Subscriptions', {
+      fields: [{ attribute: 'endpoint', length: 500 }],
+      unique: true,
+      name: 'subscriptions_endpoint_unique'
+    });
   },
 
   async down(queryInterface, Sequelize) {
