@@ -41,8 +41,13 @@ app.use(cors({
     const allowedOrigins = [
       "http://localhost:5173",
       "http://localhost:8080",
+      "https://localhost:5173",
+      "https://localhost:8443",
       "http://209.97.187.131:5173",
-      "http://209.97.187.131:8080"
+      "http://209.97.187.131:8080",
+      "https://209.97.187.131",
+      "https://awtc.com",
+      "https://www.awtc.com"
     ];
 
     if (!origin || allowedOrigins.includes(origin)) {
@@ -350,16 +355,58 @@ app.use((req, res, next) => {
 });
 
 const PORT = process.env.PORT || 8080;
+const HTTPS_PORT = process.env.HTTPS_PORT || 8443;
+const USE_HTTPS = process.env.USE_HTTPS === 'true';
 
-// Create HTTP server and initialize Socket.IO
+// Create HTTP or HTTPS server
 const http = require('http');
-const server = http.createServer(app);
-const { initializeSocketIO } = require('./config/socket');
+const https = require('https');
+const fs = require('fs');
 
+let server;
+
+if (USE_HTTPS) {
+  // Try to load SSL certificates
+  const sslKeyPath = path.join(__dirname, 'ssl', 'key.pem');
+  const sslCertPath = path.join(__dirname, 'ssl', 'cert.pem');
+  
+  if (fs.existsSync(sslKeyPath) && fs.existsSync(sslCertPath)) {
+    const httpsOptions = {
+      key: fs.readFileSync(sslKeyPath),
+      cert: fs.readFileSync(sslCertPath)
+    };
+    
+    server = https.createServer(httpsOptions, app);
+    
+    // Also create HTTP server to redirect to HTTPS
+    const httpApp = express();
+    httpApp.use((req, res) => {
+      res.redirect(301, `https://${req.headers.host.replace(PORT, HTTPS_PORT)}${req.url}`);
+    });
+    const httpServer = http.createServer(httpApp);
+    httpServer.listen(PORT, () => {
+      console.log(`HTTP server running on port ${PORT} (redirecting to HTTPS)`);
+    });
+    
+    console.log('🔐 HTTPS mode enabled');
+  } else {
+    console.warn('⚠️  SSL certificates not found. Run: node scripts/generate-ssl-cert.js');
+    console.warn('   Falling back to HTTP mode...');
+    server = http.createServer(app);
+  }
+} else {
+  server = http.createServer(app);
+}
+
+// Initialize Socket.IO
+const { initializeSocketIO } = require('./config/socket');
 initializeSocketIO(server);
 
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
+const serverPort = USE_HTTPS && fs.existsSync(path.join(__dirname, 'ssl', 'key.pem')) ? HTTPS_PORT : PORT;
+const protocol = USE_HTTPS && fs.existsSync(path.join(__dirname, 'ssl', 'key.pem')) ? 'https' : 'http';
+
+server.listen(serverPort, () => {
+  console.log(`Server running on ${protocol}://localhost:${serverPort}`);
+  console.log(`Swagger docs available at ${protocol}://localhost:${serverPort}/api-docs`);
   console.log(`WebSocket server initialized for messaging`);
 });

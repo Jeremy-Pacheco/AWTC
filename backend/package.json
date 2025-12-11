@@ -12,7 +12,8 @@
     "start:prod": "cross-env NODE_ENV=production node index.js",
     "dev": "nodemon index.js",
     "dns": "node dns-server/dns-server.js",
-    "dns:prod": "cross-env DNS_PORT=53 node dns-server/dns-server.js"
+    "dns:prod": "cross-env DNS_PORT=53 node dns-server/dns-server.js",
+    "generate-ssl": "node scripts/generate-ssl-cert.js"
   },
   "author": "",
   "license": "ISC",
