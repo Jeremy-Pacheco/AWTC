@@ -2,6 +2,7 @@ const { Project } = require('../models');
 const db = require('../models');
 const { User } = db;
 const logger = require('../utils/logger');
+const { sendNotificationToUser } = require('./subscription.controller');
 
 // Create a new project
 exports.createProject = async (req, res) => {
@@ -70,7 +71,69 @@ exports.updateProject = async (req, res) => {
       updateData.filename = req.file.filename;
     }
 
+    // Capture old status before update
+    const oldStatus = project.status;
+    logger.info(`Updating project ${project.id}. Old status: ${oldStatus}, New status candidate: ${status}`);
+
     await project.update(updateData);
+
+    // Check if status changed to active, cancelled, or finished and send push notifications
+    if (status && status !== oldStatus && ['active', 'cancelled', 'finished'].includes(status)) {
+      logger.info(`Status change detected for project ${project.id}. Checking for enrolled users...`);
+      try {
+        // Find all users enrolled in this project
+        const userProjects = await db.UserProject.findAll({
+          where: { 
+            projectId: project.id,
+            status: 'accepted'
+          }
+        });
+
+        const userIds = userProjects.map(up => up.userId);
+        logger.info(`Found ${userIds.length} enrolled users: ${userIds.join(', ')}`);
+
+        if (userIds.length > 0) {
+          const notificationPayload = {
+            title: 'Project Status Update',
+            body: `The project "${project.name}" is now ${status}.`,
+            icon: '/images/logo.png',
+            // Unique tag to ensure notifications stack
+            tag: `project-${project.id}-${Date.now()}`,
+            data: {
+              url: `/projects/${project.id}`
+            }
+          };
+
+          logger.info(`Sending notification payload: ${JSON.stringify(notificationPayload)}`);
+
+          // Send notifications to all enrolled users
+          const notificationPromises = userIds.map(userId => 
+            sendNotificationToUser(userId, notificationPayload)
+          );
+
+          const results = await Promise.allSettled(notificationPromises);
+          const sentCount = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
+          const failedCount = results.filter(r => r.status === 'fulfilled' && !r.value.success).length;
+          
+          logger.info(`Notifications sent: ${sentCount}, Failed: ${failedCount}`);
+          
+          if (failedCount > 0) {
+             const errors = results
+                .filter(r => r.status === 'fulfilled' && !r.value.success)
+                .map(r => r.value.message);
+             logger.error(`Notification errors: ${JSON.stringify(errors)}`);
+          }
+        } else {
+          logger.info('No users enrolled in this project to notify.');
+        }
+      } catch (notifyError) {
+        logger.error(`Error sending push notifications: ${notifyError.message}`);
+        console.error(notifyError);
+      }
+    } else {
+      logger.info('No notification sent. Conditions not met (status change or target status).');
+    }
+
     // Return updated project with category
     const updated = await Project.findByPk(project.id, { include: [{ model: db.Category, as: 'category' }] });
     res.status(200).json(updated);

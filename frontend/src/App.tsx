@@ -33,12 +33,6 @@ function App() {
           return; // User not logged in
         }
         
-        // Only setup for admin and coordinator
-        if (userRole !== 'admin' && userRole !== 'coordinator') {
-          console.log('❌ User is not admin/coordinator, skipping push notifications');
-          return;
-        }
-
         // Check if browser supports notifications
         if (!isNotificationSupported()) {
           console.log('❌ Push notifications not supported in this browser');
