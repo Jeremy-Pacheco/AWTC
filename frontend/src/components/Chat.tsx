@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -40,6 +41,7 @@ interface ChatProps {
 }
 
 export default function Chat({ currentUser, token }: ChatProps) {
+  const location = useLocation();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [availableUsers, setAvailableUsers] = useState<User[]>([]);
@@ -55,6 +57,46 @@ export default function Chat({ currentUser, token }: ChatProps) {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const selectedUserRef = useRef<User | null>(null);
   const shouldScrollRef = useRef<boolean>(true);
+  
+  // Helper function to show notification via Service Worker
+  const showMessageNotification = async (msg: Message) => {
+    try {
+      // Try to use Service Worker notification first (more reliable in HTTP)
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        const registration = await navigator.serviceWorker.ready;
+        await registration.showNotification(`New message from ${msg.sender.name}`, {
+          body: msg.content.length > 100 ? msg.content.substring(0, 100) + '...' : msg.content,
+          icon: msg.sender.profileImage ? `${BASE_URL}${msg.sender.profileImage}` : '/logo.png',
+          tag: `message-${msg.id}`,
+          requireInteraction: false,
+          data: {
+            url: '/messages',
+            messageId: msg.id
+          }
+        });
+        return;
+      }
+    } catch (err) {
+      console.error('Service Worker notification failed:', err);
+    }
+    
+    // Fallback to regular notification
+    try {
+      const notification = new Notification(`New message from ${msg.sender.name}`, {
+        body: msg.content.length > 100 ? msg.content.substring(0, 100) + '...' : msg.content,
+        icon: msg.sender.profileImage ? `${BASE_URL}${msg.sender.profileImage}` : '/logo.png',
+        tag: `message-${msg.id}`,
+        requireInteraction: false
+      });
+      
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+      };
+    } catch (err) {
+      console.error('Regular notification failed:', err);
+    }
+  };
   
   // Keep selectedUserRef updated
   useEffect(() => {
@@ -98,6 +140,28 @@ export default function Chat({ currentUser, token }: ChatProps) {
       console.log('Usuario seleccionado actual:', currentSelectedUser?.id);
       console.log('Usuario del mensaje:', otherUserId);
       console.log('¿Es conversación actual?', currentSelectedUser?.id === otherUserId);
+      
+      // Show notification if message is for current user and they're not viewing it
+      const isOnMessagesPage = location.pathname === '/messages';
+      const isViewingConversation = currentSelectedUser?.id === otherUserId;
+      
+      if (message.receiverId === currentUser.id && (!isOnMessagesPage || !isViewingConversation)) {
+        // Show browser notification
+        if ('Notification' in window) {
+          // Request permission if not already granted
+          if (Notification.permission === 'default') {
+            Notification.requestPermission().then(permission => {
+              if (permission === 'granted') {
+                showMessageNotification(message);
+              }
+            }).catch(err => {
+              console.error('Error requesting notification permission:', err);
+            });
+          } else if (Notification.permission === 'granted') {
+            showMessageNotification(message);
+          }
+        }
+      }
       
       // If message is from current conversation, add it
       if (currentSelectedUser && currentSelectedUser.id === otherUserId) {
@@ -160,6 +224,13 @@ export default function Chat({ currentUser, token }: ChatProps) {
       newSocket.close();
     };
   }, [currentUser.id, currentUser.role]);
+
+  // Notify backend about current page when location changes
+  useEffect(() => {
+    if (socket && socket.connected) {
+      socket.emit('update_page', { page: location.pathname });
+    }
+  }, [location.pathname, socket]);
 
   // Load conversations
   const loadConversations = async () => {

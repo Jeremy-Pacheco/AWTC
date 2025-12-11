@@ -43,11 +43,4 @@ router.get('/', subscriptionController.getUserSubscriptions);
 // Routes requiring admin/coordinator role
 router.use(requireMessagingRole);
 
-/**
- * @route POST /api/subscriptions/test
- * @desc Send test notification to current user
- * @access Private (Admin/Coordinator only)
- */
-router.post('/test', subscriptionController.testNotification);
-
 module.exports = router;

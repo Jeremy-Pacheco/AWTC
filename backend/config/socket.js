@@ -13,8 +13,13 @@ function initializeSocketIO(server) {
       origin: [
         "http://localhost:5173",
         "http://localhost:8080",
+        "https://localhost:5173",
+        "https://localhost:8443",
         "http://209.97.187.131:5173",
-        "http://209.97.187.131:8080"
+        "http://209.97.187.131:8080",
+        "https://209.97.187.131",
+        "https://awtc.com",
+        "https://www.awtc.com"
       ],
       methods: ["GET", "POST"],
       credentials: true
@@ -55,8 +60,11 @@ function initializeSocketIO(server) {
   io.on('connection', (socket) => {
     console.log(`User connected: ${socket.userName} (ID: ${socket.userId})`);
     
-    // Register user socket
-    userSockets.set(socket.userId, socket.id);
+    // Register user socket with page info
+    userSockets.set(socket.userId, {
+      socketId: socket.id,
+      currentPage: null // Will be updated by client
+    });
 
     // Notify user that they are connected
     socket.emit('connected', {
@@ -67,6 +75,16 @@ function initializeSocketIO(server) {
 
     // Emit list of connected users to everyone
     emitOnlineUsers();
+
+    // Event: Update current page
+    socket.on('update_page', (data) => {
+      const { page } = data;
+      const userSocket = userSockets.get(socket.userId);
+      if (userSocket) {
+        userSocket.currentPage = page;
+        console.log(`User ${socket.userName} is now on page: ${page}`);
+      }
+    });
 
     // Event: Send message
     socket.on('send_message', async (data) => {
@@ -111,16 +129,18 @@ function initializeSocketIO(server) {
         socket.emit('message_sent', fullMessage);
 
         // Emit to receiver if connected
-        const receiverSocketId = userSockets.get(parseInt(receiverId));
-        const isReceiverOnline = !!receiverSocketId;
+        const receiverSocket = userSockets.get(parseInt(receiverId));
+        const isReceiverOnline = !!receiverSocket;
+        const isReceiverOnMessagesPage = receiverSocket?.currentPage === '/messages';
         
-        if (receiverSocketId) {
-          io.to(receiverSocketId).emit('receive_message', fullMessage);
+        if (receiverSocket) {
+          io.to(receiverSocket.socketId).emit('receive_message', fullMessage);
         }
 
-        // Send push notification if receiver is not connected
-        // or if they are connected but might not be on messages page
-        if (!isReceiverOnline) {
+        // Send push notification if receiver is not connected OR not on messages page
+        const shouldSendPushNotification = !isReceiverOnline || !isReceiverOnMessagesPage;
+        
+        if (shouldSendPushNotification) {
           try {
             // Send push notification to receiver
             await sendNotificationToUser(parseInt(receiverId), {
@@ -134,7 +154,7 @@ function initializeSocketIO(server) {
                 senderId: socket.userId
               }
             });
-            console.log(`Push notification sent to user ${receiverId}`);
+            console.log(`Push notification sent to user ${receiverId} (online: ${isReceiverOnline}, on messages: ${isReceiverOnMessagesPage})`);
           } catch (error) {
             console.error('Error sending push notification:', error);
           }
@@ -171,9 +191,9 @@ function initializeSocketIO(server) {
         socket.emit('message_read', { messageId });
 
         // Notify sender
-        const senderSocketId = userSockets.get(message.senderId);
-        if (senderSocketId) {
-          io.to(senderSocketId).emit('message_read_by_receiver', { messageId });
+        const senderSocket = userSockets.get(message.senderId);
+        if (senderSocket) {
+          io.to(senderSocket.socketId).emit('message_read_by_receiver', { messageId });
         }
       } catch (error) {
         console.error('Error marking message as read:', error);
@@ -184,10 +204,10 @@ function initializeSocketIO(server) {
     // Event: User is typing
     socket.on('typing', (data) => {
       const { receiverId } = data;
-      const receiverSocketId = userSockets.get(parseInt(receiverId));
+      const receiverSocket = userSockets.get(parseInt(receiverId));
       
-      if (receiverSocketId) {
-        io.to(receiverSocketId).emit('user_typing', {
+      if (receiverSocket) {
+        io.to(receiverSocket.socketId).emit('user_typing', {
           userId: socket.userId,
           userName: socket.userName
         });
@@ -197,10 +217,10 @@ function initializeSocketIO(server) {
     // Event: User stopped typing
     socket.on('stop_typing', (data) => {
       const { receiverId } = data;
-      const receiverSocketId = userSockets.get(parseInt(receiverId));
+      const receiverSocket = userSockets.get(parseInt(receiverId));
       
-      if (receiverSocketId) {
-        io.to(receiverSocketId).emit('user_stop_typing', {
+      if (receiverSocket) {
+        io.to(receiverSocket.socketId).emit('user_stop_typing', {
           userId: socket.userId
         });
       }
