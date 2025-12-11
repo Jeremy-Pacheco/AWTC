@@ -22,6 +22,27 @@ const client = ldap.createClient({
   url: LDAP_URL
 });
 
+function ensureUsersOU() {
+  return new Promise((resolve, reject) => {
+    const entry = {
+      ou: 'users',
+      objectClass: ['organizationalUnit', 'top']
+    };
+
+    client.add(LDAP_USERS_DN, entry, (err) => {
+      if (err) {
+        if (err.code === 68) { // EntryAlreadyExists
+          console.log('ℹ️  Group ou=users already exists.');
+          return resolve();
+        }
+        return reject(err);
+      }
+      console.log('✅ Group ou=users created.');
+      resolve();
+    });
+  });
+}
+
 function addUserToLDAP(user) {
   return new Promise((resolve, reject) => {
     const entry = {
@@ -37,12 +58,12 @@ function addUserToLDAP(user) {
     client.add(userDN, entry, (err) => {
       if (err) {
         if (err.code === 68) {
-          console.log(`⚠️  El usuario ${user.email} ya existe en LDAP.`);
+          console.log(`⚠️  User ${user.email} already exists in LDAP.`);
           return resolve();
         }
         return reject(err);
       }
-      console.log(`✅ Usuario ${user.email} creado en LDAP.`);
+      console.log(`✅ User ${user.email} created in LDAP.`);
       resolve();
     });
   });
@@ -50,18 +71,20 @@ function addUserToLDAP(user) {
 
 client.bind(LDAP_ADMIN_DN, LDAP_ADMIN_PASSWORD, async (err) => {
   if (err) {
-    console.error('❌ Error conectando al LDAP:', err);
+    console.error('❌ Error connecting to LDAP:', err);
     process.exit(1);
   }
-  console.log('🔌 Conectado al LDAP como Admin.');
+  console.log('🔌 Connected to LDAP as Admin.');
 
   try {
+    await ensureUsersOU();
+
     for (const user of usersToSync) {
       await addUserToLDAP(user);
     }
-    console.log('\n✨ Sincronización completada. Ahora puedes loguearte con estos usuarios.');
+    console.log('\n✨ Synchronization completed. You can now log in with these users.');
   } catch (error) {
-    console.error('❌ Error durante la sincronización:', error);
+    console.error('❌ Error during synchronization:', error);
   } finally {
     client.unbind();
   }
