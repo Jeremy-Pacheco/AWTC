@@ -300,41 +300,15 @@
   <% } %>
 
   <% if (currentSection === 'reviews') { %>
-  <div class="section-card">
-    <h2 class="section-title">
-      <i class="fas fa-star" style="color: #F0BB00;"></i>
-      Reviews
-    </h2>
-    <p style="color: #4a5568; margin-bottom: 20px;">Total reviews: <%= reviews ? reviews.length : 0 %></p>
-    
-    <% if (reviews && reviews.length) { %>
-      <ul class="item-list">
-        <% reviews.forEach(function(r){ %>
-          <li class="item-list-item">
-            <div class="item-description"><%= r.content || ('Review #' + r.id) %></div>
-            <% if (r.date) { %>
-              <div class="item-meta"><%= new Date(r.date).toLocaleDateString() %></div>
-            <% } %>
-          </li>
-        <% }) %>
-      </ul>
-    <% } else { %>
-      <div class="empty-state">
-        <i class="fas fa-star"></i>
-        <p>No reviews available</p>
-      </div>
-    <% } %>
-  </div>
+    <%- include('reviews-dashboard', { reviews: reviews, reviewsNumber: reviewsNumber }) %>
   <% } %>
 
   <% if (currentSection === 'contacts') { %>
     <%- include('incidents-dashboard', { contacts: contacts }) %>
   <% } %>
 
-</body>
-</html>
+  </div>
+</div>
 
-      </div>
-    </div>
-  </body>
+</body>
 </html>

@@ -140,6 +140,30 @@ app.get('/debug-models', async (req, res) => {
   res.json({ models: keys, samples });
 });
 
+// Debug route to check messages
+app.get('/debug-messages', async (req, res) => {
+  try {
+    const messages = await db.Message.findAll({
+      include: [
+        { model: db.User, as: 'sender', attributes: ['id', 'name', 'email'] },
+        { model: db.User, as: 'receiver', attributes: ['id', 'name', 'email'] }
+      ]
+    });
+    
+    const [counts] = await db.sequelize.query(
+      `SELECT senderId, COUNT(*) as count FROM \`Messages\` GROUP BY senderId`
+    );
+    
+    res.json({
+      totalMessages: messages.length,
+      messages: messages,
+      countsBySender: counts
+    });
+  } catch (err) {
+    res.json({ error: err.message, stack: err.stack });
+  }
+});
+
 // Auth middleware that supports Bearer/Basic headers (keeps API auth intact)
 const authMiddleware = require("./middlewares/auth.middlewares");
 app.use(authMiddleware);
@@ -192,7 +216,56 @@ async function getDashboardData() {
   const projects = (await safeFindAll(db.Project)) || [];
   const users = (await safeFindAll(db.User)) || [];
   const categories = (await safeFindAll(db.Category)) || [];
-  const reviews = (await safeFindAll(db.Reviews)) || [];
+  
+  // Load reviews with their associated users
+  let reviews = [];
+  try {
+    reviews = await db.Reviews.findAll({
+      include: [{ model: db.User, as: 'user', attributes: ['id', 'email', 'name', 'role'] }]
+    });
+  } catch (err) {
+    console.warn('Could not load reviews with users:', err.message);
+    reviews = (await safeFindAll(db.Reviews)) || [];
+  }
+  
+  // Load message counts per user
+  let messageCountsPerUser = {};
+  try {
+    if (db.Message) {
+      // First, check if there are any messages in the database
+      const allMessages = await db.Message.findAll();
+      console.log('Total messages in database:', allMessages.length);
+      
+      const [messageCounts] = await db.sequelize.query(
+        `SELECT senderId as userId, COUNT(*) as messageCount
+         FROM \`Messages\`
+         GROUP BY senderId`
+      );
+      console.log('Message counts per user (raw query):', messageCounts);
+      messageCounts.forEach(row => {
+        messageCountsPerUser[row.userId] = parseInt(row.messageCount) || 0;
+      });
+      console.log('Message counts map:', messageCountsPerUser);
+    } else {
+      console.warn('Message model not available');
+    }
+  } catch (err) {
+    console.warn('Could not load message counts:', err.message, err.stack);
+  }
+  
+  // Add message counts to reviews
+  reviews = reviews.map(review => {
+    const reviewData = review.toJSON ? review.toJSON() : review;
+    const userId = reviewData.user?.id;
+    const msgCount = messageCountsPerUser[userId] || 0;
+    console.log(`Review user ID: ${userId}, messageCount from map: ${msgCount}`);
+    return {
+      ...reviewData,
+      messageCount: msgCount
+    };
+  });
+  console.log('Final reviews with message counts:', reviews.map(r => ({ userId: r.user?.id, messageCount: r.messageCount, userName: r.user?.name })));
+  
   const contacts = db.Contact ? (await safeFindAll(db.Contact)) : [];
 
   const recent = (arr, n = 5) => {
@@ -285,6 +358,7 @@ async function renderDashboard(req, res, section = 'overview') {
     console.log(`Dashboard counts -> projects: ${data.projects.length}, users: ${data.users.length}, categories: ${data.categories.length}, reviews: ${data.reviews.length}`);
     console.log(`Section: ${section}, latestProjects: ${data.latestProjects?.length}, latestUsers: ${data.latestUsers?.length}`);
     console.log(`ProjectsPerUser data:`, data.projectsPerUser ? `${data.projectsPerUser.length} users` : 'null');
+    console.log('Reviews before render:', JSON.stringify(data.reviews.map(r => ({ userId: r.user?.id, messageCount: r.messageCount }))));
     // compute current user's registrations and bans if any
     const userRegisteredProjectIds = req.user ? (await db.UserProject.findAll({ where: { userId: req.user.id } })).map(r => r.projectId) : [];
     const userBannedProjectIds = req.user ? (await db.UserProjectBan.findAll({ where: { userId: req.user.id } })).map(b => b.projectId) : [];
@@ -351,7 +425,20 @@ const frontendPath = path.join(__dirname, "../frontend/dist");
 app.use(express.static(frontendPath));
 
 app.use((req, res, next) => {
-  if (req.path.startsWith("/api")) return next();
+  // Skip frontend serving for API routes, debug routes, and dashboard routes
+  if (req.path.startsWith("/api") || 
+      req.path.startsWith("/debug") || 
+      req.path === "/login" || 
+      req.path === "/logout" ||
+      req.path === "/" ||
+      req.path === "/overview" ||
+      req.path === "/projects" ||
+      req.path === "/users" ||
+      req.path === "/categories" ||
+      req.path === "/reviews" ||
+      req.path === "/contacts") {
+    return next();
+  }
   res.sendFile(path.join(frontendPath, "index.html"));
 });
 

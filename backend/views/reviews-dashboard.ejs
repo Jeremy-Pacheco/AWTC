@@ -1,0 +1,902 @@
+<!-- D3.js Library -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<style>
+  .reviews-dashboard {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 1400px) {
+    .reviews-dashboard {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    .reviews-dashboard {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .reviews-dashboard {
+      gap: 16px;
+    }
+  }
+
+  /* Top Reviews Component */
+  .top-reviews-container {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 1px solid #e2e8f0;
+  }
+
+  .top-reviews-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #F0BB00;
+  }
+
+  .top-reviews-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a202c;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .review-item {
+    padding: 16px;
+    margin-bottom: 12px;
+    background: #f7fafc;
+    border-radius: 8px;
+    border-left: 4px solid #cbd5e0;
+    transition: all 0.2s ease;
+  }
+
+  .review-item:hover {
+    background: #fff;
+    border-left-color: #F0BB00;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transform: translateX(4px);
+  }
+
+  .review-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 8px;
+  }
+
+  .review-item-user {
+    font-weight: 600;
+    color: #1a202c;
+    font-size: 14px;
+  }
+
+  .review-item-date {
+    font-size: 12px;
+    color: #718096;
+  }
+
+  .review-item-content {
+    font-size: 13px;
+    color: #4a5568;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    word-break: break-word;
+  }
+
+  .review-item-rating {
+    display: inline-block;
+    color: #F0BB00;
+    font-size: 12px;
+  }
+
+  .user-item-role {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .role-admin { background: #feb2b2; color: #742a2a; }
+  .role-coordinator { background: #bee3f8; color: #2c5282; }
+  .role-volunteer { background: #c6f6d5; color: #22543d; }
+
+  /* General Reviews Component */
+  .reviews-list-container {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 1px solid #e2e8f0;
+  }
+
+  .reviews-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #F0BB00;
+  }
+
+  .reviews-list-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a202c;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .reviews-count-badge {
+    background: #F0BB00;
+    color: #1a202c;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .pagination-btn {
+    background: #fff;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #4a5568;
+  }
+
+  .pagination-btn:hover:not(:disabled) {
+    background: #F0BB00;
+    border-color: #F0BB00;
+    color: #1a202c;
+  }
+
+  .pagination-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .pagination-info {
+    font-size: 13px;
+    color: #718096;
+    font-weight: 500;
+  }
+
+  /* Daily Statistics Chart Component */
+  .chart-container {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 1px solid #e2e8f0;
+  }
+
+  .chart-header {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #F0BB00;
+  }
+
+  .chart-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 4px;
+  }
+
+  .chart-subtitle {
+    font-size: 13px;
+    color: #718096;
+  }
+
+  #dailyReviewsChart, #reviewsWithImagesChart {
+    width: 100%;
+    height: 280px;
+  }
+
+  @media (max-width: 768px) {
+    #dailyReviewsChart, #reviewsWithImagesChart {
+      height: 250px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    #dailyReviewsChart, #reviewsWithImagesChart {
+      height: 220px;
+    }
+  }
+
+  /* Reviews with Images Component */
+  .reviews-images-container {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border: 1px solid #e2e8f0;
+    grid-column: 1 / -1;
+  }
+
+  .reviews-images-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #F0BB00;
+  }
+
+  .reviews-images-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a202c;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  @media (max-width: 768px) {
+    .images-grid {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .images-grid {
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+    }
+  }
+
+  .image-card {
+    background: #f7fafc;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .image-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+    border-color: #F0BB00;
+  }
+
+  .image-card-img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    background: #e2e8f0;
+  }
+
+  @media (max-width: 480px) {
+    .image-card-img {
+      height: 120px;
+    }
+  }
+
+  .image-card-info {
+    padding: 12px;
+  }
+
+  .image-card-user {
+    font-weight: 600;
+    color: #1a202c;
+    font-size: 13px;
+    margin-bottom: 4px;
+    word-break: break-word;
+  }
+
+  .image-card-content {
+    font-size: 12px;
+    color: #718096;
+    line-height: 1.3;
+    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .image-card-date {
+    font-size: 11px;
+    color: #cbd5e0;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #718096;
+  }
+
+  .empty-state-icon {
+    font-size: 48px;
+    color: #cbd5e0;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 1000;
+  }
+
+  @media (max-width: 768px) {
+    .reviews-dashboard {
+      grid-template-columns: 1fr;
+    }
+
+    .top-reviews-container,
+    .reviews-list-container,
+    .chart-container {
+      padding: 16px;
+    }
+  }
+</style>
+
+<div class="section-card">
+  <h2 class="section-title">
+    <i class="fas fa-star" style="color: #F0BB00;"></i>
+    Reviews Dashboard
+  </h2>
+</div>
+
+<div class="reviews-dashboard">
+  <!-- Most Active Reviewers Component -->
+  <div class="top-reviews-container">
+    <div class="top-reviews-header">
+      <div class="top-reviews-title">
+        <i class="fas fa-trophy"></i>
+        Most Active Reviewers
+      </div>
+    </div>
+    
+    <div id="activeReviewersContent"></div>
+  </div>
+
+  <!-- General Reviews Component -->
+  <div class="reviews-list-container">
+    <div class="reviews-list-header">
+      <div class="reviews-list-title">
+        <i class="fas fa-comments"></i>
+        All Reviews
+      </div>
+      <span class="reviews-count-badge"><%= reviewsNumber || 0 %> Total</span>
+    </div>
+    
+    <div id="reviewsListContent"></div>
+    
+    <div class="pagination">
+      <button class="pagination-btn" id="prevPage" disabled>
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <span class="pagination-info" id="pageInfo">Page 1 of 1</span>
+      <button class="pagination-btn" id="nextPage" disabled>
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Daily Statistics Chart Component -->
+  <div class="chart-container">
+    <div class="chart-header">
+      <div class="chart-title">
+        <i class="fas fa-chart-line" style="color: #F0BB00;"></i>
+        Daily Reviews
+      </div>
+      <div class="chart-subtitle">Reviews created - Last 7 days</div>
+    </div>
+    <div id="dailyReviewsChart"></div>
+  </div>
+
+  <!-- Reviews with Images Component -->
+  <div class="chart-container">
+    <div class="chart-header">
+      <div class="chart-title">
+        <i class="fas fa-chart-bar" style="color: #F0BB00;"></i>
+        Reviews Statistics
+      </div>
+      <div class="chart-subtitle">Content analysis</div>
+    </div>
+    <div id="reviewsStatsChart"></div>
+  </div>
+
+  <!-- Reviews with Images Gallery Component -->
+  <div class="reviews-images-container">
+    <div class="reviews-images-header">
+      <div class="reviews-images-title">
+        <i class="fas fa-images"></i>
+        Reviews with Images
+      </div>
+    </div>
+    
+    <div id="reviewsImagesContent"></div>
+  </div>
+</div>
+
+<script>
+  // Reviews data from server
+  try {
+    const allReviews = <%- JSON.stringify(reviews || []) %>;
+    console.log('All reviews loaded:', allReviews);
+    if (allReviews && allReviews.length > 0) {
+      console.log('Sample review data:', allReviews[0]);
+      console.log('First review messageCount:', allReviews[0].messageCount);
+    }
+  } catch (err) {
+    console.error('Error parsing reviews:', err);
+  }
+  const allReviews = <%- JSON.stringify(reviews || []) %>;
+  const REVIEWS_PER_PAGE = 6;
+  let currentPage = 1;
+  let selectedUserId = null;
+
+  // Helper function to format date
+  function formatDate(dateString) {
+    const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return new Date(dateString).toLocaleDateString('en-US', options);
+  }
+
+  // Helper function to truncate text
+  function truncateText(text, length = 100) {
+    return text && text.length > length ? text.substring(0, length) + '...' : text || 'No content';
+  }
+
+  // Component 1: Most Active Reviewers
+  function renderActiveReviewers() {
+    // Count reviews per user
+    const reviewCountByUser = {};
+    allReviews.forEach(review => {
+      if (review.user) {
+        const userId = review.user.id;
+        if (!reviewCountByUser[userId]) {
+          reviewCountByUser[userId] = {
+            user: review.user,
+            count: 0
+          };
+        }
+        reviewCountByUser[userId].count++;
+      }
+    });
+
+    // Convert to array and sort by count
+    const activeReviewers = Object.values(reviewCountByUser)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    const container = document.getElementById('activeReviewersContent');
+    
+    if (activeReviewers.length === 0) {
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox empty-state-icon"></i><p>No reviewers yet</p></div>';
+      return;
+    }
+
+    container.innerHTML = activeReviewers.map((reviewer, index) => `
+      <div class="review-item" data-user-id="${reviewer.user.id}" onclick="filterByUser(${reviewer.user.id}, '${(reviewer.user.name || reviewer.user.email).replace(/'/g, "\\'")}')" style="cursor: pointer;">
+        <div class="review-item-header">
+          <div style="flex: 1;">
+            <span style="color: #F0BB00; font-weight: 700; font-size: 18px; margin-right: 10px;">#${index + 1}</span>
+            <span class="review-item-user">
+              <i class="fas fa-user-circle" style="color: #F0BB00; margin-right: 6px;"></i>
+              ${reviewer.user.name || reviewer.user.email}
+            </span>
+            <span class="user-item-role role-${reviewer.user.role || 'volunteer'}" style="margin-left: 8px;">${reviewer.user.role || 'volunteer'}</span>
+          </div>
+          <div style="text-align: right; color: #718096; font-size: 12px;">
+            <i class="fas fa-star" style="color: #F0BB00; margin-right: 4px;"></i>
+            ${reviewer.count} review${reviewer.count > 1 ? 's' : ''}
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Function to filter reviews by user
+  function filterByUser(userId, userName) {
+    selectedUserId = userId;
+    currentPage = 1;
+    
+    // Update title to show filtering
+    const titleElement = document.querySelector('.reviews-list-title');
+    titleElement.innerHTML = `
+      <i class="fas fa-comments"></i>
+      Reviews by ${userName}
+      <button onclick="clearFilter()" style="margin-left: 10px; padding: 4px 8px; background: #e2e8f0; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
+        <i class="fas fa-times"></i> Clear Filter
+      </button>
+    `;
+    
+    // Highlight selected user
+    document.querySelectorAll('.review-item[data-user-id]').forEach(item => {
+      item.style.background = '#f7fafc';
+      item.style.borderLeft = '4px solid #cbd5e0';
+    });
+    const selectedElement = document.querySelector(`.review-item[data-user-id="${userId}"]`);
+    if (selectedElement) {
+      selectedElement.style.background = '#fffbeb';
+      selectedElement.style.borderLeft = '4px solid #F0BB00';
+    }
+    
+    renderReviewsList(1);
+    renderReviewsImages();
+  }
+
+  // Function to clear filter
+  function clearFilter() {
+    selectedUserId = null;
+    currentPage = 1;
+    
+    // Restore original title
+    const titleElement = document.querySelector('.reviews-list-title');
+    titleElement.innerHTML = `
+      <i class="fas fa-comments"></i>
+      All Reviews
+    `;
+    
+    // Remove highlights
+    document.querySelectorAll('.review-item[data-user-id]').forEach(item => {
+      item.style.background = '#f7fafc';
+      item.style.borderLeft = '4px solid #cbd5e0';
+    });
+    
+    renderReviewsList(1);
+    renderReviewsImages();
+  }
+
+  // Function to navigate to a specific review
+  function goToReview(reviewId) {
+    const review = allReviews.find(r => r.id === reviewId);
+    if (!review) return;
+    
+    selectedUserId = null;
+    currentPage = 1;
+    
+    // Restore original title
+    const titleElement = document.querySelector('.reviews-list-title');
+    titleElement.innerHTML = `
+      <i class="fas fa-comments"></i>
+      All Reviews
+    `;
+    
+    // Remove highlights
+    document.querySelectorAll('.review-item[data-user-id]').forEach(item => {
+      item.style.background = '#f7fafc';
+      item.style.borderLeft = '4px solid #cbd5e0';
+    });
+    
+    renderReviewsList(1);
+    renderReviewsImages();
+    
+    // Scroll to All Reviews section
+    setTimeout(() => {
+      const reviewsContainer = document.querySelector('.reviews-list-container');
+      if (reviewsContainer) {
+        reviewsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  }
+
+  // Component 2: General Reviews with Pagination
+  function renderReviewsList(page) {
+    // Filter reviews by selected user if any
+    const filteredReviews = selectedUserId 
+      ? allReviews.filter(review => review.user?.id === selectedUserId)
+      : allReviews;
+    
+    const start = (page - 1) * REVIEWS_PER_PAGE;
+    const end = start + REVIEWS_PER_PAGE;
+    const pageReviews = filteredReviews.slice(start, end);
+    const totalPages = Math.ceil(filteredReviews.length / REVIEWS_PER_PAGE);
+
+    const container = document.getElementById('reviewsListContent');
+    
+    if (filteredReviews.length === 0) {
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox empty-state-icon"></i><p>No reviews found</p></div>';
+      document.getElementById('pageInfo').textContent = 'Page 1 of 1';
+      document.getElementById('prevPage').disabled = true;
+      document.getElementById('nextPage').disabled = true;
+      return;
+    }
+
+    container.innerHTML = pageReviews.map(review => `
+      <div class="review-item">
+        <div class="review-item-header">
+          <span class="review-item-user">
+            <i class="fas fa-user-circle" style="color: #F0BB00; margin-right: 6px;"></i>
+            ${review.user ? (review.user.name || review.user.email) : 'Unknown User'}
+          </span>
+          <span class="review-item-date">${formatDate(review.date)}</span>
+        </div>
+        <div class="review-item-content">${review.content || 'No content'}</div>
+        ${review.image ? `<div style="margin-top: 10px;"><img src="${review.image}" style="max-height: 150px; border-radius: 6px; object-fit: cover;"></div>` : ''}
+      </div>
+    `).join('');
+
+    document.getElementById('pageInfo').textContent = `Page ${page} of ${totalPages}`;
+    document.getElementById('prevPage').disabled = page === 1;
+    document.getElementById('nextPage').disabled = page === totalPages;
+  }
+
+  // Component 3: Daily Reviews Statistics Chart
+  function renderDailyReviewsChart() {
+    const last7Days = [];
+    const today = new Date();
+    
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      const count = allReviews.filter(r => {
+        if (!r.date) return false;
+        const reviewDate = new Date(r.date).toISOString().split('T')[0];
+        return reviewDate === dateStr;
+      }).length;
+      
+      last7Days.push({
+        date: dateStr,
+        count: count,
+        label: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+      });
+    }
+
+    const margin = { top: 20, right: 30, bottom: 60, left: 50 };
+    const container = document.getElementById('dailyReviewsChart');
+    const width = container.offsetWidth - margin.left - margin.right;
+    const height = 300 - margin.top - margin.bottom;
+
+    const svg = d3.select('#dailyReviewsChart')
+      .append('svg')
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom)
+      .append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleBand()
+      .domain(last7Days.map(d => d.label))
+      .range([0, width])
+      .padding(0.3);
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(last7Days, d => d.count) + 2])
+      .range([height, 0]);
+
+    // Grid lines
+    svg.append('g')
+      .attr('class', 'grid')
+      .attr('opacity', 0.1)
+      .call(d3.axisLeft(y).tickSize(-width).tickFormat(''));
+
+    // Bars
+    svg.selectAll('.bar')
+      .data(last7Days)
+      .enter()
+      .append('rect')
+      .attr('class', 'bar')
+      .attr('x', d => x(d.label))
+      .attr('width', x.bandwidth())
+      .attr('y', height)
+      .attr('height', 0)
+      .attr('fill', '#F0BB00')
+      .attr('rx', 4)
+      .transition()
+      .duration(800)
+      .attr('y', d => y(d.count))
+      .attr('height', d => height - y(d.count));
+
+    // Add value labels on bars
+    svg.selectAll('.label')
+      .data(last7Days)
+      .enter()
+      .append('text')
+      .attr('class', 'label')
+      .attr('x', d => x(d.label) + x.bandwidth() / 2)
+      .attr('y', d => y(d.count) - 5)
+      .attr('text-anchor', 'middle')
+      .attr('fill', '#1a202c')
+      .attr('font-size', '12px')
+      .attr('font-weight', '600')
+      .text(d => d.count);
+
+    // X axis
+    svg.append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(d3.axisBottom(x))
+      .selectAll('text')
+      .attr('transform', 'rotate(-45)')
+      .style('text-anchor', 'end')
+      .attr('dx', '-.8em')
+      .attr('dy', '.15em');
+
+    // Y axis
+    svg.append('g')
+      .call(d3.axisLeft(y).ticks(5));
+  }
+
+  // Component 4: Reviews Statistics
+  function renderReviewsStatsChart() {
+    const withImages = allReviews.filter(r => r.image).length;
+    const withoutImages = allReviews.length - withImages;
+
+    const data = [
+      { category: 'With Images', count: withImages },
+      { category: 'Without Images', count: withoutImages }
+    ];
+
+    const container = document.getElementById('reviewsStatsChart');
+    const width = container.offsetWidth;
+    const height = 300;
+    const margin = { top: 20, right: 30, bottom: 50, left: 50 };
+
+    const svg = d3.select('#reviewsStatsChart')
+      .append('svg')
+      .attr('width', width)
+      .attr('height', height)
+      .append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const chartWidth = width - margin.left - margin.right;
+    const chartHeight = height - margin.top - margin.bottom;
+
+    const x = d3.scaleBand()
+      .domain(data.map(d => d.category))
+      .range([0, chartWidth])
+      .padding(0.4);
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(data, d => d.count) + 2])
+      .range([chartHeight, 0]);
+
+    const colors = ['#F0BB00', '#bee3f8'];
+
+    // Grid lines
+    svg.append('g')
+      .attr('opacity', 0.1)
+      .call(d3.axisLeft(y).tickSize(-chartWidth).tickFormat(''));
+
+    // Bars
+    svg.selectAll('.bar')
+      .data(data)
+      .enter()
+      .append('rect')
+      .attr('class', 'bar')
+      .attr('x', d => x(d.category))
+      .attr('width', x.bandwidth())
+      .attr('y', chartHeight)
+      .attr('height', 0)
+      .attr('fill', (d, i) => colors[i])
+      .attr('rx', 4)
+      .transition()
+      .duration(800)
+      .attr('y', d => y(d.count))
+      .attr('height', d => chartHeight - y(d.count));
+
+    // Labels
+    svg.selectAll('.label')
+      .data(data)
+      .enter()
+      .append('text')
+      .attr('class', 'label')
+      .attr('x', d => x(d.category) + x.bandwidth() / 2)
+      .attr('y', d => y(d.count) - 5)
+      .attr('text-anchor', 'middle')
+      .attr('fill', '#1a202c')
+      .attr('font-size', '12px')
+      .attr('font-weight', '600')
+      .text(d => d.count);
+
+    // X axis
+    svg.append('g')
+      .attr('transform', `translate(0,${chartHeight})`)
+      .call(d3.axisBottom(x));
+
+    // Y axis
+    svg.append('g')
+      .call(d3.axisLeft(y).ticks(5));
+  }
+
+  // Component 5: Reviews with Images Gallery
+  function renderReviewsImages() {
+    // Filter images by selected user if any
+    let reviewsWithImages = allReviews.filter(r => r.image).sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    if (selectedUserId) {
+      reviewsWithImages = reviewsWithImages.filter(r => r.user?.id === selectedUserId);
+    }
+    
+    const container = document.getElementById('reviewsImagesContent');
+    
+    if (reviewsWithImages.length === 0) {
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-image empty-state-icon"></i><p>No reviews with images yet</p></div>';
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="images-grid">
+        ${reviewsWithImages.map(review => `
+          <div class="image-card" onclick="goToReview(${review.id})" style="cursor: pointer;">
+            <img src="${review.image}" alt="Review image" class="image-card-img" onerror="this.src='https://via.placeholder.com/200x150?text=Image+Not+Found'">
+            <div class="image-card-info">
+              <div class="image-card-user">
+                <i class="fas fa-user-circle" style="color: #F0BB00; margin-right: 4px;"></i>
+                ${review.user ? (review.user.name || review.user.email) : 'Unknown'}
+              </div>
+              <div class="image-card-content">${truncateText(review.content, 60)}</div>
+              <div class="image-card-date">${formatDate(review.date)}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  // Pagination event listeners
+  document.getElementById('prevPage').addEventListener('click', () => {
+    if (currentPage > 1) {
+      currentPage--;
+      renderReviewsList(currentPage);
+    }
+  });
+
+  document.getElementById('nextPage').addEventListener('click', () => {
+    const totalPages = Math.ceil(allReviews.length / REVIEWS_PER_PAGE);
+    if (currentPage < totalPages) {
+      currentPage++;
+      renderReviewsList(currentPage);
+    }
+  });
+
+  // Initial render of all components
+  renderActiveReviewers();
+  renderReviewsList(1);
+  
+  if (typeof d3 !== 'undefined') {
+    renderDailyReviewsChart();
+    renderReviewsStatsChart();
+  }
+  
+  renderReviewsImages();
+</script>

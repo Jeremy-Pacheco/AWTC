@@ -80,6 +80,12 @@ if (db.Category && db.Project) {
   db.Project.belongsTo(db.Category, { foreignKey: 'categoryId', as: 'category' });
 }
 
+// Define relationship between User and Reviews
+if (db.User && db.Reviews) {
+  db.User.hasMany(db.Reviews, { foreignKey: 'userId' });
+  db.Reviews.belongsTo(db.User, { foreignKey: 'userId', as: 'user' });
+}
+
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
