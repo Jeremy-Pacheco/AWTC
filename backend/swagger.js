@@ -17,8 +17,8 @@ const options = {
         description: 'Development Server'
       },
       {
-        url: 'http://209.97.187.131:8080',
-        description: 'Production Server'
+        url: 'http://awilltochange.me/api',
+        description: 'Production Server (via Nginx)'
       }
     ],
     components: {
