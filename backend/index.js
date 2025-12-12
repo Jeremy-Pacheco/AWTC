@@ -46,6 +46,12 @@ app.use(cors({
       "http://209.97.187.131:5173",
       "http://209.97.187.131:8080",
       "https://209.97.187.131",
+      "http://awilltochange.me:5173",
+      "http://awilltochange.me:8080",
+      "https://awilltochange.me:5173",
+      "https://awilltochange.me:8433",
+      "http://awilltochange.me",
+      "https://awilltochange.me",
       "https://awtc.com",
       "https://www.awtc.com"
     ];
