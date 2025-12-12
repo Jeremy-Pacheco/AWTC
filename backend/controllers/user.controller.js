@@ -5,7 +5,11 @@ const ldapUtil = require("../utils/ldap.util");
 // Create user (registration)
 exports.createUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    // Accept either `name` or `firstName` + `lastName`
+    let { name, email, password, firstName, lastName } = req.body;
+    if (!name && firstName && lastName) {
+      name = `${firstName} ${lastName}`.trim();
+    }
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Missing data" });
@@ -47,16 +51,24 @@ exports.createUser = async (req, res) => {
 // User login
 exports.login = async (req, res) => {
   try {
-    const authHeader = req.headers["authorization"];
-    if (!authHeader || !authHeader.startsWith("Basic ")) {
-      return res.status(400).json({ message: "Authorization header required" });
-    }
+    let email, password;
 
-    const base64Credentials = authHeader.split(" ")[1];
-    const credentials = Buffer.from(base64Credentials, "base64").toString(
-      "ascii"
-    );
-    const [email, password] = credentials.split(":");
+    // Check for Basic Auth header (email:password in base64)
+    const authHeader = req.headers["authorization"];
+    if (authHeader && authHeader.startsWith("Basic ")) {
+      const base64Credentials = authHeader.split(" ")[1];
+      const credentials = Buffer.from(base64Credentials, "base64").toString("ascii");
+      [email, password] = credentials.split(":");
+    } 
+    // Check for JSON body (email and password in request body)
+    else if (req.body && req.body.email && req.body.password) {
+      email = req.body.email;
+      password = req.body.password;
+    } 
+    // No credentials provided
+    else {
+      return res.status(400).json({ message: "Authorization header or email/password body required" });
+    }
 
     // Authenticate with LDAP
     const isAuthenticated = await ldapUtil.authenticate(email, password);
