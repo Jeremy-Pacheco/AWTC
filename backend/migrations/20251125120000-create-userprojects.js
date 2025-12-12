@@ -49,6 +49,7 @@ module.exports = {
   },
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('UserProjects');
-    await queryInterface.sequelize.query('DROP TYPE IF EXISTS enum_UserProjects_status;');
+    // MySQL handles ENUMs within the table definition, so explicit DROP TYPE is not needed/supported
+    // await queryInterface.sequelize.query('DROP TYPE IF EXISTS enum_UserProjects_status;');
   }
 };
