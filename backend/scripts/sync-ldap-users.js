@@ -3,6 +3,7 @@ const path = require('path');
 
 // Try to load .env (production) or .env.development (local)
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
+require('dotenv').config({ path: path.join(__dirname, '../.env.production') });
 require('dotenv').config({ path: path.join(__dirname, '../.env.development') });
 
 const LDAP_URL = process.env.LDAP_URL || 'ldap://localhost:389';

@@ -309,13 +309,6 @@ function ReviewsSection({
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("jwtToken");
-    localStorage.removeItem("userName");
-    localStorage.removeItem("userRole");
-    window.location.reload();
-  };
-
   const getUserDisplayName = (user?: { email?: string; name?: string }) => {
     if (user?.name) return user.name;
     if (user?.email) return user.email.split("@")[0];
