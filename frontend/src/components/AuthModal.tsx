@@ -95,9 +95,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, mode, onClose }) => {
   };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {open && (
         <motion.div
+          key="auth-modal"
           className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

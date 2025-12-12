@@ -41,8 +41,19 @@ app.use(cors({
     const allowedOrigins = [
       "http://localhost:5173",
       "http://localhost:8080",
+      "https://localhost:5173",
+      "https://localhost:8443",
       "http://209.97.187.131:5173",
-      "http://209.97.187.131:8080"
+      "http://209.97.187.131:8080",
+      "https://209.97.187.131",
+      "http://awilltochange.me:5173",
+      "http://awilltochange.me:8080",
+      "https://awilltochange.me:5173",
+      "https://awilltochange.me:8433",
+      "http://awilltochange.me",
+      "https://awilltochange.me",
+      "https://awtc.com",
+      "https://www.awtc.com"
     ];
 
     if (!origin || allowedOrigins.includes(origin)) {
@@ -52,9 +63,10 @@ app.use(cors({
       callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: false,
-  optionsSuccessStatus: 200
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204
 }));
 
 app.use(express.json());
@@ -134,6 +146,30 @@ app.get('/debug-models', async (req, res) => {
   res.json({ models: keys, samples });
 });
 
+// Debug route to check messages
+app.get('/debug-messages', async (req, res) => {
+  try {
+    const messages = await db.Message.findAll({
+      include: [
+        { model: db.User, as: 'sender', attributes: ['id', 'name', 'email'] },
+        { model: db.User, as: 'receiver', attributes: ['id', 'name', 'email'] }
+      ]
+    });
+    
+    const [counts] = await db.sequelize.query(
+      `SELECT senderId, COUNT(*) as count FROM \`Messages\` GROUP BY senderId`
+    );
+    
+    res.json({
+      totalMessages: messages.length,
+      messages: messages,
+      countsBySender: counts
+    });
+  } catch (err) {
+    res.json({ error: err.message, stack: err.stack });
+  }
+});
+
 // Auth middleware that supports Bearer/Basic headers (keeps API auth intact)
 const authMiddleware = require("./middlewares/auth.middlewares");
 app.use(authMiddleware);
@@ -167,6 +203,8 @@ const userRoutes = require("./routes/user.routes");
 const contactRoutes = require("./routes/contact.routes");
 const sessionRoutes = require("./routes/session.routes");
 const externalRoutes = require("./routes/external.routes");
+const messageRoutes = require("./routes/message.routes");
+const subscriptionRoutes = require("./routes/subscription.routes");
 
 app.use("/api/projects", projectRoutes);
 app.use("/api/reviews", reviewRoutes);
@@ -174,6 +212,8 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/contacts", contactRoutes);
 app.use("/api/external", externalRoutes);
+app.use("/api/messages", messageRoutes);
+app.use("/api/subscriptions", subscriptionRoutes);
 app.use('/', sessionRoutes);
 
 // Simple EJS dashboard routes (demo)
@@ -182,7 +222,56 @@ async function getDashboardData() {
   const projects = (await safeFindAll(db.Project)) || [];
   const users = (await safeFindAll(db.User)) || [];
   const categories = (await safeFindAll(db.Category)) || [];
-  const reviews = (await safeFindAll(db.Reviews)) || [];
+  
+  // Load reviews with their associated users
+  let reviews = [];
+  try {
+    reviews = await db.Reviews.findAll({
+      include: [{ model: db.User, as: 'user', attributes: ['id', 'email', 'name', 'role'] }]
+    });
+  } catch (err) {
+    console.warn('Could not load reviews with users:', err.message);
+    reviews = (await safeFindAll(db.Reviews)) || [];
+  }
+  
+  // Load message counts per user
+  let messageCountsPerUser = {};
+  try {
+    if (db.Message) {
+      // First, check if there are any messages in the database
+      const allMessages = await db.Message.findAll();
+      console.log('Total messages in database:', allMessages.length);
+      
+      const [messageCounts] = await db.sequelize.query(
+        `SELECT senderId as userId, COUNT(*) as messageCount
+         FROM \`Messages\`
+         GROUP BY senderId`
+      );
+      console.log('Message counts per user (raw query):', messageCounts);
+      messageCounts.forEach(row => {
+        messageCountsPerUser[row.userId] = parseInt(row.messageCount) || 0;
+      });
+      console.log('Message counts map:', messageCountsPerUser);
+    } else {
+      console.warn('Message model not available');
+    }
+  } catch (err) {
+    console.warn('Could not load message counts:', err.message, err.stack);
+  }
+  
+  // Add message counts to reviews
+  reviews = reviews.map(review => {
+    const reviewData = review.toJSON ? review.toJSON() : review;
+    const userId = reviewData.user?.id;
+    const msgCount = messageCountsPerUser[userId] || 0;
+    console.log(`Review user ID: ${userId}, messageCount from map: ${msgCount}`);
+    return {
+      ...reviewData,
+      messageCount: msgCount
+    };
+  });
+  console.log('Final reviews with message counts:', reviews.map(r => ({ userId: r.user?.id, messageCount: r.messageCount, userName: r.user?.name })));
+  
   const contacts = db.Contact ? (await safeFindAll(db.Contact)) : [];
 
   const recent = (arr, n = 5) => {
@@ -275,6 +364,7 @@ async function renderDashboard(req, res, section = 'overview') {
     console.log(`Dashboard counts -> projects: ${data.projects.length}, users: ${data.users.length}, categories: ${data.categories.length}, reviews: ${data.reviews.length}`);
     console.log(`Section: ${section}, latestProjects: ${data.latestProjects?.length}, latestUsers: ${data.latestUsers?.length}`);
     console.log(`ProjectsPerUser data:`, data.projectsPerUser ? `${data.projectsPerUser.length} users` : 'null');
+    console.log('Reviews before render:', JSON.stringify(data.reviews.map(r => ({ userId: r.user?.id, messageCount: r.messageCount }))));
     // compute current user's registrations and bans if any
     const userRegisteredProjectIds = req.user ? (await db.UserProject.findAll({ where: { userId: req.user.id } })).map(r => r.projectId) : [];
     const userBannedProjectIds = req.user ? (await db.UserProjectBan.findAll({ where: { userId: req.user.id } })).map(b => b.projectId) : [];
@@ -341,12 +431,96 @@ const frontendPath = path.join(__dirname, "../frontend/dist");
 app.use(express.static(frontendPath));
 
 app.use((req, res, next) => {
-  if (req.path.startsWith("/api")) return next();
+  // Skip frontend serving for API routes, debug routes, and dashboard routes
+  if (req.path.startsWith("/api") || 
+      req.path.startsWith("/debug") || 
+      req.path === "/login" || 
+      req.path === "/logout" ||
+      req.path === "/" ||
+      req.path === "/overview" ||
+      req.path === "/projects" ||
+      req.path === "/users" ||
+      req.path === "/categories" ||
+      req.path === "/reviews" ||
+      req.path === "/contacts") {
+    return next();
+  }
   res.sendFile(path.join(frontendPath, "index.html"));
 });
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
-});
+const HTTPS_PORT = process.env.HTTPS_PORT || 8443;
+const USE_HTTPS = process.env.USE_HTTPS === 'true';
+
+// Create HTTP or HTTPS server
+const http = require('http');
+const https = require('https');
+const fs = require('fs');
+
+let server;
+
+if (USE_HTTPS) {
+  // Try to load SSL certificates
+  const sslKeyPath = path.join(__dirname, 'ssl', 'key.pem');
+  const sslCertPath = path.join(__dirname, 'ssl', 'cert.pem');
+  
+  if (fs.existsSync(sslKeyPath) && fs.existsSync(sslCertPath)) {
+    const httpsOptions = {
+      key: fs.readFileSync(sslKeyPath),
+      cert: fs.readFileSync(sslCertPath)
+    };
+    
+    // Create HTTPS server
+    const httpsServer = https.createServer(httpsOptions, app);
+    
+    // Create HTTP server (without redirect, serve the app directly)
+    const httpServer = http.createServer(app);
+    
+    // Initialize Socket.IO on HTTPS server (primary)
+    const { initializeSocketIO } = require('./config/socket');
+    initializeSocketIO(httpsServer);
+    
+    // Start both servers
+    httpServer.listen(PORT, () => {
+      console.log(`🌐 HTTP server running on http://localhost:${PORT}`);
+    });
+    
+    httpsServer.listen(HTTPS_PORT, () => {
+      console.log(`🔐 HTTPS server running on https://localhost:${HTTPS_PORT}`);
+      console.log(`📚 Swagger docs available at https://localhost:${HTTPS_PORT}/api-docs`);
+      console.log(`💬 WebSocket server initialized for messaging`);
+    });
+    
+    console.log('✅ Dual mode: Both HTTP and HTTPS servers running');
+    console.log('   - HTTP (for push notifications): http://localhost:8080');
+    console.log('   - HTTPS (for secure features): https://localhost:8443');
+    
+  } else {
+    console.warn('⚠️  SSL certificates not found. Run: node scripts/generate-ssl-cert.js');
+    console.warn('   Falling back to HTTP mode...');
+    
+    server = http.createServer(app);
+    
+    // Initialize Socket.IO
+    const { initializeSocketIO } = require('./config/socket');
+    initializeSocketIO(server);
+    
+    server.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+      console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
+      console.log(`WebSocket server initialized for messaging`);
+    });
+  }
+} else {
+  server = http.createServer(app);
+  
+  // Initialize Socket.IO
+  const { initializeSocketIO } = require('./config/socket');
+  initializeSocketIO(server);
+  
+  server.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
+    console.log(`WebSocket server initialized for messaging`);
+  });
+}

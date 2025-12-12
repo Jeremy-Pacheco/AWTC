@@ -325,226 +325,219 @@ function ReviewsSection({
   return (
     <>
       <section className="my-12 px-4 md:px-0">
-      <div className="flex flex-col md:flex-row gap-8 items-start">
-        <div className="flex-1 w-full">
-          <div className="flex justify-between items-baseline mb-6 border-b pb-2">
-            <h5 className="text-xl font-bold text-gray-800">Reviews</h5>
-            <span className="text-sm text-gray-500">
-              {reviews.length} comments
-            </span>
-          </div>
-
-          <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-            {reviews.length === 0 ? (
-              <div className="text-center py-10 text-gray-400">
-                No reviews yet. Be the first!
-              </div>
-            ) : (
-              reviews.map((review) => (
-                <div
-                  key={review.id}
-                  className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex flex-col">
-                      <span className="font-bold text-gray-900 text-base capitalize">
-                        {getUserDisplayName(review.user)}
-                      </span>
-                      <span className="text-xs text-gray-400 mt-0.5">
-                        {new Date(review.date).toLocaleDateString(undefined, {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </span>
-                    </div>
-
-                    {currentUserId === review.userId && !editingId && (
-                      <div className="flex gap-3 text-sm font-medium">
-                        <button
-                          onClick={() => {
-                            setEditingId(review.id);
-                            setEditContent(review.content);
-                          }}
-                          className="text-green-600 hover:text-green-800 transition-colors"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(review.id)}
-                          className="text-red-500 hover:text-red-700 transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {review.image && (
-                    <div className="mb-4">
-                      <img
-                        src={`${API_BASE_URL}${review.image}`}
-                        alt="Attached"
-                        className="h-32 w-auto object-cover rounded-xl cursor-zoom-in hover:opacity-95"
-                        onClick={() =>
-                          window.open(
-                            `${API_BASE_URL}${review.image}`,
-                            "_blank"
-                          )
-                        }
-                      />
-                    </div>
-                  )}
-
-                  {editingId === review.id ? (
-                    <div className="mt-2 animate-fade-in">
-                      <textarea
-                        value={editContent}
-                        onChange={(e) => setEditContent(e.target.value)}
-                        className="w-full border border-gray-200 p-3 rounded-xl text-sm focus:ring-2 focus:ring-yellow-400 outline-none resize-none bg-gray-50"
-                      />
-
-                      {review.image && !editRemoveImage && !editSelectedFile && (
-                        <div className="mt-3 mb-2">
-                          <img
-                            src={`${API_BASE_URL}${review.image}`}
-                            alt="Current"
-                            className="h-24 w-auto object-cover rounded-lg"
-                          />
-                        </div>
-                      )}
-
-                      {editSelectedFile && (
-                        <div className="mt-3 mb-2">
-                          <img
-                            src={URL.createObjectURL(editSelectedFile)}
-                            alt="New preview"
-                            className="h-24 w-auto object-cover rounded-lg"
-                          />
-                        </div>
-                      )}
-
-                      <div className="flex items-center justify-between gap-4 mt-3">
-                        <div>
-                          <input
-                            id={`editFileInput-${review.id}`}
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const f = e.target.files && e.target.files[0];
-                              setEditSelectedFile(f ?? null);
-                              if (f) setEditRemoveImage(false);
-                            }}
-                            className="hidden"
-                          />
-                          <label
-                            htmlFor={`editFileInput-${review.id}`}
-                            className="cursor-pointer flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-colors"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth={1.5}
-                              stroke="currentColor"
-                              className="w-5 h-5"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M4.5 12.75l6 6 9-13.5"
-                              />
-                            </svg>
-                            {editSelectedFile
-                              ? editSelectedFile.name
-                              : "Add / Replace image"}
-                          </label>
-                        </div>
-
-                        {review.image && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditRemoveImage((prev) => {
-                                const next = !prev;
-                                if (next) setEditSelectedFile(null);
-                                return next;
-                              });
-                            }}
-                            className={`text-sm px-3 py-1 rounded-full border ${
-                              editRemoveImage
-                                ? "bg-red-50 text-red-600 border-red-200"
-                                : "bg-gray-100 text-gray-700 border-gray-200"
-                            }`}
-                          >
-                            {editRemoveImage
-                              ? "Image will be removed"
-                              : "Remove image"}
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="flex gap-2 mt-3 justify-end">
-                        <button
-                          onClick={() => {
-                            setEditingId(null);
-                            setEditSelectedFile(null);
-                            setEditRemoveImage(false);
-                          }}
-                          className="px-4 py-1.5 rounded-full text-xs font-medium bg-gray-100 hover:bg-gray-200"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={() => saveEdit(review.id)}
-                          className="px-4 py-1.5 rounded-full text-xs font-medium bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white"
-                        >
-                          Save
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-gray-600 leading-relaxed text-sm">
-                      {review.content}
-                    </p>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
+      <div className="flex flex-col gap-4 items-start w-full">
+        <div className="flex justify-between items-baseline mb-6 border-b pb-2 w-full">
+          <h5 className="text-xl font-bold text-gray-800">Reviews</h5>
+          <span className="text-sm text-gray-500">
+            {reviews.length} comments
+          </span>
         </div>
 
-        <div className="md:w-1/4 flex flex-col items-center sticky top-8">
-          {isLoggedIn ? (
-            <div className="w-full bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
-              <div className="mb-4">
-              </div>
+        {isLoggedIn && (
+          <button
+            onClick={() => setShowReviewModal(true)}
+            className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-5 py-2 rounded-3xl font-semibold shadow text-sm md:text-base w-full md:w-auto transition-colors duration-300 mb-4"
+          >
+            Write a Review
+          </button>
+        )}
 
-              <button
-                onClick={() => setShowReviewModal(true)}
-                className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-5 py-2 rounded-3xl font-semibold shadow text-sm md:text-base w-full transition-colors duration-300 mb-3"
-              >
-                Write a Review
-              </button>
+        <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar w-full">
+          {reviews.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">
+              No reviews yet. Be the first!
             </div>
           ) : (
-            <div className="w-full bg-yellow-50 p-8 rounded-3xl text-center border border-yellow-100">
-              <h3 className="font-bold text-lg mb-2 text-gray-800">
-                Join the conversation
-              </h3>
-              <p className="text-xs text-gray-500 mb-6">
-                Share your experience with the community.
-              </p>
-
-              <button
-                onClick={onOpenSignup}
-                className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-5 py-2 rounded-3xl font-semibold shadow text-sm md:text-base w-full transition-colors duration-300"
+            reviews.map((review) => (
+              <div
+                key={review.id}
+                className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
               >
-                Add Review
-              </button>
-            </div>
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex flex-col">
+                    <span className="font-bold text-gray-900 text-base capitalize">
+                      {getUserDisplayName(review.user)}
+                    </span>
+                    <span className="text-xs text-gray-400 mt-0.5">
+                      {new Date(review.date).toLocaleDateString(undefined, {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </div>
+
+                  {currentUserId === review.userId && !editingId && (
+                    <div className="flex gap-3 text-sm font-medium">
+                      <button
+                        onClick={() => {
+                          setEditingId(review.id);
+                          setEditContent(review.content);
+                        }}
+                        className="text-green-600 hover:text-green-800 transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(review.id)}
+                        className="text-red-500 hover:text-red-700 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {review.image && (
+                  <div className="mb-4">
+                    <img
+                      src={`${API_BASE_URL}${review.image}`}
+                      alt="Attached"
+                      className="h-32 w-auto object-cover rounded-xl cursor-zoom-in hover:opacity-95"
+                      onClick={() =>
+                        window.open(
+                          `${API_BASE_URL}${review.image}`,
+                          "_blank"
+                        )
+                      }
+                    />
+                  </div>
+                )}
+
+                {editingId === review.id ? (
+                  <div className="mt-2 animate-fade-in">
+                    <textarea
+                      value={editContent}
+                      onChange={(e) => setEditContent(e.target.value)}
+                      className="w-full border border-gray-200 p-3 rounded-xl text-sm focus:ring-2 focus:ring-yellow-400 outline-none resize-none bg-gray-50"
+                    />
+
+                    {review.image && !editRemoveImage && !editSelectedFile && (
+                      <div className="mt-3 mb-2">
+                        <img
+                          src={`${API_BASE_URL}${review.image}`}
+                          alt="Current"
+                          className="h-24 w-auto object-cover rounded-lg"
+                        />
+                      </div>
+                    )}
+
+                    {editSelectedFile && (
+                      <div className="mt-3 mb-2">
+                        <img
+                          src={URL.createObjectURL(editSelectedFile)}
+                          alt="New preview"
+                          className="h-24 w-auto object-cover rounded-lg"
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between gap-4 mt-3">
+                      <div>
+                        <input
+                          id={`editFileInput-${review.id}`}
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const f = e.target.files && e.target.files[0];
+                            setEditSelectedFile(f ?? null);
+                            if (f) setEditRemoveImage(false);
+                          }}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor={`editFileInput-${review.id}`}
+                          className="cursor-pointer flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-black transition-colors"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="w-5 h-5"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M4.5 12.75l6 6 9-13.5"
+                            />
+                          </svg>
+                          {editSelectedFile
+                            ? editSelectedFile.name
+                            : "Add / Replace image"}
+                        </label>
+                      </div>
+
+                      {review.image && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditRemoveImage((prev) => {
+                              const next = !prev;
+                              if (next) setEditSelectedFile(null);
+                              return next;
+                            });
+                          }}
+                          className={`text-sm px-3 py-1 rounded-full border ${
+                            editRemoveImage
+                              ? "bg-red-50 text-red-600 border-red-200"
+                              : "bg-gray-100 text-gray-700 border-gray-200"
+                          }`}
+                        >
+                          {editRemoveImage
+                            ? "Image will be removed"
+                            : "Remove image"}
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2 mt-3 justify-end">
+                      <button
+                        onClick={() => {
+                          setEditingId(null);
+                          setEditSelectedFile(null);
+                          setEditRemoveImage(false);
+                        }}
+                        className="px-4 py-1.5 rounded-full text-xs font-medium bg-gray-100 hover:bg-gray-200"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => saveEdit(review.id)}
+                        className="px-4 py-1.5 rounded-full text-xs font-medium bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-gray-600 leading-relaxed text-sm">
+                    {review.content}
+                  </p>
+                )}
+              </div>
+            ))
           )}
         </div>
+
+        {!isLoggedIn && (
+          <div className="w-full bg-yellow-50 p-6 md:p-8 rounded-3xl text-center border border-yellow-100">
+            <h3 className="font-bold text-lg mb-2 text-gray-800">
+              Join the conversation
+            </h3>
+            <p className="text-xs text-gray-500 mb-6">
+              Share your experience with the community.
+            </p>
+
+            <button
+              onClick={onOpenSignup}
+              className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-5 py-2 rounded-3xl font-semibold shadow text-sm md:text-base w-full transition-colors duration-300"
+            >
+              Add Review
+            </button>
+          </div>
+        )}
       </div>
 
       {showReviewModal && (
@@ -672,7 +665,7 @@ function Home() {
 
       <main className="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12">
         <h2 className="text-3xl font-bold">Newest Projects</h2>
-        <p className="text-lg text-gray-600">Discover volunteer projects and make an impact.</p>
+        <p className="text-lg text-gray-600">Discover volunteer projects and make an impact</p>
         <Carousel />
 
         <h2 className="text-3xl font-bold">About Us</h2>

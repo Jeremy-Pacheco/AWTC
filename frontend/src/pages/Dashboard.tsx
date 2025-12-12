@@ -360,8 +360,7 @@ const Dashboard: React.FC = () => {
         {([
           "profile",
           "myprojects",
-          "reviews",
-          ...(user && (user.role === 'admin' || user.role === 'coordinator') ? ["projects", "categories"] : []),
+          ...(user && (user.role === 'admin' || user.role === 'coordinator') ? ["projects", "categories", "reviews"] : []),
           ...(user && user.role === 'admin' ? ["users", "contacts", "analytics"] : []),
         ] as const).map((tab) => (
           <button
@@ -502,7 +501,7 @@ const Dashboard: React.FC = () => {
                           />
                         )}
                       </div>
-                      {user && user.role === 'admin' && (
+                      {user && (user.role === 'admin' || user.role === 'coordinator') && (
                         <div className="flex gap-2 flex-wrap md:flex-nowrap">
                           <button 
                             className="bg-[#B33A3A] text-white hover:bg-[#1f2124] hover:text-white transition px-3 py-1 rounded-3xl text-sm" 
