@@ -3,7 +3,10 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    await queryInterface.removeColumn('Users', 'password');
+    const tableInfo = await queryInterface.describeTable('Users');
+    if (tableInfo.password) {
+      await queryInterface.removeColumn('Users', 'password');
+    }
   },
 
   async down (queryInterface, Sequelize) {
