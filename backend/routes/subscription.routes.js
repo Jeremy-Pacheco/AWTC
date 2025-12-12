@@ -20,23 +20,80 @@ const requireMessagingRole = (req, res, next) => {
 router.use(requireAuth);
 
 /**
- * @route POST /api/subscriptions/subscribe
- * @desc Subscribe user to push notifications
- * @access Private (All authenticated users)
+ * @swagger
+ * /api/subscriptions/subscribe:
+ *   post:
+ *     summary: Subscribe user to push notifications
+ *     description: Register device for push notifications (All authenticated users)
+ *     tags: [Subscriptions]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               endpoint:
+ *                 type: string
+ *                 example: "https://fcm.googleapis.com/..."
+ *               auth:
+ *                 type: string
+ *                 example: "auth_key"
+ *               p256dh:
+ *                 type: string
+ *                 example: "p256dh_key"
+ *     responses:
+ *       201:
+ *         description: Subscription created successfully
+ *       400:
+ *         description: Invalid subscription data
+ *       401:
+ *         description: Unauthorized - No valid token
  */
 router.post('/subscribe', subscriptionController.subscribe);
 
 /**
- * @route POST /api/subscriptions/unsubscribe
- * @desc Unsubscribe user from push notifications
- * @access Private (All authenticated users)
+ * @swagger
+ * /api/subscriptions/unsubscribe:
+ *   post:
+ *     summary: Unsubscribe user from push notifications
+ *     description: Remove device from push notifications (All authenticated users)
+ *     tags: [Subscriptions]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               endpoint:
+ *                 type: string
+ *                 example: "https://fcm.googleapis.com/..."
+ *     responses:
+ *       200:
+ *         description: Unsubscribed successfully
+ *       401:
+ *         description: Unauthorized - No valid token
  */
 router.post('/unsubscribe', subscriptionController.unsubscribe);
 
 /**
- * @route GET /api/subscriptions
- * @desc Get current user's subscriptions
- * @access Private (All authenticated users)
+ * @swagger
+ * /api/subscriptions:
+ *   get:
+ *     summary: Get current user's subscriptions
+ *     description: Get list of all push notification subscriptions for the authenticated user
+ *     tags: [Subscriptions]
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: List of subscriptions
+ *       401:
+ *         description: Unauthorized - No valid token
  */
 router.get('/', subscriptionController.getUserSubscriptions);
 

@@ -21,6 +21,11 @@ const options = {
         description: 'Production Server (via Nginx)'
       }
     ],
+    security: [
+      {
+        bearerAuth: []
+      }
+    ],
     components: {
       securitySchemes: {
         bearerAuth: {
@@ -108,7 +113,10 @@ const options = {
     './routes/category.routes.js',
     './routes/user.routes.js',
     './routes/contact.routes.js',
-    './routes/session.routes.js'
+    './routes/session.routes.js',
+    './routes/message.routes.js',
+    './routes/subscription.routes.js',
+    './routes/external.routes.js'
   ]
 };
 
