@@ -54,9 +54,12 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
     return 'denied';
   }
 
-  // Check if we're in a secure context (required for Edge and some browsers)
-  if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
-    console.warn('Notifications require HTTPS');
+  // Check if we're in a secure context (HTTPS or localhost)
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const isSecure = window.location.protocol === 'https:' || isLocalhost;
+  
+  if (!isSecure) {
+    console.warn('Notifications require HTTPS or localhost');
     return 'denied';
   }
 
@@ -89,9 +92,11 @@ async function registerServiceWorker(): Promise<ServiceWorkerRegistration> {
     throw new Error('Service workers not supported');
   }
 
-  // Check for secure context
-  if (!window.isSecureContext) {
-    throw new Error('Service workers require a secure context (HTTPS)');
+  // Check for secure context (localhost is always secure)
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  
+  if (!window.isSecureContext && !isLocalhost) {
+    throw new Error('Service workers require a secure context (HTTPS or localhost)');
   }
 
   try {
@@ -166,10 +171,19 @@ export async function subscribeUserToPush(token: string): Promise<PushSubscripti
         console.log('New push subscription created');
       } catch (pushError: any) {
         // Handle specific push subscription errors
-        if (pushError.name === 'AbortError' || pushError.message?.includes('push service error')) {
-          console.warn('⚠️ Push subscription failed - this is common with self-signed certificates');
-          console.warn('Push notifications will work in production with valid SSL certificates');
-          console.warn('For now, notifications are disabled in development');
+        if (pushError.name === 'AbortError' || pushError.message?.includes('push service error') || pushError.name === 'NotAllowedError') {
+          console.warn('⚠️ Push subscription failed');
+          console.warn('📋 Posibles causas:');
+          console.warn('   1. Certificados SSL auto-firmados o inválidos');
+          console.warn('   2. La página no está servida desde localhost o HTTPS válido');
+          console.warn('   3. El navegador bloqueó las notificaciones');
+          console.warn('');
+          console.warn('✅ Soluciones para desarrollo:');
+          console.warn('   • Asegúrate de acceder desde http://localhost:PUERTO');
+          console.warn('   • Si usas HTTPS, usa certificados válidos o un túnel (ngrok)');
+          console.warn('   • En producción funcionará con SSL válido');
+          console.warn('');
+          console.warn('Error completo:', pushError.message);
           return null;
         }
         throw pushError; // Re-throw other errors

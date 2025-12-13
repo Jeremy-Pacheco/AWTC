@@ -4,6 +4,7 @@ import HeroImage from "../components/HeroImage";
 import AlertModal from "../components/AlertModal";
 import logo4 from "../../../frontend/public/home/aboutUs-image.png";
 import { NavLink, useNavigate } from "react-router-dom";
+import { io, Socket } from "socket.io-client";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 const IMAGE_URL = import.meta.env.VITE_IMAGE_URL || "http://localhost:8080/images";
@@ -202,6 +203,7 @@ function ReviewsSection({
     }
   }, [token]);
 
+  // Fetch reviews
   useEffect(() => {
     fetch(`${API_BASE_URL}/api/reviews`)
       .then((res) => {
@@ -218,6 +220,47 @@ function ReviewsSection({
       })
       .catch((err) => console.error(err));
   }, [refreshTrigger]);
+
+  // Socket listener for real-time review deletion
+  useEffect(() => {
+    let socket: Socket | null = null;
+
+    // Only connect if user is logged in
+    if (token && currentUserId) {
+      try {
+        socket = io(API_BASE_URL, {
+          transports: ['websocket', 'polling'],
+          reconnection: true,
+          reconnectionDelay: 1000,
+          reconnectionAttempts: 5
+        });
+
+        socket.on('connect', () => {
+          console.log('Connected to socket for review updates');
+        });
+
+        socket.on('review_deleted', (data: { reviewId: number; userId: number }) => {
+          console.log('Review deleted event received:', data);
+          
+          // Remove the review from the list immediately
+          setReviews(prev => prev.filter(r => r.id !== data.reviewId));
+        });
+
+        socket.on('connect_error', (error) => {
+          console.error('Socket connection error:', error);
+        });
+      } catch (error) {
+        console.error('Error setting up socket:', error);
+      }
+    }
+
+    return () => {
+      if (socket) {
+        socket.disconnect();
+        console.log('Socket disconnected');
+      }
+    };
+  }, [token, currentUserId]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

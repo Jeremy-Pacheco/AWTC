@@ -38,11 +38,14 @@ function initializeSocketIO(server) {
       const userId = socket.handshake.auth.userId;
       const userRole = socket.handshake.auth.userRole;
 
+      // Allow connections without auth for public events (like review_deleted)
       if (!userId || !userRole) {
-        return next(new Error('Authentication error'));
+        console.log('Public socket connection (no auth)');
+        socket.isPublic = true;
+        return next();
       }
 
-      // Verify that user exists and has admin or coordinator role
+      // Verify that user exists and has admin or coordinator role for messaging
       const user = await db.User.findByPk(userId);
       
       if (!user) {
@@ -50,7 +53,12 @@ function initializeSocketIO(server) {
       }
 
       if (user.role !== 'admin' && user.role !== 'coordinator') {
-        return next(new Error('Unauthorized: Only admins and coordinators can use messaging'));
+        // Allow regular users to connect but not use messaging
+        socket.userId = userId;
+        socket.userRole = user.role;
+        socket.userName = user.name;
+        socket.isRegularUser = true;
+        return next();
       }
 
       socket.userId = userId;
@@ -64,6 +72,12 @@ function initializeSocketIO(server) {
   });
 
   io.on('connection', (socket) => {
+    if (socket.isPublic) {
+      console.log('Public socket connected (listening to broadcasts only)');
+      socket.emit('connected', { message: 'Connected to public events' });
+      return; // Don't register messaging handlers for public connections
+    }
+
     console.log(`User connected: ${socket.userName} (ID: ${socket.userId})`);
     
     // Register user socket with page info
