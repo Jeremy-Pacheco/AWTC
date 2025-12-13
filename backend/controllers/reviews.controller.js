@@ -1,4 +1,6 @@
 const { Reviews, User } = require("../models");
+const { sendNotificationToUser } = require("./subscription.controller");
+const { getIO } = require("../config/socket");
 const fs = require("fs");
 const path = require("path");
 
@@ -89,8 +91,11 @@ exports.deleteReview = async (req, res) => {
 
     if (!review) return res.status(404).json({ message: "Review not found" });
 
+    const isAdmin = req.user.role === "admin";
+    const isOwner = review.userId === req.user.id;
+
     // Allow admins to delete any review, or users to delete their own
-    if (review.userId !== req.user.id && req.user.role !== 'admin') {
+    if (!isOwner && !isAdmin) {
       return res.status(403).json({ message: "No tienes permiso." });
     }
 
@@ -101,7 +106,45 @@ exports.deleteReview = async (req, res) => {
       }
     }
 
+    const reviewOwnerId = review.userId;
+    const reviewId = review.id;
+    const reviewSnippet = review.content
+      ? `${review.content.slice(0, 90)}${review.content.length > 90 ? "..." : ""}`
+      : "tu reseña";
+
     await review.destroy();
+
+    // Notify the review owner when an admin deletes their review
+    if (isAdmin && !isOwner) {
+      // Emit socket event for real-time update
+      try {
+        const io = getIO();
+        io.emit('review_deleted', { reviewId, userId: reviewOwnerId });
+        console.log(`Socket event emitted: review_deleted for review ${reviewId}`);
+      } catch (socketError) {
+        console.error("Error emitting socket event:", socketError);
+      }
+
+      // Send push notification
+      const payload = {
+        title: "Your review was deleted",
+        body: `An administrator deleted your review: "${reviewSnippet}"`,
+        icon: "/images/logo.png",
+        tag: `review-${reviewId}-deleted-${Date.now()}`,
+        data: {
+          url: "/reviews",
+          reviewId,
+        },
+      };
+
+      try {
+        const notifyResult = await sendNotificationToUser(reviewOwnerId, payload);
+        console.log("Push notification result:", notifyResult);
+      } catch (notifyError) {
+        console.error("Error sending review deletion notification:", notifyError);
+      }
+    }
+
     res.status(200).json({ message: "Review deleted successfully" });
   } catch (error) {
     console.error(error);
