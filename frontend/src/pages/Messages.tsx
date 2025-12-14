@@ -59,10 +59,10 @@ export default function Messages() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-white dark:bg-[var(--bg-primary)]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading messaging...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading messaging...</p>
         </div>
       </div>
     );
@@ -73,7 +73,7 @@ export default function Messages() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 dark:bg-[var(--bg-primary)]">
       <Chat currentUser={currentUser} token={token} />
     </div>
   );
