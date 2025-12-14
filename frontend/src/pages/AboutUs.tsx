@@ -1,13 +1,22 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import HeroImage from "../components/HeroImage";
 import AlertModal from "../components/AlertModal";
 
 const AboutUs: React.FC = () => {
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+  const navigate = useNavigate();
 
-  const openSignup = () => {
-    window.dispatchEvent(new CustomEvent("openAuthModal", { detail: { mode: "signup" } }));
+  const handleBecomeVolunteer = () => {
+    const token = localStorage.getItem("jwtToken");
+    if (token) {
+      // User is logged in, go to volunteering page
+      navigate("/volunteering");
+    } else {
+      // User is not logged in, open signup modal
+      window.dispatchEvent(new CustomEvent("openAuthModal", { detail: { mode: "signup" } }));
+    }
   };
 
   useEffect(() => {
@@ -91,7 +100,7 @@ const AboutUs: React.FC = () => {
             impact. Your time matters — and change begins when you decide to take action.
           </p>
           <button
-            onClick={openSignup}
+            onClick={handleBecomeVolunteer}
             className="inline-block bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-6 py-2 rounded-3xl font-semibold shadow transition"
           >
             Become a volunteer today

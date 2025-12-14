@@ -430,8 +430,11 @@ const Dashboard: React.FC = () => {
             }`}
             onClick={() => {
               if (tab === "analytics") {
-                // Redirect to the backend dashboard via Nginx /admin/ route
-                window.open(`${window.location.origin}/admin/`, '_blank');
+                // In development, use API_URL (localhost:8080), in production use Nginx /admin/ route
+                const analyticsUrl = import.meta.env.DEV 
+                  ? API_URL 
+                  : `${window.location.origin}/admin/`;
+                window.open(analyticsUrl, '_blank');
               } else {
                 setActiveTab(tab as 'profile' | 'myprojects' | 'projects' | 'users' | 'contacts' | 'categories' | 'reviews');
               }
