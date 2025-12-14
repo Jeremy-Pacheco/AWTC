@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { io, Socket } from "socket.io-client";
 import HeroImage from "../components/HeroImage";
 import AuthModal from "../components/AuthModal";
 import AlertModal from "../components/AlertModal";
@@ -16,6 +17,7 @@ type Project = {
   filename?: string;
   categoryId?: number | null;
   category?: { id: number; name: string } | null;
+  volunteerCount?: number;
 };
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -25,6 +27,7 @@ const Volunteering: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [searchParams] = useSearchParams();
   const projectRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+  const socketRef = useRef<Socket | null>(null);
 
   const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -38,6 +41,43 @@ const Volunteering: React.FC = () => {
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [enrolledProjectIds, setEnrolledProjectIds] = useState<number[]>([]);
   const [bannedProjectIds, setBannedProjectIds] = useState<number[]>([]);
+  
+  // Volunteer count state: Map of projectId -> { enrolled: number, capacity: number }
+  const [volunteerCounts, setVolunteerCounts] = useState<{ [key: number]: { enrolled: number; capacity: number } }>({});
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    const socket = io(`${API_URL}/volunteering`, {
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5
+    });
+
+    socket.on('connected', (data) => {
+      console.log('Connected to volunteering WebSocket:', data);
+    });
+
+    // Listen for volunteer count updates
+    socket.on('volunteer_count_updated', (data) => {
+      const { projectId, enrolled, capacity } = data;
+      setVolunteerCounts((prev) => ({
+        ...prev,
+        [projectId]: { enrolled, capacity }
+      }));
+      console.log(`Volunteer count updated for project ${projectId}: ${enrolled}/${capacity}`);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Disconnected from volunteering WebSocket');
+    });
+
+    socketRef.current = socket;
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   const fetchEnrolledProjects = async () => {
     const token = localStorage.getItem("jwtToken");
@@ -73,10 +113,21 @@ const Volunteering: React.FC = () => {
   };
 
   useEffect(() => {
-    fetch(`${API_URL}/api/projects`)
-      .then(res => res.json())
-      .then((data: Project[]) => {
+    const fetchProjects = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/projects`);
+        const data = await res.json();
         setProjects(data);
+        
+        // Initialize volunteer counts from project data
+        const initialCounts: { [key: number]: { enrolled: number; capacity: number } } = {};
+        data.forEach((p: Project) => {
+          initialCounts[p.id] = {
+            enrolled: p.volunteerCount || 0,
+            capacity: p.capacity
+          };
+        });
+        setVolunteerCounts(initialCounts);
         
         // Scroll to specific project if ID in URL
         const projectId = searchParams.get("project");
@@ -96,16 +147,20 @@ const Volunteering: React.FC = () => {
             }
           }, 300);
         }
-      })
-      .catch(err => console.error("Error fetching projects:", err));
+      } catch (err) {
+        console.error("Error fetching projects:", err);
+      }
+    };
 
-    // fetch categories for filter and form
+    fetchProjects();
+
+    // Fetch categories for filter
     fetch(`${API_URL}/api/categories`)
       .then(res => res.json())
       .then((cats: { id: number; name: string }[]) => setCategories(cats || []))
       .catch(err => console.error('Error fetching categories:', err));
 
-    // fetch enrolled projects if logged in
+    // Fetch enrolled projects if logged in
     fetchEnrolledProjects();
   }, [searchParams]);
 
@@ -138,6 +193,9 @@ const Volunteering: React.FC = () => {
         } else if (res.status === 403) {
           setAlertMessage("You cannot enroll in this project");
           setAlertOpen(true);
+        } else if (res.status === 400) {
+          setAlertMessage(data.message || "Project is at full capacity");
+          setAlertOpen(true);
         } else {
           setAlertMessage(data.message || "Error enrolling");
           setAlertOpen(true);
@@ -154,6 +212,13 @@ const Volunteering: React.FC = () => {
       setAlertMessage("Network error enrolling");
       setAlertOpen(true);
     }
+  };
+
+  // Check if a project is at full capacity
+  const isProjectFull = (projectId: number): boolean => {
+    const count = volunteerCounts[projectId];
+    if (!count) return false;
+    return count.enrolled >= count.capacity;
   };
 
   const filteredProjects = selectedCategory
@@ -176,7 +241,7 @@ const Volunteering: React.FC = () => {
             <p className="text-lg text-gray-600">Small actions, big impact</p>
           </div>
           <div className="mt-4 md:mt-0 flex items-center gap-2">
-                        <span>Filter by category</span>
+            <span>Filter by category</span>
             <select
               className="border rounded p-2"
               value={selectedCategory}
@@ -189,66 +254,90 @@ const Volunteering: React.FC = () => {
                 </option>
               ))}
             </select>
-
           </div>
         </div>
 
-
-
         <div className="flex flex-col gap-6 px-4 md:px-16 pb-16">
-          {filteredProjects.map(proj => (
-            <div
-              key={proj.id}
-              ref={(el) => {
-                if (el) projectRefs.current[proj.id] = el;
-              }}
-              className="flex flex-col md:flex-row bg-white rounded p-4 md:p-6 gap-4 shadow-2xl transition-all duration-300"
-            >
-              {proj.filename && (
-                <img
-                  src={`${IMAGE_URL}/${proj.filename}`}
-                  alt={proj.name}
-                  className="w-full md:w-48 h-48 object-cover rounded"
-                />
-              )}
-              <div className="flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-2xl font-bold">{proj.name}</h3>
-                    {proj.category && (
-                      <span className="bg-[#1f2124] text-white px-3 py-1 rounded-full text-xs font-bold">
-                        {proj.category.name}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-600 mb-3">📍 {proj.location}</p>
-                  <p className="mb-4">{proj.description}</p>
-                </div>
-                {bannedProjectIds.includes(proj.id) ? (
-                  <button
-                    disabled
-                    className="bg-[#B33A3A] text-white px-4 py-2 rounded-3xl font-semibold cursor-not-allowed w-fit"
-                  >
-                    Not Available
-                  </button>
-                ) : enrolledProjectIds.includes(proj.id) ? (
-                  <button
-                    disabled
-                    className="bg-gray-400 text-white px-4 py-2 rounded-3xl font-semibold cursor-not-allowed w-fit"
-                  >
-                    Already Enrolled
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleEnroll(proj.id)}
-                    className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-3xl font-semibold transition-colors w-fit"
-                  >
-                    Enroll
-                  </button>
+          {filteredProjects.map(proj => {
+            const isFull = isProjectFull(proj.id);
+            const count = volunteerCounts[proj.id];
+            
+            return (
+              <div
+                key={proj.id}
+                ref={(el) => {
+                  if (el) projectRefs.current[proj.id] = el;
+                }}
+                className="flex flex-col md:flex-row bg-white rounded p-4 md:p-6 gap-4 shadow-2xl transition-all duration-300"
+              >
+                {proj.filename && (
+                  <img
+                    src={`${IMAGE_URL}/${proj.filename}`}
+                    alt={proj.name}
+                    className="w-full md:w-48 h-48 object-cover rounded"
+                  />
                 )}
+                <div className="flex flex-col justify-between w-full">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="text-2xl font-bold">{proj.name}</h3>
+                      {proj.category && (
+                        <span className="bg-[#1f2124] text-white px-3 py-1 rounded-full text-xs font-bold">
+                          {proj.category.name}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600 mb-3">📍 {proj.location}</p>
+                    
+                    <p className="mb-4">{proj.description}</p>
+                  </div>
+                  
+                  {/* Button and Capacity section */}
+                  <div className="flex flex-col-reverse sm:flex-row justify-between items-end gap-2 sm:gap-4">
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      {bannedProjectIds.includes(proj.id) ? (
+                        <button
+                          disabled
+                          className="bg-[#B33A3A] text-white px-4 py-2 rounded-3xl font-semibold cursor-not-allowed w-full sm:w-fit text-center"
+                        >
+                          Not Available
+                        </button>
+                      ) : enrolledProjectIds.includes(proj.id) ? (
+                        <button
+                          disabled
+                          className="bg-gray-400 text-white px-4 py-2 rounded-3xl font-semibold cursor-not-allowed w-full sm:w-fit text-center"
+                        >
+                          Already Enrolled
+                        </button>
+                      ) : isFull ? (
+                        <button
+                          disabled
+                          className="bg-red-600 text-white px-4 py-2 rounded-3xl font-semibold cursor-not-allowed w-full sm:w-fit text-center"
+                        >
+                          Full
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleEnroll(proj.id)}
+                          className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-3xl font-semibold transition-colors w-full sm:w-fit text-center"
+                        >
+                          Enroll
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Display volunteer capacity */}
+                    <div className="text-sm font-semibold whitespace-nowrap self-end">
+                      <span className={isFull ? 'text-red-600 font-bold' : 'text-[#F0BB00] font-bold'}>
+                        Volunteers: {count ? `${count.enrolled}/${count.capacity}` : `0/${proj.capacity}`}
+                      </span>
+                      {isFull}
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Auth Modal */}
