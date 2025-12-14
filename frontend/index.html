@@ -5,6 +5,16 @@
     <link rel="icon" type="image/png" href="/awtc-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>A Will To Change</title>
+    <script>
+      // Apply dark mode class before React loads to prevent flash
+      (function() {
+        const saved = localStorage.getItem("darkMode");
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (saved === "true" || (saved === null && prefersDark)) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
