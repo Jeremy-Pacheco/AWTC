@@ -4,6 +4,7 @@ const { sendNotificationToUser } = require('../controllers/subscription.controll
 
 let io;
 let reviewsNamespace;
+let volunteeringNamespace;
 
 // Store active user connections
 const userSockets = new Map(); // userId -> socketId
@@ -25,6 +26,8 @@ function initializeSocketIO(server) {
         "https://awilltochange.me:8080",
         "http://awilltochange.me",
         "https://awilltochange.me",
+        "http://www.awilltochange.me",
+        "https://www.awilltochange.me",
         "https://awtc.com",
         "https://www.awtc.com"
       ],
@@ -33,11 +36,18 @@ function initializeSocketIO(server) {
     }
   });
 
-  // Namespace público para Reviews (sin autenticación)
+  // Public namespace for reviews (no authentication required)
   reviewsNamespace = io.of('/reviews');
   reviewsNamespace.on('connection', (socket) => {
     console.log('Reviews socket connected');
     socket.emit('connected', { message: 'Connected to reviews events' });
+  });
+
+  // Public namespace for volunteering (no authentication required)
+  volunteeringNamespace = io.of('/volunteering');
+  volunteeringNamespace.on('connection', (socket) => {
+    console.log('Volunteering socket connected');
+    socket.emit('connected', { message: 'Connected to volunteering events' });
   });
 
   // Authentication middleware for Socket.IO
@@ -285,8 +295,16 @@ function getReviewsNS() {
   return reviewsNamespace;
 }
 
+function getVolunteeringNS() {
+  if (!volunteeringNamespace) {
+    throw new Error('Volunteering namespace not initialized');
+  }
+  return volunteeringNamespace;
+}
+
 module.exports = {
   initializeSocketIO,
   getIO,
-  getReviewsNS
+  getReviewsNS,
+  getVolunteeringNS
 };
