@@ -1,6 +1,60 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
+
+// --- Test-local polyfills and cleanup ---
+// Ensure atob/btoa exist in the jsdom/Node environment
+if (typeof (globalThis as any).atob === 'undefined') {
+  (globalThis as any).atob = (str: string) => Buffer.from(str, 'base64').toString('binary');
+}
+if (typeof (globalThis as any).btoa === 'undefined') {
+  (globalThis as any).btoa = (str: string) => Buffer.from(str, 'binary').toString('base64');
+}
+
+// Ensure File constructor exists
+try {
+  // eslint-disable-next-line no-new
+  new File([], 'x.txt');
+} catch {
+  class NodeFile extends Blob {
+    name: string;
+    lastModified: number;
+    constructor(parts: any[], name: string, options: any = {}) {
+      super(parts, options);
+      this.name = name;
+      this.lastModified = options.lastModified || Date.now();
+    }
+  }
+  // @ts-ignore
+  (globalThis as any).File = NodeFile as any;
+}
+
+// Ensure localStorage has a working implementation with clear()
+(() => {
+  const ls = (globalThis as any).localStorage;
+  const hasClear = ls && typeof ls.clear === 'function';
+  if (!ls || !hasClear) {
+    let store: Record<string, string> = {};
+    const mockLocalStorage = {
+      getItem(key: string) { return Object.prototype.hasOwnProperty.call(store, key) ? store[key] : null; },
+      setItem(key: string, value: string) { store[key] = String(value); },
+      removeItem(key: string) { delete store[key]; },
+      clear() { store = {}; },
+      key(index: number) { return Object.keys(store)[index] ?? null; },
+      get length() { return Object.keys(store).length; }
+    } as unknown as Storage;
+    (globalThis as any).localStorage = mockLocalStorage;
+  }
+})();
+
+// Reset fetch mocks between tests to avoid interference
+afterEach(() => {
+  const f = (globalThis as any).fetch;
+  if (f && typeof f === 'function' && (f as any).mock) {
+    (f as any).mockClear?.();
+    (f as any).mockReset?.();
+  }
+});
 
 // Test 1: ReviewsSection renders reviews list
 describe('ReviewsSection', () => {
@@ -186,9 +240,10 @@ describe('Date Formatting', () => {
       month: 'short',
       day: 'numeric'
     });
-
-    expect(formatted).toContain('12');
-    expect(formatted).toContain('2025');
+    // Be resilient to locale differences; ensure year and day are present
+    expect(formatted).toMatch(/2025/);
+    // Day '12' may appear with leading zeros or different separators
+    expect(formatted).toMatch(/12/);
   });
 });
 
