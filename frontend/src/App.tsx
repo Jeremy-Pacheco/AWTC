@@ -57,20 +57,24 @@ function App() {
 
   return (
     <BrowserRouter>
-      <NavBar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/aboutus" element={<AboutUs />} />
-        <Route path="/volunteering" element={<Volunteering />} />
-        <Route path="/moreinfo" element={<MoreInfo />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/messages" element={<Messages />} />
-      </Routes>
-      <Footer />
-      <FloatingMessageButton />
+      <div className="flex flex-col min-h-screen">
+        <NavBar />
+        <main className="grow">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/aboutus" element={<AboutUs />} />
+            <Route path="/volunteering" element={<Volunteering />} />
+            <Route path="/moreinfo" element={<MoreInfo />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/messages" element={<Messages />} />
+          </Routes>
+        </main>
+        <Footer />
+        <FloatingMessageButton />
+      </div>
     </BrowserRouter>
   );
 }
