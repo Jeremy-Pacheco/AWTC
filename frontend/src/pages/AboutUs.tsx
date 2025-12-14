@@ -11,8 +11,8 @@ const AboutUs: React.FC = () => {
   const handleBecomeVolunteer = () => {
     const token = localStorage.getItem("jwtToken");
     if (token) {
-      // User is logged in, go to dashboard profile
-      navigate("/dashboard");
+      // User is logged in, go to volunteering page
+      navigate("/volunteering");
     } else {
       // User is not logged in, open signup modal
       window.dispatchEvent(new CustomEvent("openAuthModal", { detail: { mode: "signup" } }));
