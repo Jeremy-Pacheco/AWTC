@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Force Tailwind to use class-based dark mode instead of prefers-color-scheme */
+@variant dark (&:where(.dark, .dark *));
+
 /**--------- DARK MODE VARIABLES --------- */
 :root {
   --bg-primary: #ffffff;
@@ -249,6 +252,11 @@ body {
   color: var(--text-primary) !important;
 }
 
+.dark .text-gray-800,
+.dark .text-gray-900 {
+  color: var(--text-primary) !important;
+}
+
 .dark .text-gray-600,
 .dark .text-gray-700 {
   color: var(--text-secondary) !important;
@@ -259,13 +267,24 @@ body {
   color: var(--text-muted) !important;
 }
 
+.dark .border-gray-100,
 .dark .border-gray-200,
 .dark .border-gray-300 {
   border-color: var(--border-color) !important;
 }
 
+.dark .bg-gray-50 {
+  background-color: var(--bg-secondary) !important;
+}
+
+.dark .hover\:bg-gray-100:hover,
+.dark .hover\:bg-gray-200:hover {
+  background-color: var(--bg-tertiary) !important;
+}
+
 .dark .shadow-md,
-.dark .shadow-lg {
+.dark .shadow-lg,
+.dark .shadow-sm {
   box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -1px var(--shadow-color) !important;
 }
 
@@ -290,5 +309,23 @@ body {
 /** Fix for specific white backgrounds */
 .dark [class*="bg-white"] {
   background-color: var(--bg-primary) !important;
+}
+
+/** Fix for yellow backgrounds in prompts/alerts */
+.dark .bg-yellow-50 {
+  background-color: rgba(240, 187, 0, 0.1) !important;
+}
+
+.dark .border-yellow-100 {
+  border-color: rgba(240, 187, 0, 0.3) !important;
+}
+
+/** Fix for red backgrounds in alerts/errors */
+.dark .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+}
+
+.dark .border-red-200 {
+  border-color: rgba(239, 68, 68, 0.3) !important;
 }
 

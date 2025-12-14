@@ -241,9 +241,9 @@ const Volunteering: React.FC = () => {
             <p className="text-lg text-gray-600 dark:text-gray-400">Small actions, big impact</p>
           </div>
           <div className="mt-4 md:mt-0 flex items-center gap-2">
-            <span className="dark:text-gray-300">Filter by category</span>
+            <span className="text-gray-700 dark:text-gray-300">Filter by category</span>
             <select
-              className="border rounded p-2 dark:bg-[var(--bg-secondary)] dark:border-gray-600 dark:text-white"
+              className="border border-gray-300 rounded p-2 bg-white text-gray-800 dark:bg-[var(--bg-secondary)] dark:border-gray-600 dark:text-white"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
             >

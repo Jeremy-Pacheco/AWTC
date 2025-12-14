@@ -15,10 +15,6 @@ function NavBar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    const savedMode = localStorage.getItem("darkMode");
-    if (savedMode !== null) {
-      return savedMode === "true";
-    }
     return document.documentElement.classList.contains("dark");
   });
 

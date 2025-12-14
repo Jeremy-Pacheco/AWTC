@@ -5,10 +5,6 @@ import { useState, useEffect } from "react";
 
 function Footer() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    const savedMode = localStorage.getItem("darkMode");
-    if (savedMode !== null) {
-      return savedMode === "true";
-    }
     return document.documentElement.classList.contains("dark");
   });
 
@@ -41,7 +37,7 @@ function Footer() {
           {/* Column 1: Logo, tagline, social icons */}
           <div>
             <img src={isDarkMode ? LogoWhite : Logo} alt="AWTC Logo" className="h-12 w-12 mb-3" />
-            <p className="mb-4 dark:text-gray-300">Together for a better planet</p>
+            <p className="mb-4 text-gray-600 dark:text-gray-300">Together for a better planet</p>
             <div className="flex space-x-3">
               <a href="#" aria-label="Facebook" className="hover:text-gray-800 dark:hover:text-white">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor"><path d="M22 12a10 10 0 10-11.5 9.9v-7h-2.2v-2.9h2.2V9.4c0-2.2 1.3-3.4 3.3-3.4.96 0 1.97.17 1.97.17v2.2h-1.13c-1.12 0-1.47.69-1.47 1.4v1.7h2.5l-.4 2.9h-2.1v7A10 10 0 0022 12z"/></svg>
