@@ -238,12 +238,12 @@ const Volunteering: React.FC = () => {
         <div className="flex flex-col md:flex-row justify-between items-center mt-8 mb-6 px-4 md:px-16">
           <div>
             <h2 className="text-3xl font-bold">Active Projects</h2>
-            <p className="text-lg text-gray-600">Small actions, big impact</p>
+            <p className="text-lg text-gray-600 dark:text-gray-400">Small actions, big impact</p>
           </div>
           <div className="mt-4 md:mt-0 flex items-center gap-2">
-            <span>Filter by category</span>
+            <span className="dark:text-gray-300">Filter by category</span>
             <select
-              className="border rounded p-2"
+              className="border rounded p-2 dark:bg-[var(--bg-secondary)] dark:border-gray-600 dark:text-white"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
@@ -268,7 +268,7 @@ const Volunteering: React.FC = () => {
                 ref={(el) => {
                   if (el) projectRefs.current[proj.id] = el;
                 }}
-                className="flex flex-col md:flex-row bg-white rounded p-4 md:p-6 gap-4 shadow-2xl transition-all duration-300"
+                className="flex flex-col md:flex-row bg-white dark:bg-[var(--card-bg)] rounded-xl p-4 md:p-6 gap-4 shadow-xl dark:shadow-2xl dark:shadow-black/30 border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:shadow-2xl hover:scale-[1.01]"
               >
                 {proj.filename && (
                   <img
@@ -287,7 +287,7 @@ const Volunteering: React.FC = () => {
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 mb-3">📍 {proj.location}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">📍 {proj.location}</p>
                     
                     <p className="mb-4">{proj.description}</p>
                   </div>
