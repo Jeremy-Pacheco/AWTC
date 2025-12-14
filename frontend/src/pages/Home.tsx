@@ -221,46 +221,54 @@ function ReviewsSection({
       .catch((err) => console.error(err));
   }, [refreshTrigger]);
 
-  // Socket listener for real-time review deletion
+  // Reviews WebSocket: listen on public namespace '/reviews'
   useEffect(() => {
-    let socket: Socket | null = null;
+    let reviewsSocket: Socket | null = null;
+    try {
+      reviewsSocket = io(`${API_BASE_URL}/reviews`, {
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: 5
+      });
 
-    // Only connect if user is logged in
-    if (token && currentUserId) {
-      try {
-        socket = io(API_BASE_URL, {
-          transports: ['websocket', 'polling'],
-          reconnection: true,
-          reconnectionDelay: 1000,
-          reconnectionAttempts: 5
-        });
+      reviewsSocket.on('connected', () => {
+        console.log('Connected to reviews socket namespace');
+      });
 
-        socket.on('connect', () => {
-          console.log('Connected to socket for review updates');
+      reviewsSocket.on('review_created', (data: { id: number; content: string; date: string; image?: string | null; userId: number; user?: { email?: string; name?: string }; }) => {
+        console.log('review_created:', data);
+        setReviews(prev => {
+          // Avoid duplicates
+          if (prev.some(r => r.id === data.id)) return prev;
+          return [data as Review, ...prev];
         });
+      });
 
-        socket.on('review_deleted', (data: { reviewId: number; userId: number }) => {
-          console.log('Review deleted event received:', data);
-          
-          // Remove the review from the list immediately
-          setReviews(prev => prev.filter(r => r.id !== data.reviewId));
-        });
+      reviewsSocket.on('review_updated', (data: { id: number; content: string; date: string; image?: string | null; }) => {
+        console.log('review_updated:', data);
+        setReviews(prev => prev.map(r => r.id === data.id ? { ...r, content: data.content, image: data.image ?? null, date: data.date } : r));
+      });
 
-        socket.on('connect_error', (error) => {
-          console.error('Socket connection error:', error);
-        });
-      } catch (error) {
-        console.error('Error setting up socket:', error);
-      }
+      reviewsSocket.on('review_deleted', (data: { reviewId: number; userId?: number }) => {
+        console.log('review_deleted:', data);
+        setReviews(prev => prev.filter(r => r.id !== data.reviewId));
+      });
+
+      reviewsSocket.on('connect_error', (error) => {
+        console.error('Reviews socket connection error:', error);
+      });
+    } catch (error) {
+      console.error('Error setting up reviews socket:', error);
     }
 
     return () => {
-      if (socket) {
-        socket.disconnect();
-        console.log('Socket disconnected');
+      if (reviewsSocket) {
+        reviewsSocket.disconnect();
+        console.log('Reviews socket disconnected');
       }
     };
-  }, [token, currentUserId]);
+  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
