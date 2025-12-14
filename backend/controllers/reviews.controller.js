@@ -1,6 +1,6 @@
 const { Reviews, User } = require("../models");
 const { sendNotificationToUser } = require("./subscription.controller");
-const { getIO } = require("../config/socket");
+const { getReviewsNS } = require("../config/socket");
 const fs = require("fs");
 const path = require("path");
 
@@ -26,6 +26,21 @@ exports.createReview = async (req, res) => {
         { model: User, as: "user", attributes: ["id", "email", "name"] },
       ],
     });
+
+    // Emit evento de creación de review
+    try {
+      getReviewsNS().emit('review_created', {
+        id: reviewWithUser.id,
+        content: reviewWithUser.content,
+        date: reviewWithUser.date,
+        image: reviewWithUser.image || null,
+        userId: reviewWithUser.userId,
+        user: reviewWithUser.user
+      });
+      console.log(`Emitted review_created (${reviewWithUser.id})`);
+    } catch (e) {
+      console.warn('Emit review_created failed', e.message);
+    }
 
     res.status(201).json(reviewWithUser);
   } catch (error) {
@@ -75,6 +90,19 @@ exports.updateReview = async (req, res) => {
 
     await review.update(updateData);
 
+    // Emit evento de actualización de review
+    try {
+      getReviewsNS().emit('review_updated', {
+        id: review.id,
+        content: review.content,
+        date: review.date,
+        image: review.image || null
+      });
+      console.log(`Emitted review_updated (${review.id})`);
+    } catch (e) {
+      console.warn('Emit review_updated failed', e.message);
+    }
+
     res.status(200).json(review);
   } catch (error) {
     console.error(error);
@@ -116,13 +144,12 @@ exports.deleteReview = async (req, res) => {
 
     // Notify the review owner when an admin deletes their review
     if (isAdmin && !isOwner) {
-      // Emit socket event for real-time update
+      // Emit socket event (namespace de reviews)
       try {
-        const io = getIO();
-        io.emit('review_deleted', { reviewId, userId: reviewOwnerId });
-        console.log(`Socket event emitted: review_deleted for review ${reviewId}`);
+        getReviewsNS().emit('review_deleted', { reviewId, userId: reviewOwnerId });
+        console.log(`Emitted review_deleted (${reviewId})`);
       } catch (socketError) {
-        console.error("Error emitting socket event:", socketError);
+        console.error("Error emitting review_deleted:", socketError);
       }
 
       // Send push notification

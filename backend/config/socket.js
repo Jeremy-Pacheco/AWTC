@@ -3,6 +3,7 @@ const db = require('../models');
 const { sendNotificationToUser } = require('../controllers/subscription.controller');
 
 let io;
+let reviewsNamespace;
 
 // Store active user connections
 const userSockets = new Map(); // userId -> socketId
@@ -30,6 +31,13 @@ function initializeSocketIO(server) {
       methods: ["GET", "POST"],
       credentials: true
     }
+  });
+
+  // Namespace público para Reviews (sin autenticación)
+  reviewsNamespace = io.of('/reviews');
+  reviewsNamespace.on('connection', (socket) => {
+    console.log('Reviews socket connected');
+    socket.emit('connected', { message: 'Connected to reviews events' });
   });
 
   // Authentication middleware for Socket.IO
@@ -270,7 +278,15 @@ function getIO() {
   return io;
 }
 
+function getReviewsNS() {
+  if (!reviewsNamespace) {
+    throw new Error('Reviews namespace not initialized');
+  }
+  return reviewsNamespace;
+}
+
 module.exports = {
   initializeSocketIO,
-  getIO
+  getIO,
+  getReviewsNS
 };
