@@ -1,4 +1,6 @@
 const { Reviews, User } = require("../models");
+const { sendNotificationToUser } = require("./subscription.controller");
+const { getReviewsNS } = require("../config/socket");
 const fs = require("fs");
 const path = require("path");
 
@@ -24,6 +26,21 @@ exports.createReview = async (req, res) => {
         { model: User, as: "user", attributes: ["id", "email", "name"] },
       ],
     });
+
+    // Emit evento de creación de review
+    try {
+      getReviewsNS().emit('review_created', {
+        id: reviewWithUser.id,
+        content: reviewWithUser.content,
+        date: reviewWithUser.date,
+        image: reviewWithUser.image || null,
+        userId: reviewWithUser.userId,
+        user: reviewWithUser.user
+      });
+      console.log(`Emitted review_created (${reviewWithUser.id})`);
+    } catch (e) {
+      console.warn('Emit review_created failed', e.message);
+    }
 
     res.status(201).json(reviewWithUser);
   } catch (error) {
@@ -73,6 +90,19 @@ exports.updateReview = async (req, res) => {
 
     await review.update(updateData);
 
+    // Emit evento de actualización de review
+    try {
+      getReviewsNS().emit('review_updated', {
+        id: review.id,
+        content: review.content,
+        date: review.date,
+        image: review.image || null
+      });
+      console.log(`Emitted review_updated (${review.id})`);
+    } catch (e) {
+      console.warn('Emit review_updated failed', e.message);
+    }
+
     res.status(200).json(review);
   } catch (error) {
     console.error(error);
@@ -89,8 +119,11 @@ exports.deleteReview = async (req, res) => {
 
     if (!review) return res.status(404).json({ message: "Review not found" });
 
+    const isAdmin = req.user.role === "admin";
+    const isOwner = review.userId === req.user.id;
+
     // Allow admins to delete any review, or users to delete their own
-    if (review.userId !== req.user.id && req.user.role !== 'admin') {
+    if (!isOwner && !isAdmin) {
       return res.status(403).json({ message: "No tienes permiso." });
     }
 
@@ -101,7 +134,44 @@ exports.deleteReview = async (req, res) => {
       }
     }
 
+    const reviewOwnerId = review.userId;
+    const reviewId = review.id;
+    const reviewSnippet = review.content
+      ? `${review.content.slice(0, 90)}${review.content.length > 90 ? "..." : ""}`
+      : "tu reseña";
+
     await review.destroy();
+
+    // Notify the review owner when an admin deletes their review
+    if (isAdmin && !isOwner) {
+      // Emit socket event (namespace de reviews)
+      try {
+        getReviewsNS().emit('review_deleted', { reviewId, userId: reviewOwnerId });
+        console.log(`Emitted review_deleted (${reviewId})`);
+      } catch (socketError) {
+        console.error("Error emitting review_deleted:", socketError);
+      }
+
+      // Send push notification
+      const payload = {
+        title: "Your review was deleted",
+        body: `An administrator deleted your review: "${reviewSnippet}"`,
+        icon: "/images/logo.png",
+        tag: `review-${reviewId}-deleted-${Date.now()}`,
+        data: {
+          url: "/reviews",
+          reviewId,
+        },
+      };
+
+      try {
+        const notifyResult = await sendNotificationToUser(reviewOwnerId, payload);
+        console.log("Push notification result:", notifyResult);
+      } catch (notifyError) {
+        console.error("Error sending review deletion notification:", notifyError);
+      }
+    }
+
     res.status(200).json({ message: "Review deleted successfully" });
   } catch (error) {
     console.error(error);

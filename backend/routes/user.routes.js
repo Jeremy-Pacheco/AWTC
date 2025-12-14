@@ -102,7 +102,21 @@ router.get('/:id/bans', authMiddleware, isAdminOrCoordinator, userCtrl.getUserBa
  *                 type: string
  *     responses:
  *       201:
- *         description: User created successfully
+ *         description: User created successfully, returns access_token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: User created successfully
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *                 access_token:
+ *                   type: string
+ *                   description: JWT token to authorize protected endpoints
+ *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
  *       400:
  *         description: Bad request
  */
@@ -134,6 +148,7 @@ router.post('/signup', userCtrl.createUser);
  *         description: Login successful, returns token
  *       401:
  *         description: Invalid credentials
+ *     security: []
  */
 router.post('/login', userCtrl.login);
 

@@ -374,7 +374,7 @@ export default function Chat({ currentUser, token }: ChatProps) {
   };
 
   return (
-    <div className="flex h-[calc(100vh-80px)] bg-gray-100 relative">
+    <div className="flex h-[calc(100vh-80px)] bg-gray-100 dark:bg-[var(--bg-primary)] relative">
       {/* Mobile overlay */}
       {showSidebar && (
         <div 
@@ -385,25 +385,25 @@ export default function Chat({ currentUser, token }: ChatProps) {
 
       {/* Sidebar - Conversation list */}
       <div className={`
-        w-80 bg-white border-r border-gray-200 flex flex-col
+        w-80 bg-white dark:bg-[var(--bg-secondary)] border-r border-gray-200 dark:border-gray-700 flex flex-col
         lg:relative lg:translate-x-0
         fixed inset-y-0 left-0 z-50 transform transition-transform duration-300
         ${showSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-800">Mensajes</h2>
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white">Mensajes</h2>
           <div className="flex items-center gap-2 mt-2">
             <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-gray-600 dark:text-gray-400">
               {isConnected ? 'Conectado' : 'Desconectado'}
             </span>
           </div>
         </div>
 
         {/* Search new user */}
-        <div className="p-3 border-b border-gray-200">
+        <div className="p-3 border-b border-gray-200 dark:border-gray-700">
           <select
-            className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-white dark:bg-[var(--bg-tertiary)] text-gray-800 dark:text-white"
             onChange={(e) => {
               const user = availableUsers.find(u => u.id === parseInt(e.target.value));
               if (user) handleSelectUser(user);
@@ -432,8 +432,10 @@ export default function Chat({ currentUser, token }: ChatProps) {
                 role: conv.userRole,
                 profileImage: conv.profileImage
               })}
-              className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition ${
-                selectedUser?.id === conv.userId ? 'bg-yellow-50' : ''
+              className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer transition ${
+                selectedUser?.id === conv.userId 
+                  ? 'bg-yellow-50 dark:!bg-[#1a1a1a]' 
+                  : 'hover:bg-gray-50 dark:hover:!bg-[#252525]'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -465,10 +467,10 @@ export default function Chat({ currentUser, token }: ChatProps) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <p className="font-semibold text-gray-800 truncate">{conv.userName}</p>
-                      <span className="text-xs text-gray-500">{formatDate(conv.lastMessageDate)}</span>
+                      <p className="font-semibold text-gray-800 dark:text-white truncate">{conv.userName}</p>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{formatDate(conv.lastMessageDate)}</span>
                     </div>
-                    <p className="text-sm text-gray-600 truncate">{conv.lastMessage}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{conv.lastMessage}</p>
                   </div>
                 </div>
                 {conv.unreadCount > 0 && (
@@ -483,18 +485,18 @@ export default function Chat({ currentUser, token }: ChatProps) {
       </div>
 
       {/* Chat area */}
-      <div className="flex-1 flex flex-col bg-white w-full">
+      <div className="flex-1 flex flex-col bg-white dark:bg-[var(--bg-primary)] w-full">
         {selectedUser ? (
           <>
             {/* Chat header */}
-            <div className="p-4 border-b border-gray-200 bg-white flex items-center gap-3">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[var(--bg-secondary)] flex items-center gap-3">
               {/* Button to open sidebar on mobile */}
               <button
                 onClick={() => setShowSidebar(true)}
-                className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition"
+                className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
                 aria-label="Abrir lista de conversaciones"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
@@ -521,8 +523,8 @@ export default function Chat({ currentUser, token }: ChatProps) {
                   )}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-800">{selectedUser.name}</h3>
-                  <p className="text-sm text-gray-600">
+                  <h3 className="font-semibold text-gray-800 dark:text-white">{selectedUser.name}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     {selectedUser.role === 'admin' ? 'Administrador' : 'Coordinador'}
                     {onlineUsers.includes(selectedUser.id) && (
                       <span className="ml-2 text-green-500">● En línea</span>
@@ -535,7 +537,7 @@ export default function Chat({ currentUser, token }: ChatProps) {
             {/* Messages */}
             <div 
               ref={messagesContainerRef}
-              className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
+              className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-[var(--bg-primary)]"
               onScroll={(e) => {
                 const container = e.currentTarget;
                 const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
@@ -554,7 +556,7 @@ export default function Chat({ currentUser, token }: ChatProps) {
                   <div key={msg.id}>
                     {showDate && (
                       <div className="flex justify-center my-4">
-                        <span className="text-xs text-gray-500 bg-white px-3 py-1 rounded-full">
+                        <span className="text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-[var(--bg-secondary)] px-3 py-1 rounded-full">
                           {formatDate(msg.createdAt)}
                         </span>
                       </div>
@@ -563,10 +565,10 @@ export default function Chat({ currentUser, token }: ChatProps) {
                       <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                         isOwnMessage 
                           ? 'bg-yellow-500 text-white rounded-br-none' 
-                          : 'bg-white text-gray-800 border border-gray-200 rounded-bl-none'
+                          : 'bg-white dark:bg-[var(--bg-secondary)] text-gray-800 dark:text-white border border-gray-200 dark:border-gray-700 rounded-bl-none'
                       }`}>
                         <p className="break-words">{msg.content}</p>
-                        <div className={`text-xs mt-1 ${isOwnMessage ? 'text-yellow-100' : 'text-gray-500'}`}>
+                        <div className={`text-xs mt-1 ${isOwnMessage ? 'text-yellow-100' : 'text-gray-500 dark:text-gray-400'}`}>
                           {formatTime(msg.createdAt)}
                           {isOwnMessage && (
                             <span className="ml-1">{msg.isRead ? '✓✓' : '✓'}</span>
@@ -579,7 +581,7 @@ export default function Chat({ currentUser, token }: ChatProps) {
               })}
               {isTyping && (
                 <div className="flex justify-start">
-                  <div className="bg-gray-200 px-4 py-2 rounded-lg">
+                  <div className="bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-lg">
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
                       <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -592,19 +594,19 @@ export default function Chat({ currentUser, token }: ChatProps) {
             </div>
 
             {/* Message input */}
-            <div className="p-4 border-t border-gray-200 bg-white">
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-[var(--bg-secondary)]">
               <form onSubmit={handleSendMessage} className="flex gap-2">
                 <input
                   type="text"
                   value={messageInput}
                   onChange={(e) => handleTyping(e.target.value)}
                   placeholder="Escribe un mensaje..."
-                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                  className="flex-1 p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-white dark:bg-[var(--bg-tertiary)] text-gray-800 dark:text-white"
                 />
                 <button
                   type="submit"
                   disabled={!messageInput.trim() || !isConnected}
-                  className="px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
+                  className="px-6 py-3 bg-[#F0BB00] text-black rounded-lg hover:bg-[#1f2124] hover:text-white disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition"
                 >
                   Enviar
                 </button>
@@ -612,12 +614,12 @@ export default function Chat({ currentUser, token }: ChatProps) {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-500 p-4">
+          <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400 p-4">
             <div className="text-center">
               {/* Button to open sidebar on mobile when no conversation selected */}
               <button
                 onClick={() => setShowSidebar(true)}
-                className="lg:hidden mb-4 px-6 py-3 bg-[#F0BB00] text-black rounded-lg hover:bg-[#d9a700] transition flex items-center gap-2 mx-auto"
+                className="lg:hidden mb-4 px-6 py-3 bg-[#F0BB00] text-black rounded-lg hover:bg-[#1f2124] hover:text-white transition flex items-center gap-2 mx-auto"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -625,7 +627,7 @@ export default function Chat({ currentUser, token }: ChatProps) {
                 Ver Conversaciones
               </button>
               
-              <svg className="mx-auto h-24 w-24 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="mx-auto h-24 w-24 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
               <p className="mt-4 text-lg">Selecciona una conversación para comenzar</p>

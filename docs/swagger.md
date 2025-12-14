@@ -205,10 +205,13 @@ security:
   - bearerAuth: []
 ```
 
-**In Swagger UI:**
-- Click on "Authorize"
-- Paste your JWT token
-- It is automatically sent in `Authorization: Bearer <token>`
+**How to obtain and use the token in Swagger UI:**
+1. Go to the "Users" section and open `POST /api/users/login` (Login user)
+2. Click "Try it out", fill `email` and `password`, then Execute
+3. Copy the `access_token` from the JSON response
+4. Click the green "Authorize" button (top right)
+5. Paste: `Bearer <access_token>` and confirm
+6. You now have access to protected endpoints (lock icon)
 
 ### Basic Auth
 
@@ -262,7 +265,7 @@ schema:
 ## Documented Endpoints in AWTC
 
 ### Users (/api/users)
-- POST / - Register user
+- POST /login - Login user (returns `access_token`)
 - GET / - Get all (admin only)
 - GET /:id - Get user
 - PUT /:id - Update profile

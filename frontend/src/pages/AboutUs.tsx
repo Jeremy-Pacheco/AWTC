@@ -1,13 +1,22 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import HeroImage from "../components/HeroImage";
 import AlertModal from "../components/AlertModal";
 
 const AboutUs: React.FC = () => {
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+  const navigate = useNavigate();
 
-  const openSignup = () => {
-    window.dispatchEvent(new CustomEvent("openAuthModal", { detail: { mode: "signup" } }));
+  const handleBecomeVolunteer = () => {
+    const token = localStorage.getItem("jwtToken");
+    if (token) {
+      // User is logged in, go to volunteering page
+      navigate("/volunteering");
+    } else {
+      // User is not logged in, open signup modal
+      window.dispatchEvent(new CustomEvent("openAuthModal", { detail: { mode: "signup" } }));
+    }
   };
 
   useEffect(() => {
@@ -22,7 +31,7 @@ const AboutUs: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-[80vh]">
+    <div className="min-h-[80vh] bg-white dark:bg-[var(--bg-primary)]">
       <HeroImage title={<h1 className="Display">A Will To Change</h1>} imgSrc="/hero-img.jpg" heightClass="h-64 md:h-96" />
 
       <main className="max-w-6xl mx-auto px-6 py-12 space-y-16">
@@ -84,14 +93,14 @@ const AboutUs: React.FC = () => {
 
       {/* Wanna join our team (styled same as Contact us) */}
       <div className="max-w-6xl mx-auto px-6 py-12">
-        <section className="bg-white p-8 rounded-lg text-center">
+        <section className="bg-white dark:bg-[var(--card-bg)] p-8 rounded-xl shadow-xl dark:shadow-2xl dark:shadow-black/30 border border-gray-100 dark:border-gray-700 text-center">
           <h2 className="text-3xl font-bold mb-6">Wanna join our team?</h2>
-          <p className="mb-6 text-gray-700">
+          <p className="mb-6 text-gray-700 dark:text-gray-300">
             Become part of AWTC and contribute to projects that create real, measurable
             impact. Your time matters — and change begins when you decide to take action.
           </p>
           <button
-            onClick={openSignup}
+            onClick={handleBecomeVolunteer}
             className="inline-block bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-6 py-2 rounded-3xl font-semibold shadow transition"
           >
             Become a volunteer today
@@ -99,8 +108,8 @@ const AboutUs: React.FC = () => {
         </section>
 
         {/* Contact us */}
-        <section id="contact-section" className="bg-white p-8 rounded-lg mt-8 shadow-2xl">
-          <h2 className="text-2xl md:text-3xl font-bold mb-6 text-black">Contact us</h2>
+        <section id="contact-section" className="bg-white dark:bg-[var(--card-bg)] p-8 rounded-xl mt-8 shadow-xl dark:shadow-2xl dark:shadow-black/30 border border-gray-100 dark:border-gray-700">
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 text-black dark:text-white">Contact us</h2>
 
           <div className="w-full">
             <form
@@ -135,7 +144,7 @@ const AboutUs: React.FC = () => {
               <input
                 name="name"
                 placeholder="Name"
-                className="w-full pl-3 pr-3 py-2 bg-white border border-[#767676] rounded-lg focus:ring-2 focus:ring-blue-400 outline-none text-black"
+                className="w-full pl-3 pr-3 py-2 bg-white dark:bg-[var(--bg-secondary)] border border-[#767676] dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none text-black dark:text-white"
                 required
               />
 
@@ -143,20 +152,20 @@ const AboutUs: React.FC = () => {
                 name="email"
                 type="email"
                 placeholder="Email"
-                className="w-full pl-3 pr-3 py-2 bg-white border border-[#767676] rounded-lg focus:ring-2 focus:ring-blue-400 outline-none text-black"
+                className="w-full pl-3 pr-3 py-2 bg-white dark:bg-[var(--bg-secondary)] border border-[#767676] dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none text-black dark:text-white"
                 required
               />
 
               <input
                 name="subject"
                 placeholder="Subject"
-                className="w-full md:col-span-2 pl-3 pr-3 py-2 bg-white border border-[#767676] rounded-lg focus:ring-2 focus:ring-blue-400 outline-none text-black"
+                className="w-full md:col-span-2 pl-3 pr-3 py-2 bg-white dark:bg-[var(--bg-secondary)] border border-[#767676] dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none text-black dark:text-white"
               />
 
               <textarea
                 name="message"
                 placeholder="Message"
-                className="w-full md:col-span-2 pl-3 pr-3 py-2 bg-white border border-[#767676] rounded-lg focus:ring-2 focus:ring-blue-400 outline-none h-40 resize-y text-black"
+                className="w-full md:col-span-2 pl-3 pr-3 py-2 bg-white dark:bg-[var(--bg-secondary)] border border-[#767676] dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none h-40 resize-y text-black dark:text-white"
                 required
               />
 

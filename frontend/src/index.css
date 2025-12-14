@@ -1,5 +1,62 @@
 @import "tailwindcss";
 
+/**--------- DARK MODE VARIABLES --------- */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f3f4f6;
+  --bg-tertiary: #e5e7eb;
+  --text-primary: #000000;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --border-color: #d1d5db;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --card-bg: #ffffff;
+  --nav-bg: #ffffff;
+  --footer-bg: #1f2124;
+  --accent-color: #F0BB00;
+  --accent-hover: #d4a600;
+  --danger-color: #B33A3A;
+  --scrollbar-track: #f1f1f1;
+  --scrollbar-thumb: rgb(177, 177, 177);
+  --scrollbar-thumb-hover: #1f2124;
+}
+
+.dark {
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --bg-tertiary: #2d2d2d;
+  --text-primary: #ffffff;
+  --text-secondary: #e5e7eb;
+  --text-muted: #9ca3af;
+  --border-color: #404040;
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --card-bg: #1e1e1e;
+  --nav-bg: #1a1a1a;
+  --footer-bg: #0a0a0a;
+  --accent-color: #F0BB00;
+  --accent-hover: #ffc926;
+  --danger-color: #ef4444;
+  --scrollbar-track: #2d2d2d;
+  --scrollbar-thumb: #525252;
+  --scrollbar-thumb-hover: #737373;
+}
+
+/**--------- BASE DARK MODE STYLES --------- */
+html {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.dark body {
+  background-color: var(--bg-primary);
+}
+
 /**--------- TYPOGRAPHY AND BASE STYLES (DESKTOP) --------- */
 @layer base {
   .Display {
@@ -8,31 +65,31 @@
     font-family: "Arial";
   }
   h1 {
-    color: black;
+    color: var(--text-primary);
     font-size: 3.5rem; /**56px*/
     font-weight: bold;
     font-family: "Arial";
   }
   h2 {
-    color: black;
+    color: var(--text-primary);
     font-size: 3rem;   /**48px*/
     font-weight: 600;
     font-family: "Arial";
   }
   h3 {
-    color: black;
+    color: var(--text-primary);
     font-size: 2.5rem; /**40px*/
     font-weight: 600;
     font-family: "Arial";
   }
   h4 {/**Subtitle 1 */
-    color: black;
+    color: var(--text-primary);
     font-size: 1.75rem; /**28px*/
     font-weight: bold;
     font-family: "Arial";
   }
   p {
-    color: black;
+    color: var(--text-primary);
     font-size: 1.125rem; /**18px*/
     font-weight: 400;
     font-family: "Arial";
@@ -103,16 +160,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background:rgb(177, 177, 177);
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #1f2124;
+  background: var(--scrollbar-thumb-hover);
 }
 
 /** --------- MOBILE TYPOGRAPHY AND STYLES --------- */
@@ -158,3 +215,80 @@
     font-family: "Arial";
   }
 }
+
+/**--------- DARK MODE UTILITY CLASSES --------- */
+.dark .bg-white {
+  background-color: var(--bg-primary) !important;
+}
+
+.dark .bg-gray-50,
+.dark .bg-gray-100 {
+  background-color: var(--bg-secondary) !important;
+}
+
+.dark .bg-gray-200 {
+  background-color: var(--bg-tertiary) !important;
+}
+
+.dark .text-gray-800,
+.dark .text-gray-900 {
+  color: var(--text-primary) !important;
+}
+
+/* Keep yellow background on yellow buttons in dark mode (only when not hovering) */
+.dark button[class*="bg-[#F0BB00]"]:not(:hover),
+.dark a[class*="bg-[#F0BB00]"]:not(:hover),
+.dark [class*="bg-yellow-500"]:not(:hover) {
+  background-color: #F0BB00 !important;
+  color: #000000 !important;
+}
+
+/* White text for other buttons in dark mode */
+.dark button.text-black:not([class*="bg-[#F0BB00]"]):not([class*="bg-yellow"]),
+.dark .text-black:not([class*="bg-[#F0BB00]"]):not([class*="bg-yellow"]) {
+  color: var(--text-primary) !important;
+}
+
+.dark .text-gray-600,
+.dark .text-gray-700 {
+  color: var(--text-secondary) !important;
+}
+
+.dark .text-gray-400,
+.dark .text-gray-500 {
+  color: var(--text-muted) !important;
+}
+
+.dark .border-gray-200,
+.dark .border-gray-300 {
+  border-color: var(--border-color) !important;
+}
+
+.dark .shadow-md,
+.dark .shadow-lg {
+  box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -1px var(--shadow-color) !important;
+}
+
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--border-color) !important;
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--text-muted) !important;
+}
+
+/** Cards and containers in dark mode */
+/** Fix for specific white backgrounds */
+.dark [class*="bg-white"] {
+  background-color: var(--bg-primary) !important;
+}
+

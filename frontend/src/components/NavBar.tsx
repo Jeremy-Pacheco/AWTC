@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import Logo from "../assets/awtc-logo.png";
+import LogoWhite from "/awtc-logo-white.png";
 import User from "../assets/user-solid-full.svg";
+import UserWhite from "../assets/user-solid-white.svg";
 import Hamburger from "hamburger-react";
 import AuthModal from "./AuthModal";
+import DarkModeToggle from "./DarkModeToggle";
 
 function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -11,6 +14,13 @@ function NavBar() {
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedMode = localStorage.getItem("darkMode");
+    if (savedMode !== null) {
+      return savedMode === "true";
+    }
+    return document.documentElement.classList.contains("dark");
+  });
 
   const navigate = useNavigate();
 
@@ -52,6 +62,15 @@ function NavBar() {
     return () => window.removeEventListener("openAuthModal", handler as EventListener);
   }, []);
 
+  // Track dark mode changes
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDarkMode(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
   const openAuth = (mode: "login" | "signup") => {
     setAuthMode(mode);
     setAuthOpen(true);
@@ -72,10 +91,10 @@ function NavBar() {
   };
 
   return (
-    <nav className="bg-white shadow-md relative z-30">
+    <nav className="bg-white shadow-md relative z-30 dark:bg-[var(--nav-bg)]">
       <div className="mx-auto px-4 flex justify-between items-center h-16">
         <NavLink to="/home" className="flex items-center">
-          <img src={Logo} alt="Logo AWTC" className="h-10 w-10 mr-2" />
+          <img src={isDarkMode ? LogoWhite : Logo} alt="Logo AWTC" className="h-10 w-10 mr-2" />
         </NavLink>
 
         {/* desktop/tablet */}
@@ -116,6 +135,8 @@ function NavBar() {
   About Us
 </NavLink>
 
+          <DarkModeToggle />
+
           {isLoggedIn ? (
             <>
               <button
@@ -152,12 +173,12 @@ function NavBar() {
         {/* phone */}
         <div className="flex items-center space-x-2 md:hidden">
           <img
-            src={User}
+            src={isDarkMode ? UserWhite : User}
             alt="User Icon"
             className="h-8 w-8 cursor-pointer"
             onClick={() => (isLoggedIn ? navigate("/dashboard") : openAuth("login"))}
           />
-          <Hamburger toggled={menuOpen} toggle={setMenuOpen} size={26} color="#222" />
+          <Hamburger toggled={menuOpen} toggle={setMenuOpen} size={26} color={isDarkMode ? "#ffffff" : "#222"} />
         </div>
       </div>
 
@@ -171,13 +192,13 @@ function NavBar() {
       )}
 
       <div
-        className={`fixed inset-0 bg-white z-50
+        className={`fixed inset-0 bg-white dark:bg-[var(--bg-primary)] z-50
         transform transition-transform duration-300 ease-in-out
         ${menuOpen ? "translate-x-0" : "translate-x-full"}
         flex flex-col p-6 pt-20 space-y-6 overflow-y-auto`}
       >
         <button
-          className="absolute top-5 right-5 text-gray-600 hover:text-black transition-colors"
+          className="absolute top-5 right-5 text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors"
           onClick={() => setMenuOpen(false)}
           aria-label="Close menu"
         >
@@ -190,41 +211,45 @@ function NavBar() {
           <NavLink 
             to="/home" 
             onClick={() => setMenuOpen(false)}
-            className={({ isActive }) => `text-lg font-medium transition-colors ${isActive ? "text-[#F0BB00]" : "text-gray-800 hover:text-[#F0BB00]"}`}
+            className={({ isActive }) => `text-lg font-medium transition-colors ${isActive ? "text-[#F0BB00]" : "text-gray-800 dark:text-gray-200 hover:text-[#F0BB00]"}`}
           >
             Home
           </NavLink>
           <NavLink 
             to="/volunteering" 
             onClick={() => setMenuOpen(false)}
-            className={({ isActive }) => `text-lg font-medium transition-colors ${isActive ? "text-[#F0BB00]" : "text-gray-800 hover:text-[#F0BB00]"}`}
+            className={({ isActive }) => `text-lg font-medium transition-colors ${isActive ? "text-[#F0BB00]" : "text-gray-800 dark:text-gray-200 hover:text-[#F0BB00]"}`}
           >
             Volunteering
           </NavLink>
           <NavLink 
             to="/moreinfo" 
             onClick={() => setMenuOpen(false)}
-            className={({ isActive }) => `text-lg font-medium transition-colors ${isActive ? "text-[#F0BB00]" : "text-gray-800 hover:text-[#F0BB00]"}`}
+            className={({ isActive }) => `text-lg font-medium transition-colors ${isActive ? "text-[#F0BB00]" : "text-gray-800 dark:text-gray-200 hover:text-[#F0BB00]"}`}
           >
             Info
           </NavLink>
           <NavLink 
             to="/aboutus" 
             onClick={() => setMenuOpen(false)}
-            className={({ isActive }) => `text-lg font-medium transition-colors ${isActive ? "text-[#F0BB00]" : "text-gray-800 hover:text-[#F0BB00]"}`}
+            className={({ isActive }) => `text-lg font-medium transition-colors ${isActive ? "text-[#F0BB00]" : "text-gray-800 dark:text-gray-200 hover:text-[#F0BB00]"}`}
           >
             About Us
           </NavLink>
+          
+          <div className="flex justify-start mt-2">
+            <DarkModeToggle />
+          </div>
         </div>
 
-        <div className="h-px bg-gray-200 w-full my-4"></div>
+        <div className="h-px bg-gray-200 dark:bg-gray-700 w-full my-4"></div>
 
         <div className="flex flex-col space-y-3">
           {isLoggedIn ? (
             <>
               <button 
                 onClick={() => {navigate("/dashboard"); setMenuOpen(false)}} 
-                className="w-full px-4 py-2 rounded-3xl border border-[#767676] text-center hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
+                className="w-full px-4 py-2 rounded-3xl border border-[#767676] dark:border-gray-500 text-center text-gray-800 dark:text-gray-200 hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
                 Profile
               </button>
@@ -239,7 +264,7 @@ function NavBar() {
             <>
               <button 
                 onClick={() => {openAuth("login"); setMenuOpen(false)}} 
-                className="w-full px-4 py-2 rounded-3xl border border-[#767676] text-center hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
+                className="w-full px-4 py-2 rounded-3xl border border-[#767676] dark:border-gray-500 text-center text-gray-800 dark:text-gray-200 hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
                 Log In
               </button>

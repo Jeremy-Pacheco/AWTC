@@ -58,6 +58,66 @@ const Dashboard: React.FC = () => {
   const [contactsFilter, setContactsFilter] = useState<'open'|'closed'|'all'>('open');
   const [reviews, setReviews] = useState<any[]>([]);
 
+  // Pagination states
+  const [myProjectsPage, setMyProjectsPage] = useState(1);
+  const [projectsPage, setProjectsPage] = useState(1);
+  const [categoriesPage, setCategoriesPage] = useState(1);
+  const [reviewsPage, setReviewsPage] = useState(1);
+  const [usersPage, setUsersPage] = useState(1);
+  const [incidentsPage, setIncidentsPage] = useState(1);
+
+  // Items per page
+  const ITEMS_PER_PAGE = {
+    myProjects: 5,
+    projects: 5,
+    categories: 10,
+    reviews: 3,
+    users: 5,
+    incidents: 5
+  };
+
+  // Pagination helper functions
+  const paginate = (items: any[], page: number, itemsPerPage: number) => {
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return items.slice(startIndex, endIndex);
+  };
+
+  const getTotalPages = (totalItems: number, itemsPerPage: number) => {
+    return Math.ceil(totalItems / itemsPerPage);
+  };
+
+  // Pagination component
+  const PaginationControls: React.FC<{
+    currentPage: number;
+    totalPages: number;
+    onPageChange: (page: number) => void;
+  }> = ({ currentPage, totalPages, onPageChange }) => {
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="flex justify-center items-center gap-2 mt-4">
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-3 py-1 rounded border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+        >
+          Previous
+        </button>
+        <span className="text-sm text-gray-600">
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="px-3 py-1 rounded border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+        >
+          Next
+        </button>
+      </div>
+    );
+  };
+
   // Load token and fetch user data from backend
   // Load user from backend or localStorage
   useEffect(() => {
@@ -370,8 +430,11 @@ const Dashboard: React.FC = () => {
             }`}
             onClick={() => {
               if (tab === "analytics") {
-                // Redirect to the backend dashboard via Nginx /admin/ route
-                window.open(`${window.location.origin}/admin/`, '_blank');
+                // In development, use API_URL (localhost:8080), in production use Nginx /admin/ route
+                const analyticsUrl = import.meta.env.DEV 
+                  ? API_URL 
+                  : `${window.location.origin}/admin/`;
+                window.open(analyticsUrl, '_blank');
               } else {
                 setActiveTab(tab as 'profile' | 'myprojects' | 'projects' | 'users' | 'contacts' | 'categories' | 'reviews');
               }
@@ -442,7 +505,7 @@ const Dashboard: React.FC = () => {
             </div>
 
             <div className="mb-4">
-              {(projects || []).filter(p => projectsFilter === '' ? true : p.categoryId === projectsFilter).map(p => (
+              {paginate((projects || []).filter(p => projectsFilter === '' ? true : p.categoryId === projectsFilter), projectsPage, ITEMS_PER_PAGE.projects).map(p => (
                 <div key={p.id} className="border p-3 mb-2 rounded">
                   <div className="flex flex-col md:flex-row justify-between md:items-start gap-3">
                     <div className="flex-1">
@@ -457,13 +520,20 @@ const Dashboard: React.FC = () => {
                 </div>
               ))}
             </div>
+            {projects && projects.length > 0 && (
+              <PaginationControls
+                currentPage={projectsPage}
+                totalPages={getTotalPages((projects || []).filter(p => projectsFilter === '' ? true : p.categoryId === projectsFilter).length, ITEMS_PER_PAGE.projects)}
+                onPageChange={setProjectsPage}
+              />
+            )}
           </div>
         )}
         {activeTab === 'myprojects' && (
           <div>
             <h3 className="font-bold mb-2">My Projects</h3>
             <div>
-              {myProjects.map(p => (
+              {paginate(myProjects, myProjectsPage, ITEMS_PER_PAGE.myProjects).map(p => (
                 <div key={p.id} className="border p-3 mb-2 rounded flex flex-col md:flex-row justify-between md:items-start gap-3">
                   <div className="flex-1">
                     <strong className="text-sm md:text-base">{p.name}</strong> {p.status && <span className="text-gray-500 text-sm">({p.status})</span>}<br />
@@ -475,6 +545,11 @@ const Dashboard: React.FC = () => {
                 </div>
               ))}
             </div>
+            <PaginationControls
+              currentPage={myProjectsPage}
+              totalPages={getTotalPages(myProjects.length, ITEMS_PER_PAGE.myProjects)}
+              onPageChange={setMyProjectsPage}
+            />
           </div>
         )}
         {activeTab === 'reviews' && (
@@ -484,7 +559,7 @@ const Dashboard: React.FC = () => {
               {reviews.length === 0 ? (
                 <p className="text-gray-500 text-center py-4">No reviews yet</p>
               ) : (
-                reviews.map(r => (
+                paginate(reviews, reviewsPage, ITEMS_PER_PAGE.reviews).map(r => (
                   <div key={r.id} className="border p-4 mb-3 rounded bg-white shadow-sm">
                     <div className="flex flex-col md:flex-row justify-between md:items-start gap-3">
                       <div className="flex-1">
@@ -533,6 +608,13 @@ const Dashboard: React.FC = () => {
                 ))
               )}
             </div>
+            {reviews.length > 0 && (
+              <PaginationControls
+                currentPage={reviewsPage}
+                totalPages={getTotalPages(reviews.length, ITEMS_PER_PAGE.reviews)}
+                onPageChange={setReviewsPage}
+              />
+            )}
           </div>
         )}
                 {activeTab === 'users' && user && user.role === 'admin' && (
@@ -550,7 +632,7 @@ const Dashboard: React.FC = () => {
                       </div>
                     </div>
                     <div>
-                      {usersData.filter(u => userRoleFilter === '' ? true : u.role === userRoleFilter).map(u => (
+                      {paginate(usersData.filter(u => userRoleFilter === '' ? true : u.role === userRoleFilter), usersPage, ITEMS_PER_PAGE.users).map(u => (
                         <div key={u.id} className="border p-3 mb-2 rounded flex flex-col md:flex-row justify-between md:items-start gap-3">
                           <div className="flex-1 min-w-0">
                             <strong className="text-sm md:text-base block">{u.name}</strong> <small className="text-gray-500 text-xs md:text-sm block truncate">{u.email}</small> <span className="text-xs md:text-sm text-gray-600">({u.role})</span>
@@ -587,6 +669,13 @@ const Dashboard: React.FC = () => {
                         </div>
                       ))}
                     </div>
+                    {usersData && usersData.length > 0 && (
+                      <PaginationControls
+                        currentPage={usersPage}
+                        totalPages={getTotalPages(usersData.filter(u => userRoleFilter === '' ? true : u.role === userRoleFilter).length, ITEMS_PER_PAGE.users)}
+                        onPageChange={setUsersPage}
+                      />
+                    )}
                   </div>
                 )}
 
@@ -602,7 +691,7 @@ const Dashboard: React.FC = () => {
                       </select>
                     </div>
                     <div>
-                      {contacts.filter(c => contactsFilter === 'all' ? true : (contactsFilter === 'open' ? !c.read : c.read)).map(c => (
+                      {paginate(contacts.filter(c => contactsFilter === 'all' ? true : (contactsFilter === 'open' ? !c.read : c.read)), incidentsPage, ITEMS_PER_PAGE.incidents).map(c => (
                         <div key={c.id} className="border p-3 mb-2 rounded">
                           <div className="flex flex-col md:flex-row justify-between gap-2 md:items-start">
                             <div><strong className="text-sm md:text-base">{c.name}</strong> — <span className="text-xs md:text-sm text-gray-700">{c.email}</span></div>
@@ -624,6 +713,13 @@ const Dashboard: React.FC = () => {
                         </div>
                       ))}
                     </div>
+                    {contacts && contacts.length > 0 && (
+                      <PaginationControls
+                        currentPage={incidentsPage}
+                        totalPages={getTotalPages(contacts.filter(c => contactsFilter === 'all' ? true : (contactsFilter === 'open' ? !c.read : c.read)).length, ITEMS_PER_PAGE.incidents)}
+                        onPageChange={setIncidentsPage}
+                      />
+                    )}
                   </div>
                 )}
 
@@ -636,7 +732,7 @@ const Dashboard: React.FC = () => {
                       </button>
                     </div>
                     <div className="mb-4">
-                      {(categories || []).map(c => (
+                      {paginate((categories || []), categoriesPage, ITEMS_PER_PAGE.categories).map(c => (
                         <div key={c.id} className="border p-3 mb-2 rounded">
                           <div className="flex flex-col md:flex-row justify-between md:items-start gap-3">
                             <div className="flex-1">
@@ -651,6 +747,13 @@ const Dashboard: React.FC = () => {
                         </div>
                       ))}
                     </div>
+                    {categories && categories.length > 0 && (
+                      <PaginationControls
+                        currentPage={categoriesPage}
+                        totalPages={getTotalPages(categories.length, ITEMS_PER_PAGE.categories)}
+                        onPageChange={setCategoriesPage}
+                      />
+                    )}
                   </div>
                 )}
         {/** Removed settings tab per new requirements */}
