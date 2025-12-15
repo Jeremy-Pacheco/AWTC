@@ -67,6 +67,7 @@ const Dashboard: React.FC = () => {
   const [reviewsPage, setReviewsPage] = useState(1);
   const [usersPage, setUsersPage] = useState(1);
   const [incidentsPage, setIncidentsPage] = useState(1);
+  const [userProjectsPage, setUserProjectsPage] = useState(1);
 
   // Items per page
   const ITEMS_PER_PAGE = {
@@ -75,7 +76,8 @@ const Dashboard: React.FC = () => {
     categories: 10,
     reviews: 3,
     users: 5,
-    incidents: 5
+    incidents: 5,
+    userProjects: 5
   };
 
   // Pagination helper functions
@@ -693,15 +695,30 @@ const Dashboard: React.FC = () => {
                     <div>
                       {paginate(usersData.filter(u => userRoleFilter === '' ? true : u.role === userRoleFilter), usersPage, ITEMS_PER_PAGE.users).map(u => (
                         <div key={u.id} className="border p-3 mb-2 rounded flex flex-col md:flex-row justify-between md:items-start gap-3">
-                          <div className="flex-1 min-w-0">
-                            <strong className="text-sm md:text-base block">{u.name}</strong> <small className="text-gray-500 text-xs md:text-sm block truncate">{u.email}</small> <span className="text-xs md:text-sm text-gray-600">({u.role})</span>
-                            <div className="mt-2 flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-                              <label className="text-sm">{t('dashboard.role')}:</label>
-                              <select defaultValue={u.role} onChange={async (e)=>{ const newRole = e.target.value; try { const res = await fetch(`${API_URL}/api/users/${u.id}/role`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ role: newRole }) }); if (!res.ok) { const err = await res.json(); return setStatusMessage({ type: 'error', text: err.message || t('dashboard.errorSaving') }); } const updated = await res.json(); setUsersData(prev => prev.map(x => x.id === u.id ? { ...x, role: updated.user.role } : x)); setStatusMessage({ type: 'success', text: t('dashboard.roleUpdated') }); } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: t('dashboard.networkError') }); } }} className="text-sm border rounded p-1">
-                                <option value="volunteer">{t('dashboard.volunteer')}</option>
-                                <option value="coordinator">{t('dashboard.coordinator')}</option>
-                                <option value="admin">{t('dashboard.admin')}</option>
-                              </select>
+                          <div className="flex items-start gap-3 flex-1 min-w-0">
+                            {u.profileImage ? (
+                              <img
+                                src={`${API_URL}/images/${u.profileImage}`}
+                                alt={u.name}
+                                className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                              />
+                            ) : (
+                              <div className="w-12 h-12 rounded-full bg-[#F0BB00] flex items-center justify-center flex-shrink-0">
+                                <span className="text-black font-bold text-lg">
+                                  {u.name.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <strong className="text-sm md:text-base block">{u.name}</strong> <small className="text-gray-500 text-xs md:text-sm block truncate">{u.email}</small> <span className="text-xs md:text-sm text-gray-600">({u.role})</span>
+                              <div className="mt-2 flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                                <label className="text-sm">{t('dashboard.role')}:</label>
+                                <select defaultValue={u.role} onChange={async (e)=>{ const newRole = e.target.value; try { const res = await fetch(`${API_URL}/api/users/${u.id}/role`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ role: newRole }) }); if (!res.ok) { const err = await res.json(); return setStatusMessage({ type: 'error', text: err.message || t('dashboard.errorSaving') }); } const updated = await res.json(); setUsersData(prev => prev.map(x => x.id === u.id ? { ...x, role: updated.user.role } : x)); setStatusMessage({ type: 'success', text: t('dashboard.roleUpdated') }); } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: t('dashboard.networkError') }); } }} className="text-sm border rounded p-1">
+                                  <option value="volunteer">{t('dashboard.volunteer')}</option>
+                                  <option value="coordinator">{t('dashboard.coordinator')}</option>
+                                  <option value="admin">{t('dashboard.admin')}</option>
+                                </select>
+                              </div>
                             </div>
                           </div>
                           <div className="flex gap-2 flex-wrap md:flex-nowrap md:justify-end">
@@ -953,28 +970,39 @@ const Dashboard: React.FC = () => {
       {/* User Projects Modal */}
       <AnimatePresence>
         {userModalOpen && selectedUser && (
-          <motion.div className="fixed inset-0 z-50 flex justify-center items-center bg-black/10 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { setUserModalOpen(false); setSelectedUser(null); }}>
-          <motion.div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-2xl" variants={modalVariants} initial="hidden" animate="visible" exit="exit" transition={{ duration: 0.3, type: "spring", stiffness: 120 }} onClick={(e)=>e.stopPropagation()}>
+          <motion.div className="fixed inset-0 z-50 flex justify-center items-center bg-black/10 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { setUserModalOpen(false); setSelectedUser(null); setUserProjectsPage(1); }}>
+          <motion.div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto" variants={modalVariants} initial="hidden" animate="visible" exit="exit" transition={{ duration: 0.3, type: "spring", stiffness: 120 }} onClick={(e)=>e.stopPropagation()}>
             <h2 className="text-2xl font-bold mb-4">{selectedUser.name} - {t('dashboard.projects')}</h2>
               <div className="mb-4">
-                {userProjects.map((p: any) => (
-                  <div key={p.id} className="border p-3 mb-2 rounded flex justify-between items-center">
-                    <div>
-                      <strong>{p.name}</strong><br />
-                      <span className="text-sm text-gray-600">{p.description}</span>
+                {userProjects.length === 0 ? (
+                  <p className="text-gray-500 text-center py-4">{t('dashboard.noProjects')}</p>
+                ) : (
+                  paginate(userProjects, userProjectsPage, ITEMS_PER_PAGE.userProjects).map((p: any) => (
+                    <div key={p.id} className="border p-3 mb-2 rounded flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                      <div className="flex-1 min-w-0">
+                        <strong className="block truncate">{p.name}</strong>
+                        <span className="text-sm text-gray-600 block truncate">{p.description}</span>
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0">
+                        {!p.banned ? (
+                          <button className="bg-[#B33A3A] text-white px-4 py-2 rounded-3xl hover:bg-[#1f2124] transition text-sm" onClick={() => openConfirm(t('dashboard.removeBan'), t('dashboard.removeBanConfirm'), async () => { closeConfirm(); await handleRejectUserFromProject(p.id, selectedUser.id); }, true)}>{t('dashboard.removeBan')}</button>
+                        ) : (
+                          <button className="px-4 py-2 rounded-3xl border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200 text-sm" onClick={() => openConfirm(t('dashboard.unban'), t('dashboard.unbanConfirm'), async () => { closeConfirm(); await handleUnbanUserFromProject(p.id, selectedUser.id); }, false)}>{t('dashboard.unban')}</button>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      {!p.banned ? (
-                        <button className="bg-[#B33A3A] text-white px-4 py-2 rounded-3xl hover:bg-[#1f2124] transition" onClick={() => openConfirm(t('dashboard.removeBan'), t('dashboard.removeBanConfirm'), async () => { closeConfirm(); await handleRejectUserFromProject(p.id, selectedUser.id); }, true)}>{t('dashboard.removeBan')}</button>
-                      ) : (
-                        <button className="px-4 py-2 rounded-3xl border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200" onClick={() => openConfirm(t('dashboard.unban'), t('dashboard.unbanConfirm'), async () => { closeConfirm(); await handleUnbanUserFromProject(p.id, selectedUser.id); }, false)}>{t('dashboard.unban')}</button>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
-              <div className="flex justify-end">
-                <button className="px-4 py-2 rounded-3xl bg-[#1f2124] text-white border hover:border-[#767676] hover:bg-[#3B3E42] hover:text-white transition-colors duration-200" onClick={() => { setUserModalOpen(false); setSelectedUser(null); }}>{t('dashboard.close')}</button>
+              {userProjects.length > ITEMS_PER_PAGE.userProjects && (
+                <PaginationControls
+                  currentPage={userProjectsPage}
+                  totalPages={getTotalPages(userProjects.length, ITEMS_PER_PAGE.userProjects)}
+                  onPageChange={setUserProjectsPage}
+                />
+              )}
+              <div className="flex justify-end mt-4">
+                <button className="px-4 py-2 rounded-3xl bg-[#1f2124] text-white border hover:border-[#767676] hover:bg-[#3B3E42] hover:text-white transition-colors duration-200" onClick={() => { setUserModalOpen(false); setSelectedUser(null); setUserProjectsPage(1); }}>{t('dashboard.close')}</button>
               </div>
             </motion.div>
           </motion.div>
