@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Chat from '../components/Chat';
 
 interface User {
@@ -11,6 +12,7 @@ interface User {
 }
 
 export default function Messages() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [token, setToken] = useState<string>('');
@@ -30,7 +32,7 @@ export default function Messages() {
     try {
       // Verify that user is admin or coordinator
       if (userRole !== 'admin' && userRole !== 'coordinator') {
-        alert('Only administrators and coordinators can access messaging');
+        alert(t('chat.accessDenied'));
         navigate('/');
         return;
       }
@@ -62,7 +64,7 @@ export default function Messages() {
       <div className="flex items-center justify-center min-h-screen bg-white dark:bg-[var(--bg-primary)]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading messaging...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">{t('chat.loading')}</p>
         </div>
       </div>
     );

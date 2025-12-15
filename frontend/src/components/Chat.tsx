@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { io, Socket } from 'socket.io-client';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -41,6 +42,7 @@ interface ChatProps {
 }
 
 export default function Chat({ currentUser, token }: ChatProps) {
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -355,7 +357,8 @@ export default function Chat({ currentUser, token }: ChatProps) {
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    const locale = i18n.language === 'es' ? 'es-ES' : i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+    return date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
   };
 
   const formatDate = (dateString: string) => {
@@ -363,13 +366,14 @@ export default function Chat({ currentUser, token }: ChatProps) {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
+    const locale = i18n.language === 'es' ? 'es-ES' : i18n.language === 'fr' ? 'fr-FR' : 'en-US';
 
     if (date.toDateString() === today.toDateString()) {
-      return 'Hoy';
+      return t('chat.today');
     } else if (date.toDateString() === yesterday.toDateString()) {
-      return 'Ayer';
+      return t('chat.yesterday');
     } else {
-      return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+      return date.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
     }
   };
 
@@ -391,11 +395,11 @@ export default function Chat({ currentUser, token }: ChatProps) {
         ${showSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-white">Mensajes</h2>
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white">{t('chat.messages')}</h2>
           <div className="flex items-center gap-2 mt-2">
             <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              {isConnected ? 'Conectado' : 'Desconectado'}
+              {isConnected ? t('chat.connected') : t('chat.disconnected')}
             </span>
           </div>
         </div>
@@ -411,7 +415,7 @@ export default function Chat({ currentUser, token }: ChatProps) {
             }}
             defaultValue=""
           >
-            <option value="" disabled>Nuevo mensaje...</option>
+            <option value="" disabled>{t('chat.newMessage')}</option>
             {availableUsers.map(user => (
               <option key={user.id} value={user.id}>
                 {user.name} ({user.role})
@@ -525,9 +529,9 @@ export default function Chat({ currentUser, token }: ChatProps) {
                 <div>
                   <h3 className="font-semibold text-gray-800 dark:text-white">{selectedUser.name}</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {selectedUser.role === 'admin' ? 'Administrador' : 'Coordinador'}
+                    {selectedUser.role === 'admin' ? 'Admin' : 'Coordinator'}
                     {onlineUsers.includes(selectedUser.id) && (
-                      <span className="ml-2 text-green-500">● En línea</span>
+                      <span className="ml-2 text-green-500">● {t('chat.online')}</span>
                     )}
                   </p>
                 </div>
@@ -600,7 +604,7 @@ export default function Chat({ currentUser, token }: ChatProps) {
                   type="text"
                   value={messageInput}
                   onChange={(e) => handleTyping(e.target.value)}
-                  placeholder="Escribe un mensaje..."
+                  placeholder={t('chat.typeMessage')}
                   className="flex-1 p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-white dark:bg-[var(--bg-tertiary)] text-gray-800 dark:text-white"
                 />
                 <button
@@ -608,7 +612,7 @@ export default function Chat({ currentUser, token }: ChatProps) {
                   disabled={!messageInput.trim() || !isConnected}
                   className="px-6 py-3 bg-[#F0BB00] text-black rounded-lg hover:bg-[#1f2124] hover:text-white disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition"
                 >
-                  Enviar
+                  {t('chat.send')}
                 </button>
               </form>
             </div>
@@ -624,13 +628,13 @@ export default function Chat({ currentUser, token }: ChatProps) {
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
-                Ver Conversaciones
+                {t('chat.viewConversations')}
               </button>
               
               <svg className="mx-auto h-24 w-24 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
-              <p className="mt-4 text-lg">Selecciona una conversación para comenzar</p>
+              <p className="mt-4 text-lg">{t('chat.selectConversation')}</p>
             </div>
           </div>
         )}

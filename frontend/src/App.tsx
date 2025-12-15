@@ -12,6 +12,7 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Messages from "./pages/Messages";
 import { subscribeUserToPush, isNotificationSupported } from "./services/notificationService";
+import './i18n';
 
 //TODO: Import other pages when you have them
 function App() {
