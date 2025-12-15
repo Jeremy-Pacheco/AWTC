@@ -371,19 +371,10 @@ npm run build    # Build for production
 ```
 ---
 
-## 📈 Diagrams
+## 📈 Documentation
 
-### E/R Diagram
-
-![](readme-img/ERD.png)
-
-### Class Diagram
-
-![](readme-img/class-diagram.png)
-
-### Use Case Diagram
-
-![](readme-img/use-case-diagram.png)
+For detailed system diagrams (E/R Diagram, Class Diagram, Use Case Diagram), see:
+- **[System Diagrams](docs/diagrams.md)** - Complete architectural and design diagrams
 
 ---
 
