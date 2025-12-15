@@ -7,8 +7,11 @@ import UserWhite from "../assets/user-solid-white.svg";
 import Hamburger from "hamburger-react";
 import AuthModal from "./AuthModal";
 import DarkModeToggle from "./DarkModeToggle";
+import LanguageSelector from "./LanguageSelector";
+import { useTranslation } from "react-i18next";
 
 function NavBar() {
+  const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
@@ -101,7 +104,7 @@ function NavBar() {
     `text-gray-800 transition-all duration-200 ${isActive ? "font-bold" : ""}`
   }
 >
-  Home
+  {t('nav.home')}
 </NavLink>
 
 <NavLink
@@ -110,7 +113,7 @@ function NavBar() {
     `text-gray-800 transition-all duration-200 ${isActive ? "font-bold" : ""}`
   }
 >
-  Volunteering
+  {t('nav.volunteering')}
 </NavLink>
 
 <NavLink
@@ -119,7 +122,7 @@ function NavBar() {
     `text-gray-800 transition-all duration-200 ${isActive ? "font-bold" : ""}`
   }
 >
-  Info
+  {t('nav.info')}
 </NavLink>
 
 <NavLink
@@ -128,10 +131,11 @@ function NavBar() {
     `text-gray-800 transition-all duration-200 ${isActive ? "font-bold" : ""}`
   }
 >
-  About Us
+  {t('nav.aboutUs')}
 </NavLink>
 
           <DarkModeToggle />
+          <LanguageSelector />
 
           {isLoggedIn ? (
             <>
@@ -139,13 +143,13 @@ function NavBar() {
                 onClick={() => navigate("/dashboard")}
                 className="px-4 py-2 rounded-3xl border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
-                Profile
+                {t('common.profile')}
               </button>
               <button
                 onClick={handleLogout}
                 className="px-4 py-2 rounded-3xl bg-[#B33A3A] text-white hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
-                Log Out
+                {t('common.logout')}
               </button>
             </>
           ) : (
@@ -154,13 +158,13 @@ function NavBar() {
                 onClick={() => openAuth("login")}
                 className="px-4 py-2 rounded-3xl border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
-                Log In
+                {t('common.login')}
               </button>
               <button
                 onClick={() => openAuth("signup")}
                 className="px-4 py-2 rounded-3xl bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
-                Sign Up
+                {t('common.signup')}
               </button>
             </>
           )}
@@ -209,32 +213,33 @@ function NavBar() {
             onClick={() => setMenuOpen(false)}
             className={({ isActive }) => `text-lg font-medium transition-colors ${isActive ? "text-[#F0BB00]" : "text-gray-800 dark:text-gray-200 hover:text-[#F0BB00]"}`}
           >
-            Home
+            {t('nav.home')}
           </NavLink>
           <NavLink 
             to="/volunteering" 
             onClick={() => setMenuOpen(false)}
             className={({ isActive }) => `text-lg font-medium transition-colors ${isActive ? "text-[#F0BB00]" : "text-gray-800 dark:text-gray-200 hover:text-[#F0BB00]"}`}
           >
-            Volunteering
+            {t('nav.volunteering')}
           </NavLink>
           <NavLink 
             to="/moreinfo" 
             onClick={() => setMenuOpen(false)}
             className={({ isActive }) => `text-lg font-medium transition-colors ${isActive ? "text-[#F0BB00]" : "text-gray-800 dark:text-gray-200 hover:text-[#F0BB00]"}`}
           >
-            Info
+            {t('nav.info')}
           </NavLink>
           <NavLink 
             to="/aboutus" 
             onClick={() => setMenuOpen(false)}
             className={({ isActive }) => `text-lg font-medium transition-colors ${isActive ? "text-[#F0BB00]" : "text-gray-800 dark:text-gray-200 hover:text-[#F0BB00]"}`}
           >
-            About Us
+            {t('nav.aboutUs')}
           </NavLink>
           
-          <div className="flex justify-start mt-2">
+          <div className="flex justify-start mt-2 gap-2">
             <DarkModeToggle />
+            <LanguageSelector />
           </div>
         </div>
 
@@ -247,13 +252,13 @@ function NavBar() {
                 onClick={() => {navigate("/dashboard"); setMenuOpen(false)}} 
                 className="w-full px-4 py-2 rounded-3xl border border-[#767676] dark:border-gray-500 text-center text-gray-800 dark:text-gray-200 hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
-                Profile
+                {t('common.profile')}
               </button>
               <button 
                 onClick={() => {handleLogout(); setMenuOpen(false)}} 
                 className="w-full px-4 py-2 rounded-3xl bg-[#B33A3A] text-white text-center hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
-                Log Out
+                {t('common.logout')}
               </button>
             </>
           ) : (
@@ -262,13 +267,13 @@ function NavBar() {
                 onClick={() => {openAuth("login"); setMenuOpen(false)}} 
                 className="w-full px-4 py-2 rounded-3xl border border-[#767676] dark:border-gray-500 text-center text-gray-800 dark:text-gray-200 hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
-                Log In
+                {t('common.login')}
               </button>
               <button 
                 onClick={() => {openAuth("signup"); setMenuOpen(false)}} 
                 className="w-full px-4 py-2 rounded-3xl bg-[#F0BB00] text-black text-center hover:bg-[#1f2124] hover:text-white transition-colors duration-200"
               >
-                Sign Up
+                {t('common.signup')}
               </button>
             </>
           )}

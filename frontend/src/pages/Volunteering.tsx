@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { io, Socket } from "socket.io-client";
+import { useTranslation } from "react-i18next";
 import HeroImage from "../components/HeroImage";
 import AuthModal from "../components/AuthModal";
 import AlertModal from "../components/AlertModal";
@@ -24,6 +25,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 const IMAGE_URL = import.meta.env.VITE_IMAGE_URL || 'http://localhost:8080/images';
 
 const Volunteering: React.FC = () => {
+  const { t } = useTranslation();
   const [projects, setProjects] = useState<Project[]>([]);
   const [searchParams] = useSearchParams();
   const projectRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
@@ -44,6 +46,10 @@ const Volunteering: React.FC = () => {
   
   // Volunteer count state: Map of projectId -> { enrolled: number, capacity: number }
   const [volunteerCounts, setVolunteerCounts] = useState<{ [key: number]: { enrolled: number; capacity: number } }>({});
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
 
   // Initialize WebSocket connection
   useEffect(() => {
@@ -188,28 +194,28 @@ const Volunteering: React.FC = () => {
 
       if (!res.ok) {
         if (res.status === 409) {
-          setAlertMessage("You are already enrolled in this project");
+          setAlertMessage(t('volunteering.alreadyEnrolled'));
           setAlertOpen(true);
         } else if (res.status === 403) {
-          setAlertMessage("You cannot enroll in this project");
+          setAlertMessage(t('volunteering.cannotEnroll'));
           setAlertOpen(true);
         } else if (res.status === 400) {
-          setAlertMessage(data.message || "Project is at full capacity");
+          setAlertMessage(data.message || t('volunteering.fullCapacity'));
           setAlertOpen(true);
         } else {
-          setAlertMessage(data.message || "Error enrolling");
+          setAlertMessage(data.message || t('volunteering.errorEnrolling'));
           setAlertOpen(true);
         }
         return;
       }
 
-      setAlertMessage("You have successfully enrolled in the project");
+      setAlertMessage(t('volunteering.enrollSuccess'));
       setAlertOpen(true);
       // Refresh enrolled projects
       await fetchEnrolledProjects();
     } catch (err) {
       console.error(err);
-      setAlertMessage("Network error enrolling");
+      setAlertMessage(t('volunteering.networkError'));
       setAlertOpen(true);
     }
   };
@@ -225,11 +231,62 @@ const Volunteering: React.FC = () => {
     ? projects.filter(p => p.categoryId === Number(selectedCategory))
     : projects;
 
+  // Reset to page 1 when category changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredProjects.length / ITEMS_PER_PAGE);
+  const paginatedProjects = filteredProjects.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Generate page numbers to display
+  const getPageNumbers = (): (number | string)[] => {
+    const pages: (number | string)[] = [];
+    const maxVisible = 5;
+    
+    if (totalPages <= maxVisible + 2) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      pages.push(1);
+      
+      if (currentPage > 3) {
+        pages.push('...');
+      }
+      
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+      
+      if (currentPage < totalPages - 2) {
+        pages.push('...');
+      }
+      
+      pages.push(totalPages);
+    }
+    
+    return pages;
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top of projects section
+    window.scrollTo({ top: 300, behavior: 'smooth' });
+  };
+
   return (
     <>
       {/* Hero */}
       <HeroImage
-        title={<h1 className="Display">A Will To Change</h1>}
+        title={<h1 className="Display">{t('common.appName')}</h1>}
         imgSrc="/hero-img.jpg"
         heightClass="h-64 md:h-96"
       />
@@ -237,17 +294,17 @@ const Volunteering: React.FC = () => {
       <div className="p-4">
         <div className="flex flex-col md:flex-row justify-between items-center mt-8 mb-6 px-4 md:px-16">
           <div>
-            <h2 className="text-3xl font-bold">Active Projects</h2>
-            <p className="text-lg text-gray-600 dark:text-gray-400">Small actions, big impact</p>
+            <h2 className="text-3xl font-bold">{t('volunteering.activeProjects')}</h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400">{t('volunteering.subtitle')}</p>
           </div>
           <div className="mt-4 md:mt-0 flex items-center gap-2">
-            <span className="text-gray-700 dark:text-gray-300">Filter by category</span>
+            <span className="text-gray-700 dark:text-gray-300">{t('volunteering.filterByCategory')}</span>
             <select
               className="border border-gray-300 rounded p-2 bg-white text-gray-800 dark:bg-[var(--bg-secondary)] dark:border-gray-600 dark:text-white"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
-              <option value="">All Categories</option>
+              <option value="">{t('volunteering.allCategories')}</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.name}
@@ -257,8 +314,8 @@ const Volunteering: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex flex-col gap-6 px-4 md:px-16 pb-16">
-          {filteredProjects.map(proj => {
+        <div className="flex flex-col gap-6 px-4 md:px-16 pb-8">
+          {paginatedProjects.map(proj => {
             const isFull = isProjectFull(proj.id);
             const count = volunteerCounts[proj.id];
             
@@ -300,28 +357,28 @@ const Volunteering: React.FC = () => {
                           disabled
                           className="bg-[#B33A3A] text-white px-4 py-2 rounded-3xl font-semibold cursor-not-allowed w-full sm:w-fit text-center"
                         >
-                          Not Available
+                          {t('volunteering.notAvailable')}
                         </button>
                       ) : enrolledProjectIds.includes(proj.id) ? (
                         <button
                           disabled
                           className="bg-gray-400 text-white px-4 py-2 rounded-3xl font-semibold cursor-not-allowed w-full sm:w-fit text-center"
                         >
-                          Already Enrolled
+                          {t('volunteering.alreadyEnrolledBtn')}
                         </button>
                       ) : isFull ? (
                         <button
                           disabled
                           className="bg-red-600 text-white px-4 py-2 rounded-3xl font-semibold cursor-not-allowed w-full sm:w-fit text-center"
                         >
-                          Full
+                          {t('volunteering.full')}
                         </button>
                       ) : (
                         <button
                           onClick={() => handleEnroll(proj.id)}
                           className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-3xl font-semibold transition-colors w-full sm:w-fit text-center"
                         >
-                          Enroll
+                          {t('volunteering.enroll')}
                         </button>
                       )}
                     </div>
@@ -329,7 +386,7 @@ const Volunteering: React.FC = () => {
                     {/* Display volunteer capacity */}
                     <div className="text-sm font-semibold whitespace-nowrap self-end">
                       <span className={isFull ? 'text-red-600 font-bold' : 'text-[#F0BB00] font-bold'}>
-                        Volunteers: {count ? `${count.enrolled}/${count.capacity}` : `0/${proj.capacity}`}
+                        {t('volunteering.volunteers')}: {count ? `${count.enrolled}/${count.capacity}` : `0/${proj.capacity}`}
                       </span>
                       {isFull}
                     </div>
@@ -339,6 +396,47 @@ const Volunteering: React.FC = () => {
             );
           })}
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-1 mb-8 flex-wrap px-4">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
+            >
+              {t('dashboard.previous')}
+            </button>
+            
+            {getPageNumbers().map((page, index) => (
+              typeof page === 'number' ? (
+                <button
+                  key={index}
+                  onClick={() => handlePageChange(page)}
+                  className={`px-3 py-2 rounded border text-sm min-w-[40px] ${
+                    currentPage === page
+                      ? 'bg-[#F0BB00] text-black border-[#F0BB00] font-semibold'
+                      : 'border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {page}
+                </button>
+              ) : (
+                <span key={index} className="px-2 py-2 text-gray-500">
+                  {page}
+                </span>
+              )
+            ))}
+            
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
+            >
+              {t('dashboard.next')}
+            </button>
+          </div>
+        )}
 
         {/* Auth Modal */}
         <AuthModal 
