@@ -141,7 +141,7 @@ interface Review {
   date: string;
   image?: string | null;
   userId: number;
-  user?: { email?: string; name?: string };
+  user?: { email?: string; name?: string; profileImage?: string | null };
 }
 
 function ReviewsSection({
@@ -398,17 +398,36 @@ function ReviewsSection({
                 className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
               >
                 <div className="flex justify-between items-start mb-3">
-                  <div className="flex flex-col">
-                    <span className="font-bold text-gray-900 text-base capitalize">
-                      {getUserDisplayName(review.user)}
-                    </span>
-                    <span className="text-xs text-gray-400 mt-0.5">
-                      {new Date(review.date).toLocaleDateString(undefined, {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </span>
+                  <div className="flex items-center gap-3">
+                    {/* Profile Image */}
+                    {review.user?.profileImage ? (
+                      <img
+                        src={`${API_BASE_URL}/images/${review.user.profileImage}`}
+                        alt={getUserDisplayName(review.user)}
+                        className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                          (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                    ) : null}
+                    <div 
+                      className={`w-10 h-10 rounded-full bg-[#F0BB00] flex items-center justify-center text-white font-bold text-lg ${review.user?.profileImage ? 'hidden' : ''}`}
+                    >
+                      {getUserDisplayName(review.user).charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-gray-900 text-base capitalize">
+                        {getUserDisplayName(review.user)}
+                      </span>
+                      <span className="text-xs text-gray-400 mt-0.5">
+                        {new Date(review.date).toLocaleDateString(undefined, {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </span>
+                    </div>
                   </div>
 
                   {currentUserId === review.userId && !editingId && (

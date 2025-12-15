@@ -128,7 +128,7 @@ exports.createCoordinator = async (req, res) => {
 exports.getUsers = async (req, res) => {
   try {
     const users = await User.findAll({
-      attributes: ["id", "name", "email", "role"],
+      attributes: ["id", "name", "email", "role", "profileImage"],
     });
     res.json(users);
   } catch (error) {

@@ -242,6 +242,7 @@
     "cancelled": "Cancelled",
     "finished": "Finished",
     "noCategory": "-- No category --",
+    "noProjects": "This user is not registered in any project",
     "uploadImage": "Click to upload image",
     "uploadFile": "Click to upload project file",
     "categoryName": "Category name",
