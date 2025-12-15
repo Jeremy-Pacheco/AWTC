@@ -17,7 +17,7 @@ const options = {
         description: 'Development Server'
       },
       {
-        url: 'http://awilltochange.me/api',
+        url: 'https://awilltochange.me',
         description: 'Production Server (via Nginx)'
       }
     ],
