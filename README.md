@@ -375,15 +375,15 @@ npm run build    # Build for production
 
 ### E/R Diagram
 
-![](readme-img/ERD.png)
+![ERD](readme-img/ERD.png?v=2)
 
 ### Class Diagram
 
-![](readme-img/class-diagram.png)
+![Class Diagram](readme-img/class-diagram.png?v=2)
 
 ### Use Case Diagram
 
-![](readme-img/use-case-diagram.png)
+![Use Case Diagram](readme-img/use-case-diagram.png?v=2)
 
 ---
 
