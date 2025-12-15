@@ -5,12 +5,14 @@ import AlertModal from "../components/AlertModal";
 import logo4 from "../../../frontend/public/home/aboutUs-image.png";
 import { NavLink, useNavigate } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
+import { useTranslation } from "react-i18next";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 const IMAGE_URL = import.meta.env.VITE_IMAGE_URL || "http://localhost:8080/images";
 
 // --- CAROUSEL ---
 function Carousel() {
+  const { t } = useTranslation();
   const [current, setCurrent] = useState<number>(0);
   const [projects, setProjects] = useState<any[]>([]);
   const navigate = useNavigate();
@@ -44,7 +46,7 @@ function Carousel() {
   if (projects.length === 0) {
     return (
       <div className="text-center py-8 text-gray-400">
-        Not enough projects available for carousel
+        {t('home.carousel.notEnough')}
       </div>
     );
   }
@@ -105,6 +107,7 @@ function Carousel() {
 
 // --- ABOUT SECTION ---
 function AboutSection() {
+  const { t } = useTranslation();
   return (
     <section className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6 my-8 md:my-12 bg-white px-4 md:px-0">
       <img
@@ -114,15 +117,11 @@ function AboutSection() {
       />
       <div >
         <p className="mb-6 md:mb-4 text-gray-700">
-          Our mission is to make joining social and environmental projects
-          simple, safe, and meaningful, connecting volunteers with opportunities
-          that create real impact and strengthen communities. We provide
-          support, guidance, and a network where everyone can contribute, learn,
-          and grow.
+          {t('home.aboutSection.description')}
         </p>
         <NavLink to="/aboutus">
           <button className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-5 py-2 rounded-3xl font-semibold shadow text-sm md:text-base w-full md:w-auto text-center transition-colors duration-300">
-            Read more
+            {t('home.aboutSection.readMore')}
           </button>
         </NavLink>
       </div>
@@ -149,6 +148,7 @@ function ReviewsSection({
   onOpenSignup,
   refreshTrigger,
 }: ReviewsSectionProps) {
+  const { t } = useTranslation();
   const [reviews, setReviews] = useState<Review[]>([]);
 
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -303,7 +303,7 @@ function ReviewsSection({
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm("Are you sure?")) return;
+    if (!window.confirm(t('reviews.confirmDelete'))) return;
     try {
       const res = await fetch(`${API_BASE_URL}/api/reviews/${id}`, {
         method: "DELETE",
@@ -371,9 +371,9 @@ function ReviewsSection({
       <section className="my-12 px-4 md:px-0">
       <div className="flex flex-col gap-4 items-start w-full">
         <div className="flex justify-between items-baseline mb-6 border-b pb-2 w-full">
-          <h5 className="text-xl font-bold text-gray-800">Reviews</h5>
+          <h5 className="text-xl font-bold text-gray-800">{t('reviews.title')}</h5>
           <span className="text-sm text-gray-500">
-            {reviews.length} comments
+            {t('reviews.comments', { count: reviews.length })}
           </span>
         </div>
 
@@ -382,14 +382,14 @@ function ReviewsSection({
             onClick={() => setShowReviewModal(true)}
             className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-5 py-2 rounded-3xl font-semibold shadow text-sm md:text-base w-full md:w-auto transition-colors duration-300 mb-4"
           >
-            Write a Review
+            {t('reviews.writeReview')}
           </button>
         )}
 
         <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar w-full">
           {reviews.length === 0 ? (
             <div className="text-center py-10 text-gray-400">
-              No reviews yet. Be the first!
+              {t('reviews.noReviews')}
             </div>
           ) : (
             reviews.map((review) => (
@@ -420,13 +420,13 @@ function ReviewsSection({
                         }}
                         className="text-green-600 hover:text-green-800 transition-colors"
                       >
-                        Edit
+                        {t('common.edit')}
                       </button>
                       <button
                         onClick={() => handleDelete(review.id)}
                         className="text-red-500 hover:text-red-700 transition-colors"
                       >
-                        Delete
+                        {t('common.delete')}
                       </button>
                     </div>
                   )}
@@ -509,7 +509,7 @@ function ReviewsSection({
                           </svg>
                           {editSelectedFile
                             ? editSelectedFile.name
-                            : "Add / Replace image"}
+                            : t('reviews.addReplaceImage')}
                         </label>
                       </div>
 
@@ -530,8 +530,8 @@ function ReviewsSection({
                           }`}
                         >
                           {editRemoveImage
-                            ? "Image will be removed"
-                            : "Remove image"}
+                            ? t('reviews.imageWillBeRemoved')
+                            : t('reviews.removeImage')}
                         </button>
                       )}
                     </div>
@@ -545,13 +545,13 @@ function ReviewsSection({
                         }}
                         className="px-4 py-1.5 rounded-full text-xs font-medium bg-gray-100 hover:bg-gray-200"
                       >
-                        Cancel
+                        {t('common.cancel')}
                       </button>
                       <button
                         onClick={() => saveEdit(review.id)}
                         className="px-4 py-1.5 rounded-full text-xs font-medium bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white"
                       >
-                        Save
+                        {t('common.save')}
                       </button>
                     </div>
                   </div>
@@ -568,17 +568,17 @@ function ReviewsSection({
         {!isLoggedIn && (
           <div className="w-full bg-yellow-50 p-6 md:p-8 rounded-3xl text-center border border-yellow-100">
             <h3 className="font-bold text-lg mb-2 text-gray-800">
-              Join the conversation
+              {t('reviews.joinConversation')}
             </h3>
             <p className="text-xs text-gray-500 mb-6">
-              Share your experience with the community.
+              {t('reviews.shareExperience')}
             </p>
 
             <button
               onClick={onOpenSignup}
               className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-5 py-2 rounded-3xl font-semibold shadow text-sm md:text-base w-full transition-colors duration-300"
             >
-              Add Review
+              {t('reviews.addReview')}
             </button>
           </div>
         )}
@@ -595,16 +595,16 @@ function ReviewsSection({
             </button>
 
             <h3 className="text-2xl font-bold mb-1 text-gray-900">
-              New Review
+              {t('reviews.newReview')}
             </h3>
             <p className="text-sm text-gray-500 mb-6">
-              How was your experience?
+              {t('reviews.howWasExperience')}
             </p>
 
             <form onSubmit={handleCreate}>
               <textarea
                 className="w-full bg-gray-50 border border-gray-200 rounded-xl p-4 h-40 resize-none mb-4 focus:ring-2 focus:ring-[#F0BB00] focus:bg-white outline-none transition-all placeholder-gray-400"
-                placeholder="Write something meaningful..."
+                placeholder={t('reviews.placeholder')}
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 autoFocus
@@ -644,7 +644,7 @@ function ReviewsSection({
                         {selectedFile.name}
                       </span>
                     ) : (
-                      "Add photo"
+                      t('reviews.addPhoto')
                     )}
                   </label>
                 </div>
@@ -656,13 +656,13 @@ function ReviewsSection({
                   onClick={() => setShowReviewModal(false)}
                   className="flex-1 py-3 rounded-full font-semibold text-gray-500 hover:bg-gray-100 transition-colors"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white font-bold py-3 rounded-full transition-all shadow-lg hover:shadow-xl"
                 >
-                  Post Review
+                  {t('reviews.postReview')}
                 </button>
               </div>
             </form>
@@ -677,6 +677,7 @@ function ReviewsSection({
 
 // --- HOME PAGE ---
 function Home() {
+  const { t } = useTranslation();
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [refreshKey, setRefreshKey] = useState(0);
@@ -696,9 +697,9 @@ function Home() {
       <HeroImage
         title={
           <div className="text-center px-4">
-            <h1 className="Display">A Will To Change</h1>
+            <h1 className="Display">{t('common.appName')}</h1>
             <h4 className="text-base md:text-2xl">
-              Join social and environmental initiatives and make an impact today
+              {t('home.hero.subtitle')}
             </h4>
           </div>
         }
@@ -708,12 +709,12 @@ function Home() {
       />
 
       <main className="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12">
-        <h2 className="text-3xl font-bold">Newest Projects</h2>
-        <p className="text-lg text-gray-600">Discover volunteer projects and make an impact</p>
+        <h2 className="text-3xl font-bold">{t('home.newestProjects')}</h2>
+        <p className="text-lg text-gray-600">{t('home.discoverProjects')}</p>
         <Carousel />
 
-        <h2 className="text-3xl font-bold">About Us</h2>
-        <p className="text-lg text-gray-600">At our platform, we believe that everyone can make a difference</p>
+        <h2 className="text-3xl font-bold">{t('home.aboutUs')}</h2>
+        <p className="text-lg text-gray-600">{t('home.aboutUsDescription')}</p>
         <AboutSection />
         <ReviewsSection
           onOpenSignup={handleOpenSignup}

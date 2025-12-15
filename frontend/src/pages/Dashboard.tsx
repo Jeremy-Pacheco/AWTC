@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import ConfirmModal from '../components/ConfirmModal';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,6 +21,7 @@ const modalVariants = {
 };
 
 const Dashboard: React.FC = () => {
+  const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<
     "profile" | "myprojects" | "projects" | "users" | "contacts" | "categories" | "reviews"
@@ -87,6 +89,43 @@ const Dashboard: React.FC = () => {
     return Math.ceil(totalItems / itemsPerPage);
   };
 
+  // Generate page numbers to display
+  const getPageNumbers = (currentPage: number, totalPages: number): (number | string)[] => {
+    const pages: (number | string)[] = [];
+    const maxVisible = 5; // Max number of page buttons to show
+    
+    if (totalPages <= maxVisible + 2) {
+      // Show all pages if total is small
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Always show first page
+      pages.push(1);
+      
+      if (currentPage > 3) {
+        pages.push('...');
+      }
+      
+      // Show pages around current
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+      
+      if (currentPage < totalPages - 2) {
+        pages.push('...');
+      }
+      
+      // Always show last page
+      pages.push(totalPages);
+    }
+    
+    return pages;
+  };
+
   // Pagination component
   const PaginationControls: React.FC<{
     currentPage: number;
@@ -95,24 +134,44 @@ const Dashboard: React.FC = () => {
   }> = ({ currentPage, totalPages, onPageChange }) => {
     if (totalPages <= 1) return null;
 
+    const pageNumbers = getPageNumbers(currentPage, totalPages);
+
     return (
-      <div className="flex justify-center items-center gap-2 mt-4">
+      <div className="flex justify-center items-center gap-1 mt-4 flex-wrap">
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="px-3 py-1 rounded border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+          className="px-3 py-1 rounded border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 text-sm"
         >
-          Previous
+          {t('dashboard.previous')}
         </button>
-        <span className="text-sm text-gray-600">
-          Page {currentPage} of {totalPages}
-        </span>
+        
+        {pageNumbers.map((page, index) => (
+          typeof page === 'number' ? (
+            <button
+              key={index}
+              onClick={() => onPageChange(page)}
+              className={`px-3 py-1 rounded border text-sm min-w-[36px] ${
+                currentPage === page
+                  ? 'bg-[#F0BB00] text-black border-[#F0BB00] font-semibold'
+                  : 'border-gray-300 hover:bg-gray-100'
+              }`}
+            >
+              {page}
+            </button>
+          ) : (
+            <span key={index} className="px-2 py-1 text-gray-500">
+              {page}
+            </span>
+          )
+        ))}
+        
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="px-3 py-1 rounded border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+          className="px-3 py-1 rounded border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 text-sm"
         >
-          Next
+          {t('dashboard.next')}
         </button>
       </div>
     );
@@ -248,7 +307,7 @@ const Dashboard: React.FC = () => {
 
   const handleSubmitProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token) return setStatusMessage({ type: 'error', text: 'Login required' });
+    if (!token) return setStatusMessage({ type: 'error', text: t('dashboard.loginRequired') });
     try {
       const fd = new FormData();
       fd.append('name', projectForm.name);
@@ -264,14 +323,14 @@ const Dashboard: React.FC = () => {
       let method = 'POST';
       if (editingProject) { url = `${API_URL}/api/projects/${editingProject.id}`; method = 'PUT'; }
       const res = await fetch(url, { method, headers: { Authorization: `Bearer ${token}` }, body: fd });
-      if (!res.ok) { const err = await res.json(); return setStatusMessage({ type: 'error', text: err.message || 'Error saving project' }); }
+      if (!res.ok) { const err = await res.json(); return setStatusMessage({ type: 'error', text: err.message || t('dashboard.errorSaving') }); }
       await res.json();
       // reload projects
       const all = await fetch(`${API_URL}/api/projects`).then(r => r.json());
       setProjects(all);
       setProjectModalOpen(false);
       setEditingProject(null);
-    } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: 'Error saving project' }); }
+    } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: t('dashboard.errorSaving') }); }
   };
 
   const openConfirm = (title: string, message: string, onConfirm: () => void, danger = false) => {
@@ -281,80 +340,80 @@ const Dashboard: React.FC = () => {
   const closeConfirm = () => setConfirmModal({ open: false, title: '', message: '', onConfirm: null, danger: false });
 
   const unregisterFromProject = async (projectId: number) => {
-    if (!token) return setStatusMessage({ type: 'error', text: 'Login required' });
+    if (!token) return setStatusMessage({ type: 'error', text: t('dashboard.loginRequired') });
     try {
       const res = await fetch(`${API_URL}/api/projects/${projectId}/unregister`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
-      if (!res.ok) { const err = await res.json(); return setStatusMessage({ type: 'error', text: err.message || 'Error unregistering' }); }
+      if (!res.ok) { const err = await res.json(); return setStatusMessage({ type: 'error', text: err.message || t('dashboard.errorSaving') }); }
       // refresh my projects
       const d = await fetch(`${API_URL}/api/users/dashboard/projects`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
       setMyProjects(d.projects || []);
-      setStatusMessage({ type: 'success', text: 'Unregistered successfully' });
-    } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: 'Network error' }); }
+      setStatusMessage({ type: 'success', text: t('dashboard.unregistered') });
+    } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: t('dashboard.networkError') }); }
   };
 
   const handleRejectUserFromProject = async (projectId: number, userId: number) => {
-    if (!token) return setStatusMessage({ type: 'error', text: 'Login required' });
+    if (!token) return setStatusMessage({ type: 'error', text: t('dashboard.loginRequired') });
     try {
       const res = await fetch(`${API_URL}/api/projects/${projectId}/volunteers/${userId}/reject`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
-      if (!res.ok) { const err = await res.json(); return setStatusMessage({ type: 'error', text: err.message || 'Error' }); }
+      if (!res.ok) { const err = await res.json(); return setStatusMessage({ type: 'error', text: err.message || t('dashboard.networkError') }); }
       // reload user projects
       const d = await fetch(`${API_URL}/api/users/${userId}/projects`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
       setUserProjects(d.projects || []);
-      setStatusMessage({ type: 'success', text: 'User removed and banned from project' });
-    } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: 'Error' }); }
+      setStatusMessage({ type: 'success', text: t('dashboard.userBanned') });
+    } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: t('dashboard.networkError') }); }
   };
 
   const handleUnbanUserFromProject = async (projectId: number, userId: number) => {
-    if (!token) return setStatusMessage({ type: 'error', text: 'Login required' });
+    if (!token) return setStatusMessage({ type: 'error', text: t('dashboard.loginRequired') });
     try {
       const res = await fetch(`${API_URL}/api/projects/${projectId}/volunteers/${userId}/unban`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
-      if (!res.ok) { const err = await res.json(); return setStatusMessage({ type: 'error', text: err.message || 'Error' }); }
+      if (!res.ok) { const err = await res.json(); return setStatusMessage({ type: 'error', text: err.message || t('dashboard.networkError') }); }
       const d = await fetch(`${API_URL}/api/users/${userId}/projects`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
       setUserProjects(d.projects || []);
-      setStatusMessage({ type: 'success', text: 'User unbanned successfully' });
-    } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: 'Error' }); }
+      setStatusMessage({ type: 'success', text: t('dashboard.userUnbanned') });
+    } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: t('dashboard.networkError') }); }
   };
 
   const handleDeleteOwnProfile = async () => {
-    if (!token) return setStatusMessage({ type: 'error', text: 'Login required' });
+    if (!token) return setStatusMessage({ type: 'error', text: t('dashboard.loginRequired') });
     try {
       const res = await fetch(`${API_URL}/api/users/dashboard`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-      if (!res.ok) { const err = await res.json(); return setStatusMessage({ type: 'error', text: err.message || 'Error deleting account' }); }
+      if (!res.ok) { const err = await res.json(); return setStatusMessage({ type: 'error', text: err.message || t('dashboard.errorDeleting') }); }
       // Clear local storage and navigate home
       localStorage.removeItem('jwtToken');
       localStorage.removeItem('userName');
       localStorage.removeItem('userRole');
       localStorage.removeItem('userEmail');
       localStorage.removeItem('userProfileImage');
-      setStatusMessage({ type: 'success', text: 'Your account has been deleted' });
+      setStatusMessage({ type: 'success', text: t('dashboard.profileDeleted') });
       navigate('/home');
-    } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: 'Error deleting account' }); }
+    } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: t('dashboard.errorDeleting') }); }
   };
 
   const createUser = async () => {
-    if (!token) return setStatusMessage({ type: 'error', text: 'Login required' });
+    if (!token) return setStatusMessage({ type: 'error', text: t('dashboard.loginRequired') });
     try {
       const res = await fetch(`${API_URL}/api/users/signup`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ name: newUserForm.name, email: newUserForm.email, password: newUserForm.password }) });
-      if (!res.ok) { const err = await res.json(); return setStatusMessage({ type: 'error', text: err.message || 'Error creating user' }); }
+      if (!res.ok) { const err = await res.json(); return setStatusMessage({ type: 'error', text: err.message || t('dashboard.errorSaving') }); }
       const data = await res.json();
       if (newUserForm.role && newUserForm.role !== 'volunteer') {
         const res2 = await fetch(`${API_URL}/api/users/${data.user.id}/role`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ role: newUserForm.role }) });
-        if (!res2.ok) { const err = await res2.json(); return setStatusMessage({ type: 'error', text: err.message || 'Error setting role' }); }
+        if (!res2.ok) { const err = await res2.json(); return setStatusMessage({ type: 'error', text: err.message || t('dashboard.errorSaving') }); }
       }
       const users = await fetch(`${API_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json());
       setUsersData(users);
       setNewUserForm({ name: '', email: '', password: '', role: 'volunteer' });
       setCreateUserModalOpen(false);
-      setStatusMessage({ type: 'success', text: 'User created' });
+      setStatusMessage({ type: 'success', text: t('dashboard.userCreated') });
     } catch (err) {
       console.error(err);
-      setStatusMessage({ type: 'error', text: 'Error creating user' });
+      setStatusMessage({ type: 'error', text: t('dashboard.errorSaving') });
     }
   };
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !token) return setStatusMessage({ type: 'error', text: 'Authentication required' });
+    if (!user || !token) return setStatusMessage({ type: 'error', text: t('dashboard.authRequired') });
 
     const formData = new FormData();
     formData.append("name", editName);
@@ -369,7 +428,7 @@ const Dashboard: React.FC = () => {
 
       if (!res.ok) {
         const err = await res.json();
-        return setStatusMessage({ type: 'error', text: err.message || 'Error updating profile' });
+        return setStatusMessage({ type: 'error', text: err.message || t('dashboard.errorSaving') });
       }
 
       const data = await res.json();
@@ -388,19 +447,19 @@ const Dashboard: React.FC = () => {
       setPreview(null);
       setImageVersion(Date.now());
       setShowEditModal(false);
-      setStatusMessage({ type: 'success', text: 'Profile updated successfully' });
+      setStatusMessage({ type: 'success', text: t('dashboard.profileUpdated') });
 
       setPreview(null);
       setImageVersion(Date.now());
       setShowEditModal(false);
-      setStatusMessage({ type: 'success', text: 'Profile updated successfully' });
+      setStatusMessage({ type: 'success', text: t('dashboard.profileUpdated') });
     } catch (err) {
       console.error(err);
-      setStatusMessage({ type: 'error', text: 'Error updating profile' });
+      setStatusMessage({ type: 'error', text: t('dashboard.errorSaving') });
     }
   };
 
-  if (!user) return <div className="p-6">Loading user...</div>;
+  if (!user) return <div className="p-6">{t('dashboard.loadingUser')}</div>;
 
   const profileImageUrl = user.profileImage
     ? `${API_URL}/images/${user.profileImage}?v=${imageVersion}`
@@ -408,7 +467,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto">
-      <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">Dashboard</h2>
+      <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">{t('dashboard.title')}</h2>
       {statusMessage && (
         <div className={`mb-4 p-3 rounded ${statusMessage.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
           {statusMessage.text}
@@ -441,21 +500,21 @@ const Dashboard: React.FC = () => {
             }}
           >
             {tab === "profile"
-              ? "Profile"
+              ? t('dashboard.profile')
               : tab === "myprojects"
-              ? "My Projects"
+              ? t('dashboard.myProjects')
               : tab === "reviews"
-              ? "Reviews"
+              ? t('dashboard.reviews')
               : tab === "projects"
-              ? "Projects"
+              ? t('dashboard.projects')
               : tab === "contacts"
-              ? "Incidents"
+              ? t('dashboard.incidents')
               : tab === "users"
-              ? "Users"
+              ? t('dashboard.users')
               : tab === "categories"
-              ? "Categories"
+              ? t('dashboard.categories')
               : tab === "analytics"
-              ? "Analytics"
+              ? t('dashboard.analytics')
               : ""}
           </button>
         ))}
@@ -476,13 +535,13 @@ const Dashboard: React.FC = () => {
               className="mt-3 border border-[#767676] text-black px-4 py-2 rounded-3xl hover:bg-[#1f2124] hover:text-white transition"
               onClick={() => setShowEditModal(true)}
             >
-              Edit Profile
+              {t('dashboard.editProfile')}
             </button>
             <button
               className="mt-3 bg-[#B33A3A] text-white px-4 py-2 rounded-3xl hover:bg-[#1f2124] hover:text-white transition"
-              onClick={() => openConfirm('Delete Profile', 'Are you sure you want to delete your profile? This action cannot be undone.', async () => { closeConfirm(); await handleDeleteOwnProfile(); }, true)}
+              onClick={() => openConfirm(t('dashboard.deleteProfile'), t('dashboard.deleteProfileConfirm'), async () => { closeConfirm(); await handleDeleteOwnProfile(); }, true)}
             >
-              Delete Profile
+              {t('dashboard.deleteProfile')}
             </button>
             
           </div>
@@ -490,16 +549,16 @@ const Dashboard: React.FC = () => {
         {activeTab === "projects" && user && (user.role === 'admin' || user.role === 'coordinator') && (
           <div>
             <div className="mb-6 flex flex-col md:flex-row justify-between md:items-center gap-3">
-              <h3 className="font-bold mb-2 md:mb-0">Projects</h3>
+              <h3 className="font-bold mb-2 md:mb-0">{t('dashboard.projects')}</h3>
               <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2">
                 <select className="border rounded p-2 text-sm" value={projectsFilter} onChange={(e) => setProjectsFilter(e.target.value === '' ? '' : Number(e.target.value))}>
-                  <option value="">All Categories</option>
+                  <option value="">{t('dashboard.allCategories')}</option>
                   {categories.map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
                 <button className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-3xl font-semibold shadow text-sm" onClick={() => { setProjectModalOpen(true); setEditingProject(null); setProjectForm({ name: '', description: '', start_date: '', end_date: '', location: '', capacity: 1, status: 'active', categoryId: '' }); setProjectFile(null); setProjectFileName(''); }}>
-                  Add Project
+                  {t('dashboard.addProject')}
                 </button>
               </div>
             </div>
@@ -513,8 +572,8 @@ const Dashboard: React.FC = () => {
                       <div className="text-sm">{p.description}</div>
                     </div>
                     <div className="flex gap-2 flex-wrap md:flex-nowrap">
-                      <button className="border border-[#767676] text-black hover:bg-[#1f2124] hover:text-white transition px-3 py-1 rounded-3xl text-sm" onClick={() => { setEditingProject(p); setProjectModalOpen(true); setProjectForm({ name: p.name, description: p.description, start_date: p.start_date?.split('T')[0] || '', end_date: p.end_date?.split('T')[0] || '', location: p.location || '', capacity: p.capacity || 1, status: p.status || 'active', categoryId: p.categoryId || '' }); setProjectFile(null); setProjectFileName(''); }}>Edit</button>
-                      <button className="bg-[#B33A3A] text-white hover:bg-[#1f2124] hover:text-white transition px-3 py-1 rounded-3xl text-sm" onClick={() => openConfirm('Delete project', 'Are you sure you want to delete this project?', async () => { closeConfirm(); try { const res = await fetch(`${API_URL}/api/projects/${p.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) { const err = await res.json(); setStatusMessage({ type: 'error', text: err.message || 'Error deleting' }); return; } setProjects(prev => prev.filter(x => x.id !== p.id)); setStatusMessage({ type: 'success', text: 'Project deleted' }); } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: 'Error deleting' }); } }, true)}>Delete</button>
+                      <button className="border border-[#767676] text-black hover:bg-[#1f2124] hover:text-white transition px-3 py-1 rounded-3xl text-sm" onClick={() => { setEditingProject(p); setProjectModalOpen(true); setProjectForm({ name: p.name, description: p.description, start_date: p.start_date?.split('T')[0] || '', end_date: p.end_date?.split('T')[0] || '', location: p.location || '', capacity: p.capacity || 1, status: p.status || 'active', categoryId: p.categoryId || '' }); setProjectFile(null); setProjectFileName(''); }}>{t('common.edit')}</button>
+                      <button className="bg-[#B33A3A] text-white hover:bg-[#1f2124] hover:text-white transition px-3 py-1 rounded-3xl text-sm" onClick={() => openConfirm(t('dashboard.deleteProject'), t('dashboard.deleteProjectConfirm'), async () => { closeConfirm(); try { const res = await fetch(`${API_URL}/api/projects/${p.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) { const err = await res.json(); setStatusMessage({ type: 'error', text: err.message || t('dashboard.errorDeleting') }); return; } setProjects(prev => prev.filter(x => x.id !== p.id)); setStatusMessage({ type: 'success', text: t('dashboard.projectDeleted') }); } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: t('dashboard.errorDeleting') }); } }, true)}>{t('common.delete')}</button>
                     </div>
                   </div>
                 </div>
@@ -531,7 +590,7 @@ const Dashboard: React.FC = () => {
         )}
         {activeTab === 'myprojects' && (
           <div>
-            <h3 className="font-bold mb-2">My Projects</h3>
+            <h3 className="font-bold mb-2">{t('dashboard.myProjects')}</h3>
             <div>
               {paginate(myProjects, myProjectsPage, ITEMS_PER_PAGE.myProjects).map(p => (
                 <div key={p.id} className="border p-3 mb-2 rounded flex flex-col md:flex-row justify-between md:items-start gap-3">
@@ -540,7 +599,7 @@ const Dashboard: React.FC = () => {
                     <div className="text-sm">{p.description}</div>
                   </div>
                   <div className="flex gap-2 flex-wrap md:flex-nowrap">
-                    <button className="bg-[#B33A3A] text-white hover:bg-[#1f2124] hover:text-white transition px-3 py-1 rounded-3xl text-sm" onClick={() => openConfirm('Unregister', "Are you sure you want to unsubscribe? This will prevent you from registering again for this project.", async () => { closeConfirm(); await unregisterFromProject(p.id); }, true)}>Unregister</button>
+                    <button className="bg-[#B33A3A] text-white hover:bg-[#1f2124] hover:text-white transition px-3 py-1 rounded-3xl text-sm" onClick={() => openConfirm(t('dashboard.unregister'), t('dashboard.unregisterConfirm'), async () => { closeConfirm(); await unregisterFromProject(p.id); }, true)}>{t('dashboard.unregister')}</button>
                   </div>
                 </div>
               ))}
@@ -554,10 +613,10 @@ const Dashboard: React.FC = () => {
         )}
         {activeTab === 'reviews' && (
           <div>
-            <h3 className="font-bold mb-2">Reviews</h3>
+            <h3 className="font-bold mb-2">{t('dashboard.reviews')}</h3>
             <div>
               {reviews.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">No reviews yet</p>
+                <p className="text-gray-500 text-center py-4">{t('dashboard.noReviews')}</p>
               ) : (
                 paginate(reviews, reviewsPage, ITEMS_PER_PAGE.reviews).map(r => (
                   <div key={r.id} className="border p-4 mb-3 rounded bg-white shadow-sm">
@@ -580,7 +639,7 @@ const Dashboard: React.FC = () => {
                         <div className="flex gap-2 flex-wrap md:flex-nowrap">
                           <button 
                             className="bg-[#B33A3A] text-white hover:bg-[#1f2124] hover:text-white transition px-3 py-1 rounded-3xl text-sm" 
-                            onClick={() => openConfirm('Delete Review', 'Are you sure you want to delete this review?', async () => {
+                            onClick={() => openConfirm(t('dashboard.deleteReview'), t('dashboard.deleteReviewConfirm'), async () => {
                               closeConfirm();
                               try {
                                 const res = await fetch(`${API_URL}/api/reviews/${r.id}`, {
@@ -589,17 +648,17 @@ const Dashboard: React.FC = () => {
                                 });
                                 if (!res.ok) {
                                   const err = await res.json();
-                                  return setStatusMessage({ type: 'error', text: err.message || 'Error deleting review' });
+                                  return setStatusMessage({ type: 'error', text: err.message || t('dashboard.errorDeleting') });
                                 }
                                 setReviews(prev => prev.filter(x => x.id !== r.id));
-                                setStatusMessage({ type: 'success', text: 'Review deleted successfully' });
+                                setStatusMessage({ type: 'success', text: t('dashboard.reviewDeleted') });
                               } catch (err) {
                                 console.error(err);
-                                setStatusMessage({ type: 'error', text: 'Error deleting review' });
+                                setStatusMessage({ type: 'error', text: t('dashboard.errorDeleting') });
                               }
                             }, true)}
                           >
-                            Delete
+                            {t('common.delete')}
                           </button>
                         </div>
                       )}
@@ -619,16 +678,16 @@ const Dashboard: React.FC = () => {
         )}
                 {activeTab === 'users' && user && user.role === 'admin' && (
                   <div>
-                    <h3 className="font-bold mb-2">Users</h3>
+                    <h3 className="font-bold mb-2">{t('dashboard.users')}</h3>
                     <div className="mb-4 flex flex-col md:flex-row gap-2 md:items-center">
                       <select className="border p-2 text-sm" value={userRoleFilter} onChange={(e)=>setUserRoleFilter(e.target.value === '' ? '' : e.target.value)}>
-                        <option value="">All Roles</option>
-                        <option value="admin">Admin</option>
-                        <option value="coordinator">Coordinator</option>
-                        <option value="volunteer">Volunteer</option>
+                        <option value="">{t('dashboard.allRoles')}</option>
+                        <option value="admin">{t('dashboard.admin')}</option>
+                        <option value="coordinator">{t('dashboard.coordinator')}</option>
+                        <option value="volunteer">{t('dashboard.volunteer')}</option>
                       </select>
                       <div className="md:ml-auto">
-                        <button className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-3xl font-semibold shadow text-sm w-full md:w-auto" onClick={() => setCreateUserModalOpen(true)}>Create User</button>
+                        <button className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-3xl font-semibold shadow text-sm w-full md:w-auto" onClick={() => setCreateUserModalOpen(true)}>{t('dashboard.createUser')}</button>
                       </div>
                     </div>
                     <div>
@@ -637,11 +696,11 @@ const Dashboard: React.FC = () => {
                           <div className="flex-1 min-w-0">
                             <strong className="text-sm md:text-base block">{u.name}</strong> <small className="text-gray-500 text-xs md:text-sm block truncate">{u.email}</small> <span className="text-xs md:text-sm text-gray-600">({u.role})</span>
                             <div className="mt-2 flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-                              <label className="text-sm">Role:</label>
-                              <select defaultValue={u.role} onChange={async (e)=>{ const newRole = e.target.value; try { const res = await fetch(`${API_URL}/api/users/${u.id}/role`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ role: newRole }) }); if (!res.ok) { const err = await res.json(); return setStatusMessage({ type: 'error', text: err.message || 'Error updating role' }); } const updated = await res.json(); setUsersData(prev => prev.map(x => x.id === u.id ? { ...x, role: updated.user.role } : x)); setStatusMessage({ type: 'success', text: 'Role updated' }); } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: 'Error' }); } }} className="text-sm border rounded p-1">
-                                <option value="volunteer">Volunteer</option>
-                                <option value="coordinator">Coordinator</option>
-                                <option value="admin">Admin</option>
+                              <label className="text-sm">{t('dashboard.role')}:</label>
+                              <select defaultValue={u.role} onChange={async (e)=>{ const newRole = e.target.value; try { const res = await fetch(`${API_URL}/api/users/${u.id}/role`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ role: newRole }) }); if (!res.ok) { const err = await res.json(); return setStatusMessage({ type: 'error', text: err.message || t('dashboard.errorSaving') }); } const updated = await res.json(); setUsersData(prev => prev.map(x => x.id === u.id ? { ...x, role: updated.user.role } : x)); setStatusMessage({ type: 'success', text: t('dashboard.roleUpdated') }); } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: t('dashboard.networkError') }); } }} className="text-sm border rounded p-1">
+                                <option value="volunteer">{t('dashboard.volunteer')}</option>
+                                <option value="coordinator">{t('dashboard.coordinator')}</option>
+                                <option value="admin">{t('dashboard.admin')}</option>
                               </select>
                             </div>
                           </div>
@@ -663,8 +722,8 @@ const Dashboard: React.FC = () => {
                                 });
                                 setSelectedUser(u); setUserProjects(projectsWithBanFlag); setUserModalOpen(true);
                               } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: 'Error fetching user projects' }); }
-                            }}>View Projects</button>
-                            <button className="bg-[#B33A3A] text-white hover:bg-[#1f2124] hover:text-white transition px-3 py-1 rounded-3xl text-sm" onClick={() => openConfirm('Delete user', 'Are you sure you want to delete this user?', async () => { closeConfirm(); try { const res = await fetch(`${API_URL}/api/users/${u.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) { const err = await res.json(); setStatusMessage({ type: 'error', text: err.message || 'Error deleting user' }); return; } setUsersData(prev => prev.filter(x => x.id !== u.id)); setStatusMessage({ type: 'success', text: 'User deleted' }); } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: 'Error deleting user' }); } }, true)}>Delete</button>
+                            }}>{t('dashboard.viewProjects')}</button>
+                            <button className="bg-[#B33A3A] text-white hover:bg-[#1f2124] hover:text-white transition px-3 py-1 rounded-3xl text-sm" onClick={() => openConfirm(t('dashboard.deleteUser'), t('dashboard.deleteUserConfirm'), async () => { closeConfirm(); try { const res = await fetch(`${API_URL}/api/users/${u.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) { const err = await res.json(); setStatusMessage({ type: 'error', text: err.message || t('dashboard.errorDeleting') }); return; } setUsersData(prev => prev.filter(x => x.id !== u.id)); setStatusMessage({ type: 'success', text: t('dashboard.userDeleted') }); } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: t('dashboard.errorDeleting') }); } }, true)}>{t('common.delete')}</button>
                           </div>
                         </div>
                       ))}
@@ -681,13 +740,13 @@ const Dashboard: React.FC = () => {
 
                 {activeTab === 'contacts' && user && user.role === 'admin' && (
                   <div>
-                    <h3 className="font-bold mb-2">Incidents</h3>
+                    <h3 className="font-bold mb-2">{t('dashboard.incidents')}</h3>
                     <div className="mb-4 flex flex-col sm:flex-row gap-2 sm:items-center">
-                      <label className="text-sm">Filter:</label>
+                      <label className="text-sm">{t('dashboard.filter')}:</label>
                       <select value={contactsFilter} onChange={(e) => setContactsFilter(e.target.value as 'open'|'closed'|'all')} className="text-sm border rounded p-2">
-                        <option value="open">Open</option>
-                        <option value="closed">Closed</option>
-                        <option value="all">All</option>
+                        <option value="open">{t('dashboard.open')}</option>
+                        <option value="closed">{t('dashboard.closed')}</option>
+                        <option value="all">{t('dashboard.all')}</option>
                       </select>
                     </div>
                     <div>
@@ -700,12 +759,12 @@ const Dashboard: React.FC = () => {
                                 // mark as read/closed
                                 try {
                                   const res = await fetch(`${API_URL}/api/contacts/${c.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ read: true }) });
-                                  if (!res.ok) { const err = await res.json(); return setStatusMessage({ type: 'error', text: err.message || 'Error' }); }
+                                  if (!res.ok) { const err = await res.json(); return setStatusMessage({ type: 'error', text: err.message || t('dashboard.networkError') }); }
                                   const updated = await res.json();
                                   setContacts(prev => prev.map(x => x.id === c.id ? updated : x));
-                                } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: 'Error' }); }
-                              }}>Close</button> }
-                              <button className="bg-[#B33A3A] text-white hover:bg-[#1f2124] hover:text-white transition px-3 py-1 rounded-3xl text-sm" onClick={() => openConfirm('Delete message', 'Are you sure you want to delete this message?', async () => { closeConfirm(); try { const res = await fetch(`${API_URL}/api/contacts/${c.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) { const err = await res.json(); setStatusMessage({ type: 'error', text: err.message || 'Error' }); return; } setContacts(prev => prev.filter(x => x.id !== c.id)); setStatusMessage({ type: 'success', text: 'Message deleted' }); } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: 'Error deleting message' }); } }, true)}>Delete</button>
+                                } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: t('dashboard.networkError') }); }
+                              }}>{t('dashboard.close')}</button> }
+                              <button className="bg-[#B33A3A] text-white hover:bg-[#1f2124] hover:text-white transition px-3 py-1 rounded-3xl text-sm" onClick={() => openConfirm(t('dashboard.deleteMessage'), t('dashboard.deleteMessageConfirm'), async () => { closeConfirm(); try { const res = await fetch(`${API_URL}/api/contacts/${c.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) { const err = await res.json(); setStatusMessage({ type: 'error', text: err.message || t('dashboard.networkError') }); return; } setContacts(prev => prev.filter(x => x.id !== c.id)); setStatusMessage({ type: 'success', text: t('dashboard.messageDeleted') }); } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: t('dashboard.errorDeleting') }); } }, true)}>{t('common.delete')}</button>
                             </div>
                           </div>
                           <div className="mt-2 text-sm">{c.message}</div>
@@ -726,9 +785,9 @@ const Dashboard: React.FC = () => {
                 {activeTab === 'categories' && user && (user.role === 'admin' || user.role === 'coordinator') && (
                   <div>
                     <div className="mb-6 flex flex-col md:flex-row justify-between md:items-center gap-3">
-                      <h3 className="font-bold mb-2 md:mb-0">Categories</h3>
+                      <h3 className="font-bold mb-2 md:mb-0">{t('dashboard.categories')}</h3>
                       <button className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-2xl font-semibold shadow text-sm w-full md:w-auto" onClick={() => { setCategoryModalOpen(true); setEditingCategory(null); setCategoryForm({ name: '', description: '' }); }}>
-                        Add Category
+                        {t('dashboard.addCategory')}
                       </button>
                     </div>
                     <div className="mb-4">
@@ -740,8 +799,8 @@ const Dashboard: React.FC = () => {
                               <div className="text-xs md:text-sm text-gray-600">{c.description}</div>
                             </div>
                             <div className="flex gap-2 flex-wrap md:flex-nowrap">
-                              <button className="border border-[#767676] text-black hover:bg-[#1f2124] hover:text-white transition px-3 py-1 rounded-3xl text-sm" onClick={() => { setEditingCategory(c); setCategoryModalOpen(true); setCategoryForm({ name: c.name, description: c.description || '' }); }}>Edit</button>
-                              <button className="bg-[#B33A3A] text-white hover:bg-[#1f2124] hover:text-white transition px-3 py-1 rounded-3xl text-sm" onClick={() => openConfirm('Delete category', 'Are you sure you want to delete this category?', async () => { closeConfirm(); try { const res = await fetch(`${API_URL}/api/categories/${c.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) { const err = await res.json(); setStatusMessage({ type: 'error', text: err.message || 'Error deleting category' }); return; } setCategories(prev => prev.filter(x => x.id !== c.id)); setStatusMessage({ type: 'success', text: 'Category deleted' }); } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: 'Error deleting category' }); } }, true)}>Delete</button>
+                              <button className="border border-[#767676] text-black hover:bg-[#1f2124] hover:text-white transition px-3 py-1 rounded-3xl text-sm" onClick={() => { setEditingCategory(c); setCategoryModalOpen(true); setCategoryForm({ name: c.name, description: c.description || '' }); }}>{t('common.edit')}</button>
+                              <button className="bg-[#B33A3A] text-white hover:bg-[#1f2124] hover:text-white transition px-3 py-1 rounded-3xl text-sm" onClick={() => openConfirm(t('dashboard.deleteCategory'), t('dashboard.deleteCategoryConfirm'), async () => { closeConfirm(); try { const res = await fetch(`${API_URL}/api/categories/${c.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); if (!res.ok) { const err = await res.json(); setStatusMessage({ type: 'error', text: err.message || t('dashboard.errorDeleting') }); return; } setCategories(prev => prev.filter(x => x.id !== c.id)); setStatusMessage({ type: 'success', text: t('dashboard.categoryDeleted') }); } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: t('dashboard.errorDeleting') }); } }, true)}>{t('common.delete')}</button>
                             </div>
                           </div>
                         </div>
@@ -779,7 +838,7 @@ const Dashboard: React.FC = () => {
               transition={{ duration: 0.3, type: "spring", stiffness: 120 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-xl md:text-2xl font-bold mb-4">Edit Profile</h2>
+              <h2 className="text-xl md:text-2xl font-bold mb-4">{t('dashboard.editProfile')}</h2>
               <form
                 onSubmit={handleUpdateProfile}
                 className="flex flex-col gap-3"
@@ -791,7 +850,7 @@ const Dashboard: React.FC = () => {
                     className="w-24 md:w-32 h-24 md:h-32 rounded-full object-cover border"
                   />
                   <label className="mt-4 px-6 py-3 border-2 border-dashed border-[#F0BB00] rounded-lg bg-yellow-50 hover:bg-yellow-100 cursor-pointer transition-colors text-center">
-                    <span className="text-sm font-semibold text-gray-700">Click to upload image</span>
+                    <span className="text-sm font-semibold text-gray-700">{t('dashboard.uploadImage')}</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -802,7 +861,7 @@ const Dashboard: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-semibold mb-1 text-sm">Name:</label>
+                  <label className="block font-semibold mb-1 text-sm">{t('dashboard.name')}:</label>
                   <input
                     type="text"
                     value={editName}
@@ -818,13 +877,13 @@ const Dashboard: React.FC = () => {
                     className="px-4 py-2 rounded-3xl border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200 text-sm flex-1 sm:flex-none"
                     onClick={() => setShowEditModal(false)}
                   >
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                   <button
                     type="submit"
                     className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-3xl font-semibold transition-colors text-sm flex-1 sm:flex-none"
                   >
-                    Save
+                    {t('common.save')}
                   </button>
                 </div>
               </form>
@@ -852,38 +911,38 @@ const Dashboard: React.FC = () => {
               transition={{ duration: 0.3, type: "spring", stiffness: 120 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-2xl font-bold mb-4">{editingProject ? 'Edit Project' : 'Create Project'}</h2>
+              <h2 className="text-2xl font-bold mb-4">{editingProject ? t('dashboard.editProject') : t('dashboard.createProject')}</h2>
               <form onSubmit={handleSubmitProject} className="flex flex-col gap-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <input className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none text-sm" placeholder="Name" value={projectForm.name} onChange={(e)=>setProjectForm({...projectForm, name: e.target.value})} required />
+                  <input className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none text-sm" placeholder={t('dashboard.name')} value={projectForm.name} onChange={(e)=>setProjectForm({...projectForm, name: e.target.value})} required />
                   <input type="date" className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none text-sm" value={projectForm.start_date} onChange={(e)=>setProjectForm({...projectForm, start_date: e.target.value})} />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <input type="date" className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none text-sm" value={projectForm.end_date} onChange={(e)=>setProjectForm({...projectForm, end_date: e.target.value})} />
-                  <input className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none text-sm" placeholder="Location" value={projectForm.location} onChange={(e)=>setProjectForm({...projectForm, location: e.target.value})} />
+                  <input className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none text-sm" placeholder={t('dashboard.location')} value={projectForm.location} onChange={(e)=>setProjectForm({...projectForm, location: e.target.value})} />
                 </div>
-                <textarea className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none text-sm" placeholder="Description" value={projectForm.description} onChange={(e)=>setProjectForm({...projectForm, description: e.target.value})} />
+                <textarea className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none text-sm" placeholder={t('dashboard.description')} value={projectForm.description} onChange={(e)=>setProjectForm({...projectForm, description: e.target.value})} />
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <input type="number" className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none text-sm" value={projectForm.capacity} onChange={(e)=>setProjectForm({...projectForm, capacity: Number(e.target.value)})} />
                   <select className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none text-sm" value={projectForm.status} onChange={(e)=>setProjectForm({...projectForm, status: e.target.value})}>
-                    <option value="active">Active</option>
-                    <option value="cancelled">Cancelled</option>
-                    <option value="finished">Finished</option>
+                    <option value="active">{t('dashboard.active')}</option>
+                    <option value="cancelled">{t('dashboard.cancelled')}</option>
+                    <option value="finished">{t('dashboard.finished')}</option>
                   </select>
                   <select className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none text-sm" value={projectForm.categoryId} onChange={(e)=>setProjectForm({...projectForm, categoryId: e.target.value === '' ? '' : Number(e.target.value)})}>
-                    <option value="">-- No category --</option>
+                    <option value="">{t('dashboard.noCategory')}</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
                 <div className="flex flex-col gap-3">
                   <label className="px-4 py-3 border-2 border-dashed border-[#F0BB00] rounded-lg bg-yellow-50 hover:bg-yellow-100 cursor-pointer transition-colors text-center">
-                    <span className="text-sm font-semibold text-gray-700">Click to upload project file</span>
+                    <span className="text-sm font-semibold text-gray-700">{t('dashboard.uploadFile')}</span>
                     <input type="file" onChange={handleProjectFileChange} className="hidden" />
                   </label>
                   {projectFileName && <p className="text-xs text-gray-600 text-center">📄 {projectFileName}</p>}
                   <div className="flex gap-2 flex-col sm:flex-row w-full sm:w-auto sm:ml-auto">
-                    <button type="button" className="px-4 py-2 rounded-3xl border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200 text-sm flex-1 sm:flex-none" onClick={() => { setProjectModalOpen(false); setEditingProject(null); }}>Cancel</button>
-                    <button type="submit" className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-3xl font-semibold transition-colors text-sm flex-1 sm:flex-none">{editingProject ? 'Save' : 'Create'}</button>
+                    <button type="button" className="px-4 py-2 rounded-3xl border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200 text-sm flex-1 sm:flex-none" onClick={() => { setProjectModalOpen(false); setEditingProject(null); }}>{t('common.cancel')}</button>
+                    <button type="submit" className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-3xl font-semibold transition-colors text-sm flex-1 sm:flex-none">{editingProject ? t('common.save') : t('dashboard.createProject')}</button>
                   </div>
                 </div>
               </form>
@@ -896,7 +955,7 @@ const Dashboard: React.FC = () => {
         {userModalOpen && selectedUser && (
           <motion.div className="fixed inset-0 z-50 flex justify-center items-center bg-black/10 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { setUserModalOpen(false); setSelectedUser(null); }}>
           <motion.div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-2xl" variants={modalVariants} initial="hidden" animate="visible" exit="exit" transition={{ duration: 0.3, type: "spring", stiffness: 120 }} onClick={(e)=>e.stopPropagation()}>
-            <h2 className="text-2xl font-bold mb-4">{selectedUser.name} - Projects</h2>
+            <h2 className="text-2xl font-bold mb-4">{selectedUser.name} - {t('dashboard.projects')}</h2>
               <div className="mb-4">
                 {userProjects.map((p: any) => (
                   <div key={p.id} className="border p-3 mb-2 rounded flex justify-between items-center">
@@ -906,16 +965,16 @@ const Dashboard: React.FC = () => {
                     </div>
                     <div className="flex gap-2">
                       {!p.banned ? (
-                        <button className="bg-[#B33A3A] text-white px-4 py-2 rounded-3xl hover:bg-[#1f2124] transition" onClick={() => openConfirm('Remove & Ban', 'Are you sure you want to remove this user from the project and ban them? This will prevent them from registering again for this project.', async () => { closeConfirm(); await handleRejectUserFromProject(p.id, selectedUser.id); }, true)}>Remove & Ban</button>
+                        <button className="bg-[#B33A3A] text-white px-4 py-2 rounded-3xl hover:bg-[#1f2124] transition" onClick={() => openConfirm(t('dashboard.removeBan'), t('dashboard.removeBanConfirm'), async () => { closeConfirm(); await handleRejectUserFromProject(p.id, selectedUser.id); }, true)}>{t('dashboard.removeBan')}</button>
                       ) : (
-                        <button className="px-4 py-2 rounded-3xl border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200" onClick={() => openConfirm('Unban user', 'Are you sure you want to unban this user from this project?', async () => { closeConfirm(); await handleUnbanUserFromProject(p.id, selectedUser.id); }, false)}>Unban</button>
+                        <button className="px-4 py-2 rounded-3xl border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200" onClick={() => openConfirm(t('dashboard.unban'), t('dashboard.unbanConfirm'), async () => { closeConfirm(); await handleUnbanUserFromProject(p.id, selectedUser.id); }, false)}>{t('dashboard.unban')}</button>
                       )}
                     </div>
                   </div>
                 ))}
               </div>
               <div className="flex justify-end">
-                <button className="px-4 py-2 rounded-3xl bg-[#1f2124] text-white border hover:border-[#767676] hover:bg-[#3B3E42] hover:text-white transition-colors duration-200" onClick={() => { setUserModalOpen(false); setSelectedUser(null); }}>Close</button>
+                <button className="px-4 py-2 rounded-3xl bg-[#1f2124] text-white border hover:border-[#767676] hover:bg-[#3B3E42] hover:text-white transition-colors duration-200" onClick={() => { setUserModalOpen(false); setSelectedUser(null); }}>{t('dashboard.close')}</button>
               </div>
             </motion.div>
           </motion.div>
@@ -926,19 +985,19 @@ const Dashboard: React.FC = () => {
         {createUserModalOpen && (
           <motion.div className="fixed inset-0 z-50 flex justify-center items-center bg-black/10 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setCreateUserModalOpen(false)}>
             <motion.div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md" variants={modalVariants} initial="hidden" animate="visible" exit="exit" transition={{ duration: 0.3, type: "spring", stiffness: 120 }} onClick={(e)=>e.stopPropagation()}>
-              <h2 className="text-2xl font-bold mb-4">Create User</h2>
+              <h2 className="text-2xl font-bold mb-4">{t('dashboard.createUser')}</h2>
               <form onSubmit={async (e)=>{ e.preventDefault(); await createUser(); }} className="flex flex-col gap-3">
-                <input placeholder="Name" className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none" value={newUserForm.name} onChange={(e)=>setNewUserForm({...newUserForm, name: e.target.value})} required />
-                <input placeholder="Email" className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none" value={newUserForm.email} onChange={(e)=>setNewUserForm({...newUserForm, email: e.target.value})} required />
-                <input placeholder="Password" type="password" className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none" value={newUserForm.password} onChange={(e)=>setNewUserForm({...newUserForm, password: e.target.value})} required />
+                <input placeholder={t('dashboard.name')} className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none" value={newUserForm.name} onChange={(e)=>setNewUserForm({...newUserForm, name: e.target.value})} required />
+                <input placeholder={t('dashboard.email')} className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none" value={newUserForm.email} onChange={(e)=>setNewUserForm({...newUserForm, email: e.target.value})} required />
+                <input placeholder={t('dashboard.password')} type="password" className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none" value={newUserForm.password} onChange={(e)=>setNewUserForm({...newUserForm, password: e.target.value})} required />
                 <select className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none" value={newUserForm.role} onChange={(e)=>setNewUserForm({...newUserForm, role: e.target.value})}>
-                  <option value="volunteer">Volunteer</option>
-                  <option value="coordinator">Coordinator</option>
-                  <option value="admin">Admin</option>
+                  <option value="volunteer">{t('dashboard.volunteer')}</option>
+                  <option value="coordinator">{t('dashboard.coordinator')}</option>
+                  <option value="admin">{t('dashboard.admin')}</option>
                 </select>
                 <div className="flex justify-end gap-2">
-                  <button type="button" className="px-4 py-2 rounded-3xl border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200" onClick={()=>setCreateUserModalOpen(false)}>Cancel</button>
-                  <button type="submit" className="bg-[#F0BB00] text-black px-4 py-2 rounded-3xl hover:bg-[#1f2124] hover:text-white transition font-semibold">Create</button>
+                  <button type="button" className="px-4 py-2 rounded-3xl border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200" onClick={()=>setCreateUserModalOpen(false)}>{t('common.cancel')}</button>
+                  <button type="submit" className="bg-[#F0BB00] text-black px-4 py-2 rounded-3xl hover:bg-[#1f2124] hover:text-white transition font-semibold">{t('dashboard.createUser')}</button>
                 </div>
               </form>
             </motion.div>
@@ -966,36 +1025,36 @@ const Dashboard: React.FC = () => {
               transition={{ duration: 0.3, type: "spring", stiffness: 120 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-2xl font-bold mb-4">{editingCategory ? 'Edit Category' : 'Create Category'}</h2>
+              <h2 className="text-2xl font-bold mb-4">{editingCategory ? t('dashboard.editCategory') : t('dashboard.createCategory')}</h2>
               <form onSubmit={async (e) => {
                 e.preventDefault();
-                if (!token) return setStatusMessage({ type: 'error', text: 'Login required' });
+                if (!token) return setStatusMessage({ type: 'error', text: t('dashboard.loginRequired') });
                 try {
                   let url = `${API_URL}/api/categories`;
                   let method = 'POST';
                   if (editingCategory) { url = `${API_URL}/api/categories/${editingCategory.id}`; method = 'PUT'; }
                   const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(categoryForm) });
-                  if (!res.ok) { const err = await res.json(); return setStatusMessage({ type: 'error', text: err.message || 'Error saving category' }); }
+                  if (!res.ok) { const err = await res.json(); return setStatusMessage({ type: 'error', text: err.message || t('dashboard.errorSaving') }); }
                   await res.json();
                   // reload categories
                   const all = await fetch(`${API_URL}/api/categories`).then(r => r.json());
                   setCategories(all);
                   setCategoryModalOpen(false);
                   setEditingCategory(null);
-                  setStatusMessage({ type: 'success', text: editingCategory ? 'Category updated' : 'Category created' });
-                } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: 'Error saving category' }); }
+                  setStatusMessage({ type: 'success', text: editingCategory ? t('dashboard.categoryUpdated') : t('dashboard.categoryCreated') });
+                } catch (err) { console.error(err); setStatusMessage({ type: 'error', text: t('dashboard.errorSaving') }); }
               }} className="flex flex-col gap-3">
                 <div>
-                  <label className="block font-semibold mb-1">Name:</label>
-                  <input className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none" placeholder="Category name" value={categoryForm.name} onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })} required />
+                  <label className="block font-semibold mb-1">{t('dashboard.name')}:</label>
+                  <input className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none" placeholder={t('dashboard.categoryName')} value={categoryForm.name} onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })} required />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">Description:</label>
-                  <textarea className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none" placeholder="Category description" rows={4} value={categoryForm.description} onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })} />
+                  <label className="block font-semibold mb-1">{t('dashboard.description')}:</label>
+                  <textarea className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none" placeholder={t('dashboard.categoryDescription')} rows={4} value={categoryForm.description} onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })} />
                 </div>
                 <div className="flex gap-2 mt-2 flex-col sm:flex-row w-full sm:w-auto sm:ml-auto">
-                  <button type="button" className="px-4 py-2 rounded-3xl border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200 text-sm flex-1 sm:flex-none" onClick={() => { setCategoryModalOpen(false); setEditingCategory(null); }}>Cancel</button>
-                  <button type="submit" className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-3xl font-semibold transition-colors text-sm flex-1 sm:flex-none">{editingCategory ? 'Save' : 'Create'}</button>
+                  <button type="button" className="px-4 py-2 rounded-3xl border border-[#767676] hover:bg-[#1f2124] hover:text-white transition-colors duration-200 text-sm flex-1 sm:flex-none" onClick={() => { setCategoryModalOpen(false); setEditingCategory(null); }}>{t('common.cancel')}</button>
+                  <button type="submit" className="bg-[#F0BB00] text-black hover:bg-[#1f2124] hover:text-white px-4 py-2 rounded-3xl font-semibold transition-colors text-sm flex-1 sm:flex-none">{editingCategory ? t('common.save') : t('dashboard.createCategory')}</button>
                 </div>
               </form>
             </motion.div>

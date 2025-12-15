@@ -2,13 +2,26 @@ const express = require('express');
 const router = express.Router();
 const userCtrl = require('../controllers/user.controller');
 const authMiddleware = require('../middlewares/auth.middlewares');
-const multerUpload = require('../multer/upload');
+const multer = require('multer');
 
 const { isAdmin, isAdminOrCoordinator } = require('../middlewares/role.middlewares');
 
 const upload = require('../multer/upload');
 
 const requireAuth = require('../middlewares/requireAuth');
+
+// Multer error handler middleware
+const handleMulterError = (err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ message: 'File too large. Maximum size is 5MB.' });
+    }
+    return res.status(400).json({ message: `Upload error: ${err.message}` });
+  } else if (err) {
+    return res.status(400).json({ message: err.message || 'Error uploading file' });
+  }
+  next();
+};
 
 /**
  * @swagger
@@ -49,6 +62,7 @@ router.put(
   authMiddleware,
   requireAuth,
   upload.single('file'),
+  handleMulterError,
   userCtrl.updateOwnProfile
 );
 
