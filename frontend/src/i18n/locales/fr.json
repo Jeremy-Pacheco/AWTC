@@ -242,6 +242,7 @@
     "cancelled": "Annulé",
     "finished": "Terminé",
     "noCategory": "-- Pas de catégorie --",
+    "noProjects": "Cet utilisateur n'est inscrit à aucun projet",
     "uploadImage": "Cliquez pour télécharger une image",
     "uploadFile": "Cliquez pour télécharger le fichier du projet",
     "categoryName": "Nom de la catégorie",

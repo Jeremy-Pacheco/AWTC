@@ -23,7 +23,7 @@ exports.createReview = async (req, res) => {
 
     const reviewWithUser = await Reviews.findByPk(review.id, {
       include: [
-        { model: User, as: "user", attributes: ["id", "email", "name"] },
+        { model: User, as: "user", attributes: ["id", "email", "name", "profileImage"] },
       ],
     });
 
@@ -52,7 +52,7 @@ exports.createReview = async (req, res) => {
 exports.getAllReviews = async (req, res) => {
   try {
     const reviews = await Reviews.findAll({
-      include: [{ model: User, as: "user", attributes: ["id", "email", "name"] }],
+      include: [{ model: User, as: "user", attributes: ["id", "email", "name", "profileImage"] }],
       order: [["date", "DESC"]],
     });
     res.status(200).json(reviews);
