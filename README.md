@@ -3,7 +3,9 @@
 A web application to manage volunteer projects, allowing volunteers to register, sign up for projects, access resources, and communicate with coordinators.
 The application is designed to be cross-platform, responsive, and accessible, with full CRUD functionalities.
 
-**Status**: Backend is fully functional with CRUD operations for projects, categories, reviews, users, and contacts. Frontend is built in React + TypeScript with responsive UI and connects with backend APIs.
+**Status**: Backend is fully functional with CRUD operations for projects, categories, reviews, users, and contacts. Frontend is built in React + TypeScript with responsive UI, internationalization (i18n), and connects with backend APIs.
+
+**Live Demo**: [https://awilltochange.me](https://awilltochange.me)
 
 ---
 
@@ -43,11 +45,14 @@ The application is designed to be cross-platform, responsive, and accessible, wi
 - **Categories**: Full CRUD for project categorization
 - **Contact Management**: CRUD for contact submissions
 - **User Bans**: System to ban users from specific projects
-- **Dashboard**: Admin dashboard with statistics and data overview
+- **Dashboard**: Admin dashboard with statistics, pagination, and user/project management
+- **Internationalization (i18n)**: Full support for English, Spanish, and French languages
 - **API Documentation**: Swagger/OpenAPI documentation at `/api-docs`
 - **Session Management**: Express session with secure cookies
 - **Authentication**: JWT and session-based authentication with OpenLDAP integration
 - **File Uploads**: Multer integration for profile images and project/review images
+- **Real-time Updates**: Socket.io for live review updates
+- **HTTPS**: SSL/TLS encryption with Let's Encrypt certificates
 
 ---
 
@@ -57,7 +62,6 @@ The application is designed to be cross-platform, responsive, and accessible, wi
 - Email notifications and reminders
 - Advanced dashboards with charts and analytics
 - Resource library per project
-- Chat/messaging system
 
 ---
 
@@ -70,6 +74,8 @@ The application is designed to be cross-platform, responsive, and accessible, wi
 - **Tailwind CSS** 4.1.16 for styling
 - **Framer Motion** 12.23.24 for animations
 - **GSAP** 3.13.0 for advanced animations
+- **i18next** & **react-i18next** for internationalization (EN, ES, FR)
+- **Socket.io Client** for real-time updates
 - **Axios** (via API module) for HTTP requests
 - **FontAwesome & Heroicons** for icons
 
@@ -81,10 +87,12 @@ The application is designed to be cross-platform, responsive, and accessible, wi
 - **OpenLDAP** & **ldapjs** for authentication
 - **Multer** 2.0.2 for file uploads
 - **Express Session** 1.18.2 for session management
+- **Socket.io** for real-time WebSocket communication
 - **Swagger** (swagger-jsdoc, swagger-ui-express) for API documentation
 - **CORS** 2.8.5 for cross-origin requests
 - **Dotenv** 16.4.5 for environment configuration
 - **Nodemon** 3.1.10 for development auto-reload
+- **Winston** for logging
 
 ---
 
@@ -140,9 +148,9 @@ npm run dev    # Development mode with nodemon
 npm start      # Production mode
 ```
 
-Server runs at: **http://209.97.187.131:8080/**
-- API Documentation: http://209.97.187.131:8080/api-docs
-- Dashboard: http://209.97.187.131:8080/ (requires login)
+Server runs at: **https://awilltochange.me/**
+- API Documentation: https://awilltochange.me/api-docs
+- Admin Dashboard: https://awilltochange.me/admin/ (requires login)
 
 ### Frontend Setup
 
@@ -157,7 +165,7 @@ npm install
 npm run dev
 ```
 
-Frontend runs at: **http://209.97.187.131:5173/**
+Frontend runs at: **https://awilltochange.me/**
 
 3. Build for production:
 ```bash
@@ -223,8 +231,9 @@ AWTC/
     │   │   ├── Categories.tsx
     │   │   ├── VolunteerList.tsx
     │   │   ├── AuthModal.tsx
-    │   │   ├── AlertModal.tsx
     │   │   ├── ConfirmModal.tsx
+    │   │   ├── LanguageSelector.tsx     # Language switcher (i18n)
+    │   │   ├── Chat.tsx                 # Real-time chat
     │   │   └── ...
     │   ├── pages/                       # Page components
     │   │   ├── Home.tsx
@@ -234,6 +243,12 @@ AWTC/
     │   │   ├── MoreInfo.tsx
     │   │   ├── Privacy.tsx
     │   │   └── Terms.tsx
+    │   ├── i18n/                        # Internationalization
+    │   │   ├── index.ts                 # i18n configuration
+    │   │   └── locales/                 # Translation files
+    │   │       ├── en.json              # English
+    │   │       ├── es.json              # Spanish
+    │   │       └── fr.json              # French
     │   ├── assets/                      # Static assets
     │   ├── api.ts                       # API client (Axios)
     │   ├── App.tsx                      # Main app component
@@ -335,7 +350,8 @@ AWTC/
 
 ### CORS Configuration
 - Allowed origins configured in backend/index.js
-- Default: http://209.97.187.131:5173, http://209.97.187.131:8080, and production URLs
+- Production: https://awilltochange.me
+- Development: http://localhost:5173, http://localhost:8080
 - Add new URLs if deploying to different servers
 
 ### Backend Scripts
@@ -382,6 +398,10 @@ npm run build    # Build for production
 
 ## 🚢 Deployment
 
-### Frontend Deployment (Digital Ocean)
-- **Production URL**: [http://209.97.187.131:5173/](http://209.97.187.131:5173/)
-- **Hosted on**: DigitalOcean VPS
+### Production (Digital Ocean)
+- **Live URL**: [https://awilltochange.me](https://awilltochange.me)
+- **API**: [https://awilltochange.me/api](https://awilltochange.me/api)
+- **API Docs**: [https://awilltochange.me/api-docs](https://awilltochange.me/api-docs)
+- **Admin Dashboard**: [https://awilltochange.me/admin/](https://awilltochange.me/admin/)
+- **Hosted on**: DigitalOcean VPS with Nginx reverse proxy
+- **SSL**: Let's Encrypt certificates (auto-renewal via Certbot)
