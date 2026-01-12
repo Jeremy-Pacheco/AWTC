@@ -82,6 +82,9 @@ app.get('/api-docs/swagger.json', (req, res) => {
 //Setting the view to ejs
 app.set('view engine', 'ejs');
 
+// Make frontend URL available in all templates
+app.locals.frontendUrl = FRONTEND_URL;
+
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 
