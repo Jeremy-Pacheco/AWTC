@@ -22,6 +22,19 @@ function DarkModeToggle() {
     localStorage.setItem("darkMode", String(isDark));
   }, [isDark]);
 
+  // Listen for theme changes from other DarkModeToggle instances
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const currentDark = document.documentElement.classList.contains("dark");
+      setIsDark(currentDark);
+    });
+    observer.observe(document.documentElement, { 
+      attributes: true, 
+      attributeFilter: ["class"] 
+    });
+    return () => observer.disconnect();
+  }, []);
+
   const handleToggle = () => {
     setIsDark(!isDark);
   };

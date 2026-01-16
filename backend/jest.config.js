@@ -8,5 +8,6 @@ module.exports = {
     '!node_modules/**'
   ],
   testTimeout: 10000,
-  testPathIgnorePatterns: ['/node_modules/']
+  testPathIgnorePatterns: ['/node_modules/'],
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.js']
 };
