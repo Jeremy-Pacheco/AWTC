@@ -5,6 +5,7 @@ import HeroImage from "../components/HeroImage";
 import AuthModal from "../components/AuthModal";
 import AlertModal from "../components/AlertModal";
 import { useSearchParams } from "react-router-dom";
+import { handleAuthFetch } from "../utils/auth";
 
 type Project = {
   id: number;
@@ -95,7 +96,7 @@ const Volunteering: React.FC = () => {
 
     try {
       // Fetch enrolled projects
-      const resProjects = await fetch(`${API_URL}/api/users/dashboard/projects`, {
+      const resProjects = await handleAuthFetch(`${API_URL}/api/users/dashboard/projects`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (resProjects.ok) {
@@ -105,7 +106,7 @@ const Volunteering: React.FC = () => {
       }
 
       // Fetch banned projects
-      const resBans = await fetch(`${API_URL}/api/users/dashboard/bans`, {
+      const resBans = await handleAuthFetch(`${API_URL}/api/users/dashboard/bans`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (resBans.ok) {
