@@ -6,6 +6,7 @@ import logo4 from "../../../frontend/public/home/aboutUs-image.png";
 import { NavLink, useNavigate } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 import { useTranslation } from "react-i18next";
+import { handleAuthFetch } from "../utils/auth";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 const IMAGE_URL = import.meta.env.VITE_IMAGE_URL || "http://localhost:8080/images";
@@ -281,7 +282,7 @@ function ReviewsSection({
         formData.append("image", selectedFile);
       }
 
-      const res = await fetch(`${API_BASE_URL}/api/reviews`, {
+      const res = await handleAuthFetch(`${API_BASE_URL}/api/reviews`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -305,7 +306,7 @@ function ReviewsSection({
   const handleDelete = async (id: number) => {
     if (!window.confirm(t('reviews.confirmDelete'))) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/reviews/${id}`, {
+      const res = await handleAuthFetch(`${API_BASE_URL}/api/reviews/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -326,13 +327,13 @@ function ReviewsSection({
         if (editSelectedFile) formData.append("image", editSelectedFile);
         if (editRemoveImage) formData.append("removeImage", "true");
 
-        res = await fetch(`${API_BASE_URL}/api/reviews/${id}`, {
+        res = await handleAuthFetch(`${API_BASE_URL}/api/reviews/${id}`, {
           method: "PUT",
           headers: { Authorization: `Bearer ${token}` },
           body: formData,
         });
       } else {
-        res = await fetch(`${API_BASE_URL}/api/reviews/${id}`, {
+        res = await handleAuthFetch(`${API_BASE_URL}/api/reviews/${id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",

@@ -12,10 +12,16 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Messages from "./pages/Messages";
 import { subscribeUserToPush, isNotificationSupported } from "./services/notificationService";
+import { initAuthCheck } from "./utils/auth";
 import './i18n';
 
 //TODO: Import other pages when you have them
 function App() {
+  // Check for expired tokens on app startup
+  useEffect(() => {
+    initAuthCheck();
+  }, []);
+
   // Subscribe to push notifications when user is logged in
   useEffect(() => {
     const setupPushNotifications = async () => {

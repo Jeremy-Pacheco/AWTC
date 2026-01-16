@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import ConfirmModal from '../components/ConfirmModal';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from "framer-motion";
+import { handleAuthFetch } from '../utils/auth';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -189,9 +190,10 @@ const Dashboard: React.FC = () => {
 
     const fetchUser = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/users/dashboard`, {
+        const res = await handleAuthFetch(`${API_URL}/api/users/dashboard`, {
           headers: { Authorization: `Bearer ${storedToken}` },
         });
+        
         if (!res.ok) throw new Error("Failed to fetch user data");
 
         const data = await res.json();
@@ -226,7 +228,7 @@ const Dashboard: React.FC = () => {
     };
 
     fetchUser();
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     if (!token) return;
