@@ -85,12 +85,18 @@
   </div>
 </div>
 
+<!-- Hidden data containers -->
+<script id="usersData" type="application/json"><%- JSON.stringify(users || []) %></script>
+<script id="projectsData" type="application/json"><%- JSON.stringify(projects || []) %></script>
+<script id="projectsPerUserData" type="application/json"><%- JSON.stringify(typeof projectsPerUser !== 'undefined' ? projectsPerUser : []) %></script>
+<script id="allUserProjectsData" type="application/json"><%- JSON.stringify(typeof allUserProjects !== 'undefined' ? allUserProjects : []) %></script>
+
 <script>
-  // User data from server
-  const allUsers = <%- JSON.stringify(users || []) %>;
-  const allProjects = <%- JSON.stringify(projects || []) %>;
-  const userProjectsData = <%- JSON.stringify(typeof projectsPerUser !== 'undefined' ? projectsPerUser : []) %>;
-  const allUserProjects = <%- JSON.stringify(typeof allUserProjects !== 'undefined' ? allUserProjects : []) %>;
+  // Parse data from hidden containers
+  const allUsers = JSON.parse(document.getElementById('usersData').textContent || '[]');
+  const allProjects = JSON.parse(document.getElementById('projectsData').textContent || '[]');
+  const userProjectsData = JSON.parse(document.getElementById('projectsPerUserData').textContent || '[]');
+  const allUserProjects = JSON.parse(document.getElementById('allUserProjectsData').textContent || '[]');
   const USERS_PER_PAGE = 6;
   let currentPage = 1;
   let selectedUserId = null;
