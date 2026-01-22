@@ -12,7 +12,8 @@
     "submit": "Submit",
     "loading": "Loading...",
     "error": "Error",
-    "success": "Success"
+    "success": "Success",
+    "infoBanner": "Please note: All volunteer opportunities are currently listed in English."
   },
   "nav": {
     "home": "Home",

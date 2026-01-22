@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import NavBar from "./components/NavBar";
+import InfoBanner from "./components/InfoBanner";
 import Footer from "./components/Footer";
 import FloatingMessageButton from "./components/FloatingMessageButton";
 import Home from "./pages/Home";
@@ -66,6 +67,7 @@ function App() {
     <BrowserRouter>
       <div className="flex flex-col min-h-screen">
         <NavBar />
+        <InfoBanner />
         <main className="grow">
           <Routes>
             <Route path="/" element={<Home />} />

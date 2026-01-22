@@ -12,7 +12,8 @@
     "submit": "Enviar",
     "loading": "Cargando...",
     "error": "Error",
-    "success": "Éxito"
+    "success": "Éxito",
+    "infoBanner": "Nota importante: Todos los voluntariados están actualmente listados en inglés."
   },
   "nav": {
     "home": "Inicio",
