@@ -12,7 +12,8 @@
     "submit": "Soumettre",
     "loading": "Chargement...",
     "error": "Erreur",
-    "success": "Succès"
+    "success": "Succès",
+    "infoBanner": "Remarque importante : Toutes les opportunités de bénévolat sont actuellement listées en anglais."
   },
   "nav": {
     "home": "Accueil",
