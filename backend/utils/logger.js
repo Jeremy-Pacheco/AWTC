@@ -1,5 +1,6 @@
 const winston = require('winston');
 const path = require('path');
+require('winston-daily-rotate-file');
 
 // Define log levels
 const levels = {
@@ -38,15 +39,23 @@ const transports = [
       format
     ),
   }),
-  // Allow to print all the error level messages inside the error.log file
-  new winston.transports.File({
-    filename: path.join(__dirname, '../logs/error.log'),
+  // Allow to print all the error level messages inside the error.log file, rotating daily
+  new winston.transports.DailyRotateFile({
+    filename: path.join(__dirname, '../logs/error-%DATE%.log'),
+    datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
+    maxSize: '20m',
+    maxFiles: '14d',
     level: 'error',
     format: winston.format.combine(winston.format.uncolorize(), format),
   }),
-  // Allow to print all the log messages inside the combined.log file
-  new winston.transports.File({
-    filename: path.join(__dirname, '../logs/combined.log'),
+  // Allow to print all the log messages inside the combined.log file, rotating daily
+  new winston.transports.DailyRotateFile({
+    filename: path.join(__dirname, '../logs/combined-%DATE%.log'),
+    datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
+    maxSize: '20m',
+    maxFiles: '14d',
     format: winston.format.combine(winston.format.uncolorize(), format),
   }),
 ];

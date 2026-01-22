@@ -10,25 +10,32 @@ We use **Winston** for structured logging and **Morgan** for HTTP request loggin
 - **HTTP**: All incoming HTTP requests (Method, URL, Status, Response Time).
 
 ### Log Storage
-Logs are stored in the `backend/logs/` directory:
-- `error.log`: Contains only error-level messages.
-- `combined.log`: Contains all log messages (Info, Warn, Error, HTTP).
+Logs are stored in the `backend/logs/` directory and are rotated daily:
+- `error-YYYY-MM-DD.log`: Contains only error-level messages.
+- `combined-YYYY-MM-DD.log`: Contains all log messages (Info, Warn, Error, HTTP).
 
 ### Implementation Details
-- **Library**: `winston` + `morgan`
+- **Library**: `winston` + `winston-daily-rotate-file` + `morgan`
 - **Format**: Timestamped and structured.
 - **Integration**: Middleware in `index.js` captures all traffic.
 
-## Log Rotation (System Level)
-To prevent log files from consuming all disk space, we use **pm2-logrotate**.
+## Log Rotation strategy
 
-### Configuration
-- **Max Size**: 10MB (Logs rotate when they reach this size).
-- **Retention**: 30 files (Keep the last 30 rotated logs).
-- **Interval**: Daily (Force rotation every day at midnight if size limit isn't reached).
-- **Compression**: Enabled (Rotated logs are gzipped to save space).
+### 1. Application Files (Winston)
+The application handles its own log file rotation using `winston-daily-rotate-file`.
+- **Frequency**: Daily.
+- **Max Size**: 20MB (Rotates if file exceeds this size in a single day).
+- **Retention**: 14 days (Files older than 14 days are deleted).
+- **Compression**: Enabled (Old logs are zipped).
 
-### Commands used for setup
+### 2. System/Console Output (PM2)
+We also use **pm2-logrotate** to manage the stdout/stderr output captured by PM2 (which mirrors what you see in `pm2 logs`).
+
+#### Configuration for PM2
+- **Max Size**: 10MB
+- **Retention**: 30 files
+- **Compression**: Enabled
+
 ```bash
 pm2 install pm2-logrotate
 pm2 set pm2-logrotate:max_size 10M
@@ -47,5 +54,7 @@ pm2 logs awtc-backend
 ### Via File System (Historical)
 ```bash
 cd ~/AWTC/backend/logs
-cat combined.log
+ls -l
+# Look for the file with today's date
+tail -f combined-2026-01-22.log
 ```
