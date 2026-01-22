@@ -46,7 +46,9 @@ The application is designed to be cross-platform, responsive, and accessible, wi
 - **Contact Management**: CRUD for contact submissions
 - **User Bans**: System to ban users from specific projects
 - **Dashboard**: Admin dashboard with statistics, pagination, and user/project management
+- **Dashboard Styling**: Modern UI with white sidebar, updated color scheme, and enhanced visual design
 - **Internationalization (i18n)**: Full support for English, Spanish, and French languages
+- **Info Banner**: Dismissible notification banner informing users about content language
 - **API Documentation**: Swagger/OpenAPI documentation at `/api-docs`
 - **Session Management**: Express session with secure cookies
 - **Authentication**: JWT and session-based authentication with OpenLDAP integration
@@ -68,31 +70,46 @@ The application is designed to be cross-platform, responsive, and accessible, wi
 ## ⚡ Technologies
 
 ### Frontend
-- **React** 19.1.1 with TypeScript
+- **React** 19.1.1 with TypeScript 5.9.3
 - **React Router** 7.9.5 for navigation
 - **Vite** 7.1.7 for fast development and building
 - **Tailwind CSS** 4.1.16 for styling
 - **Framer Motion** 12.23.24 for animations
 - **GSAP** 3.13.0 for advanced animations
-- **i18next** & **react-i18next** for internationalization (EN, ES, FR)
-- **Socket.io Client** for real-time updates
-- **Axios** (via API module) for HTTP requests
-- **FontAwesome & Heroicons** for icons
+- **i18next** 23.11.5 & **react-i18next** 14.1.2 for internationalization (EN, ES, FR)
+- **i18next-browser-languagedetector** 8.0.0 for automatic language detection
+- **Socket.io Client** 4.8.1 for real-time updates
+- **Axios** 1.13.2 for HTTP requests
+- **FontAwesome** 7.1.0 & **Heroicons** 2.2.0 for icons
+- **Hamburger React** 2.5.2 for mobile menu
+- **React Loader Spinner** 8.0.0 & **React Loading Indicators** 1.0.1 for loading states
+- **Push Notifications** with Service Worker integration
+- **Vitest** 4.0.15 & **Testing Library** for unit testing
+- **ESLint** 9.36.0 for code quality
 
 ### Backend
 - **Node.js** with Express 5.1.0
 - **Sequelize** 6.37.7 ORM for MySQL
 - **MySQL2** 3.15.3 database driver
 - **JWT** (jsonwebtoken 9.0.2) for token-based authentication
-- **OpenLDAP** & **ldapjs** for authentication
+- **Bcrypt** 6.0.0 for password hashing
+- **OpenLDAP** & **ldapjs** 3.0.7 for LDAP authentication
 - **Multer** 2.0.2 for file uploads
-- **Express Session** 1.18.2 for session management
-- **Socket.io** for real-time WebSocket communication
-- **Swagger** (swagger-jsdoc, swagger-ui-express) for API documentation
+- **Express Session** 1.18.2 with **connect-session-sequelize** 8.0.2 for session management
+- **Cookie Parser** 1.4.7 for cookie handling
+- **Socket.io** 4.8.1 for real-time WebSocket communication
+- **Web Push** 3.6.7 for push notifications
+- **Swagger** (swagger-jsdoc 6.2.8, swagger-ui-express 5.0.1) for API documentation
+- **EJS** 3.1.10 for server-side templating (admin dashboard)
+- **D3.js** 7.9.0 for data visualizations
+- **DNS2** 2.1.0 for custom DNS server
+- **Morgan** 1.10.1 for HTTP request logging
+- **Winston** 3.19.0 & **winston-daily-rotate-file** 5.0.0 for application logging
+- **Cross-env** 7.0.3 for cross-platform environment variables
+- **Nodemon** 3.1.10 for development auto-reload
+- **Jest** 29.7.0 & **Supertest** 6.3.3 for testing
 - **CORS** 2.8.5 for cross-origin requests
 - **Dotenv** 16.4.5 for environment configuration
-- **Nodemon** 3.1.10 for development auto-reload
-- **Winston** for logging
 
 ---
 
@@ -197,7 +214,10 @@ AWTC/
 │   │   ├── reviews.controller.js
 │   │   ├── user.controller.js
 │   │   ├── contact.controller.js
-│   │   └── session.controller.js
+│   │   ├── session.controller.js
+│   │   ├── message.controller.js
+│   │   ├── subscription.controller.js
+│   │   └── external.controller.js
 │   ├── middlewares/                     # Express middlewares
 │   │   ├── auth.middlewares.js         # JWT/Bearer auth
 │   │   ├── requireAuth.js              # Session check
@@ -208,6 +228,8 @@ AWTC/
 │   │   ├── reviews.js
 │   │   ├── user.js
 │   │   ├── contact.js
+│   │   ├── message.js
+│   │   ├── subscription.js
 │   │   ├── userproject.js
 │   │   └── userprojectban.js
 │   ├── migrations/                      # Database migrations
@@ -215,6 +237,14 @@ AWTC/
 │   ├── routes/                          # API routes
 │   ├── multer/                          # File upload config
 │   ├── public/images/                   # Uploaded files
+│   ├── public/css/                      # Dashboard stylesheets
+│   │   ├── dashboard.css               # Main dashboard styles
+│   │   ├── login.css                   # Login page styles
+│   │   ├── projects-dashboard.css
+│   │   ├── users-dashboard.css
+│   │   ├── reviews-dashboard.css
+│   │   ├── categories-dashboard.css
+│   │   └── incidents-dashboard.css
 │   ├── views/                           # EJS templates (dashboard)
 │   ├── utils/                           # Utility functions
 │   ├── swagger.js                       # OpenAPI documentation
@@ -227,17 +257,20 @@ AWTC/
     │   ├── components/                  # React components
     │   │   ├── NavBar.tsx
     │   │   ├── Footer.tsx
+    │   │   ├── InfoBanner.tsx           # Dismissible info banner (i18n)
     │   │   ├── Projects.tsx
     │   │   ├── Categories.tsx
     │   │   ├── VolunteerList.tsx
     │   │   ├── AuthModal.tsx
     │   │   ├── ConfirmModal.tsx
     │   │   ├── LanguageSelector.tsx     # Language switcher (i18n)
+    │   │   ├── FloatingMessageButton.tsx
     │   │   ├── Chat.tsx                 # Real-time chat
     │   │   └── ...
     │   ├── pages/                       # Page components
     │   │   ├── Home.tsx
     │   │   ├── Dashboard.tsx
+    │   │   ├── Messages.tsx
     │   │   ├── AboutUs.tsx
     │   │   ├── Volunteering.tsx
     │   │   ├── MoreInfo.tsx
@@ -312,11 +345,29 @@ AWTC/
 - `PUT /api/projects/:id/volunteer/:userId` – Update volunteer status
 - `DELETE /api/projects/:id/volunteer/:userId` – Remove volunteer
 
+### Messages (Real-time Chat)
+- `GET /api/messages` – Get user's messages
+- `GET /api/messages/:userId` – Get conversation with specific user
+- `POST /api/messages` – Send message
+- `PUT /api/messages/:id/read` – Mark message as read
+- `GET /api/messages/unread-count` – Get unread message count
+- `GET /api/messages/available-users` – Get list of available users for messaging
+
+### Push Notifications
+- `POST /api/subscriptions/subscribe` – Subscribe to push notifications
+- `POST /api/subscriptions/unsubscribe` – Unsubscribe from push notifications
+- `POST /api/subscriptions/test` – Send test notification (Admin only)
+
+### External API
+- `GET /api/external/volunteering` – Get volunteer opportunities (public endpoint)
+
 ### Dashboard (EJS Views)
 - `GET /` – Dashboard overview (requires login)
 - `GET /projects` – Projects management
 - `GET /users` – Users management
 - `GET /reviews` – Reviews management
+- `GET /categories` – Categories management
+- `GET /incidents` – Incidents/contacts dashboard
 - `GET /contacts` – Contacts management
 - `GET /login` – Login page
 - `GET /debug-models` – Model debugging endpoint (development only)
