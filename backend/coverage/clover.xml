@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1768587625247" clover="3.2.0">
-  <project timestamp="1768587625248" name="All files">
+<coverage generated="1769169637628" clover="3.2.0">
+  <project timestamp="1769169637628" name="All files">
     <metrics statements="740" coveredstatements="241" conditionals="263" coveredconditionals="50" methods="85" coveredmethods="43" elements="1088" coveredelements="334" complexity="0" loc="740" ncloc="740" packages="2" files="19" classes="19"/>
     <package name="controllers">
       <metrics statements="651" coveredstatements="153" conditionals="234" coveredconditionals="28" methods="64" coveredmethods="22"/>
-      <file name="category.controller.js" path="C:\Users\PC\Documents\AWTC-PROYECT\AWTC\backend\controllers\category.controller.js">
+      <file name="category.controller.js" path="C:\Users\masu\Documents\proyecto awtc\AWTC\backend\controllers\category.controller.js">
         <metrics statements="25" coveredstatements="21" conditionals="4" coveredconditionals="3" methods="4" coveredmethods="4"/>
         <line num="1" count="1" type="stmt"/>
         <line num="4" count="1" type="stmt"/>
@@ -32,7 +32,7 @@
         <line num="43" count="1" type="stmt"/>
         <line num="45" count="0" type="stmt"/>
       </file>
-      <file name="contact.controller.js" path="C:\Users\PC\Documents\AWTC-PROYECT\AWTC\backend\controllers\contact.controller.js">
+      <file name="contact.controller.js" path="C:\Users\masu\Documents\proyecto awtc\AWTC\backend\controllers\contact.controller.js">
         <metrics statements="39" coveredstatements="24" conditionals="11" coveredconditionals="7" methods="5" coveredmethods="4"/>
         <line num="1" count="1" type="stmt"/>
         <line num="3" count="1" type="stmt"/>
@@ -74,7 +74,7 @@
         <line num="58" count="0" type="stmt"/>
         <line num="59" count="0" type="stmt"/>
       </file>
-      <file name="external.controller.js" path="C:\Users\PC\Documents\AWTC-PROYECT\AWTC\backend\controllers\external.controller.js">
+      <file name="external.controller.js" path="C:\Users\masu\Documents\proyecto awtc\AWTC\backend\controllers\external.controller.js">
         <metrics statements="9" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
         <line num="2" count="0" type="stmt"/>
@@ -86,7 +86,7 @@
         <line num="19" count="0" type="stmt"/>
         <line num="20" count="0" type="stmt"/>
       </file>
-      <file name="message.controller.js" path="C:\Users\PC\Documents\AWTC-PROYECT\AWTC\backend\controllers\message.controller.js">
+      <file name="message.controller.js" path="C:\Users\masu\Documents\proyecto awtc\AWTC\backend\controllers\message.controller.js">
         <metrics statements="56" coveredstatements="23" conditionals="18" coveredconditionals="0" methods="8" coveredmethods="4"/>
         <line num="1" count="1" type="stmt"/>
         <line num="2" count="1" type="stmt"/>
@@ -145,7 +145,7 @@
         <line num="240" count="1" type="stmt"/>
         <line num="241" count="1" type="stmt"/>
       </file>
-      <file name="project.controller.js" path="C:\Users\PC\Documents\AWTC-PROYECT\AWTC\backend\controllers\project.controller.js">
+      <file name="project.controller.js" path="C:\Users\masu\Documents\proyecto awtc\AWTC\backend\controllers\project.controller.js">
         <metrics statements="189" coveredstatements="54" conditionals="61" coveredconditionals="12" methods="19" coveredmethods="6"/>
         <line num="1" count="1" type="stmt"/>
         <line num="2" count="1" type="stmt"/>
@@ -170,11 +170,11 @@
         <line num="46" count="2" type="stmt"/>
         <line num="53" count="2" type="stmt"/>
         <line num="54" count="2" type="stmt"/>
-        <line num="55" count="12" type="stmt"/>
+        <line num="55" count="10" type="stmt"/>
         <line num="59" count="2" type="stmt"/>
-        <line num="60" count="13" type="stmt"/>
-        <line num="61" count="13" type="cond" truecount="2" falsecount="0"/>
-        <line num="62" count="13" type="stmt"/>
+        <line num="60" count="11" type="stmt"/>
+        <line num="61" count="11" type="cond" truecount="2" falsecount="0"/>
+        <line num="62" count="11" type="stmt"/>
         <line num="65" count="2" type="stmt"/>
         <line num="67" count="0" type="stmt"/>
         <line num="68" count="0" type="stmt"/>
@@ -337,7 +337,7 @@
         <line num="402" count="0" type="stmt"/>
         <line num="403" count="0" type="stmt"/>
       </file>
-      <file name="reviews.controller.js" path="C:\Users\PC\Documents\AWTC-PROYECT\AWTC\backend\controllers\reviews.controller.js">
+      <file name="reviews.controller.js" path="C:\Users\masu\Documents\proyecto awtc\AWTC\backend\controllers\reviews.controller.js">
         <metrics statements="79" coveredstatements="22" conditionals="40" coveredconditionals="5" methods="4" coveredmethods="4"/>
         <line num="1" count="1" type="stmt"/>
         <line num="2" count="1" type="stmt"/>
@@ -419,7 +419,7 @@
         <line num="177" count="0" type="stmt"/>
         <line num="178" count="0" type="stmt"/>
       </file>
-      <file name="session.controller.js" path="C:\Users\PC\Documents\AWTC-PROYECT\AWTC\backend\controllers\session.controller.js">
+      <file name="session.controller.js" path="C:\Users\masu\Documents\proyecto awtc\AWTC\backend\controllers\session.controller.js">
         <metrics statements="35" coveredstatements="0" conditionals="23" coveredconditionals="0" methods="4" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
         <line num="2" count="0" type="stmt"/>
@@ -457,7 +457,7 @@
         <line num="60" count="0" type="stmt"/>
         <line num="61" count="0" type="stmt"/>
       </file>
-      <file name="subscription.controller.js" path="C:\Users\PC\Documents\AWTC-PROYECT\AWTC\backend\controllers\subscription.controller.js">
+      <file name="subscription.controller.js" path="C:\Users\masu\Documents\proyecto awtc\AWTC\backend\controllers\subscription.controller.js">
         <metrics statements="69" coveredstatements="9" conditionals="26" coveredconditionals="1" methods="4" coveredmethods="0"/>
         <line num="1" count="2" type="stmt"/>
         <line num="2" count="2" type="stmt"/>
@@ -529,7 +529,7 @@
         <line num="211" count="0" type="stmt"/>
         <line num="223" count="2" type="stmt"/>
       </file>
-      <file name="user.controller.js" path="C:\Users\PC\Documents\AWTC-PROYECT\AWTC\backend\controllers\user.controller.js">
+      <file name="user.controller.js" path="C:\Users\masu\Documents\proyecto awtc\AWTC\backend\controllers\user.controller.js">
         <metrics statements="150" coveredstatements="0" conditionals="51" coveredconditionals="0" methods="15" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
         <line num="2" count="0" type="stmt"/>
@@ -685,21 +685,21 @@
     </package>
     <package name="models">
       <metrics statements="89" coveredstatements="88" conditionals="29" coveredconditionals="22" methods="21" coveredmethods="21"/>
-      <file name="category.js" path="C:\Users\PC\Documents\AWTC-PROYECT\AWTC\backend\models\category.js">
+      <file name="category.js" path="C:\Users\masu\Documents\proyecto awtc\AWTC\backend\models\category.js">
         <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
         <line num="4" count="5" type="stmt"/>
         <line num="5" count="5" type="stmt"/>
         <line num="16" count="5" type="stmt"/>
         <line num="24" count="5" type="stmt"/>
       </file>
-      <file name="contact.js" path="C:\Users\PC\Documents\AWTC-PROYECT\AWTC\backend\models\contact.js">
+      <file name="contact.js" path="C:\Users\masu\Documents\proyecto awtc\AWTC\backend\models\contact.js">
         <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
         <line num="2" count="5" type="stmt"/>
         <line num="3" count="10" type="stmt"/>
         <line num="27" count="10" type="stmt"/>
         <line num="31" count="10" type="stmt"/>
       </file>
-      <file name="index.js" path="C:\Users\PC\Documents\AWTC-PROYECT\AWTC\backend\models\index.js">
+      <file name="index.js" path="C:\Users\masu\Documents\proyecto awtc\AWTC\backend\models\index.js">
         <metrics statements="43" coveredstatements="42" conditionals="29" coveredconditionals="22" methods="3" coveredmethods="3"/>
         <line num="3" count="5" type="stmt"/>
         <line num="4" count="5" type="stmt"/>
@@ -745,7 +745,7 @@
         <line num="90" count="5" type="stmt"/>
         <line num="92" count="5" type="stmt"/>
       </file>
-      <file name="message.js" path="C:\Users\PC\Documents\AWTC-PROYECT\AWTC\backend\models\message.js">
+      <file name="message.js" path="C:\Users\masu\Documents\proyecto awtc\AWTC\backend\models\message.js">
         <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
         <line num="2" count="5" type="stmt"/>
         <line num="4" count="5" type="stmt"/>
@@ -754,7 +754,7 @@
         <line num="21" count="5" type="stmt"/>
         <line num="68" count="5" type="stmt"/>
       </file>
-      <file name="project.js" path="C:\Users\PC\Documents\AWTC-PROYECT\AWTC\backend\models\project.js">
+      <file name="project.js" path="C:\Users\masu\Documents\proyecto awtc\AWTC\backend\models\project.js">
         <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
         <line num="4" count="5" type="stmt"/>
         <line num="5" count="5" type="stmt"/>
@@ -762,14 +762,14 @@
         <line num="17" count="5" type="stmt"/>
         <line num="31" count="5" type="stmt"/>
       </file>
-      <file name="reviews.js" path="C:\Users\PC\Documents\AWTC-PROYECT\AWTC\backend\models\reviews.js">
+      <file name="reviews.js" path="C:\Users\masu\Documents\proyecto awtc\AWTC\backend\models\reviews.js">
         <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
         <line num="2" count="5" type="stmt"/>
         <line num="4" count="5" type="stmt"/>
         <line num="16" count="5" type="stmt"/>
         <line num="25" count="5" type="stmt"/>
       </file>
-      <file name="subscription.js" path="C:\Users\PC\Documents\AWTC-PROYECT\AWTC\backend\models\subscription.js">
+      <file name="subscription.js" path="C:\Users\masu\Documents\proyecto awtc\AWTC\backend\models\subscription.js">
         <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
         <line num="2" count="5" type="stmt"/>
         <line num="4" count="5" type="stmt"/>
@@ -777,7 +777,7 @@
         <line num="15" count="5" type="stmt"/>
         <line num="58" count="5" type="stmt"/>
       </file>
-      <file name="user.js" path="C:\Users\PC\Documents\AWTC-PROYECT\AWTC\backend\models\user.js">
+      <file name="user.js" path="C:\Users\masu\Documents\proyecto awtc\AWTC\backend\models\user.js">
         <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
         <line num="1" count="5" type="stmt"/>
         <line num="3" count="5" type="stmt"/>
@@ -786,7 +786,7 @@
         <line num="28" count="5" type="stmt"/>
         <line num="34" count="5" type="stmt"/>
       </file>
-      <file name="userproject.js" path="C:\Users\PC\Documents\AWTC-PROYECT\AWTC\backend\models\userproject.js">
+      <file name="userproject.js" path="C:\Users\masu\Documents\proyecto awtc\AWTC\backend\models\userproject.js">
         <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
         <line num="2" count="5" type="stmt"/>
         <line num="3" count="5" type="stmt"/>
@@ -795,7 +795,7 @@
         <line num="18" count="5" type="stmt"/>
         <line num="21" count="5" type="stmt"/>
       </file>
-      <file name="userprojectban.js" path="C:\Users\PC\Documents\AWTC-PROYECT\AWTC\backend\models\userprojectban.js">
+      <file name="userprojectban.js" path="C:\Users\masu\Documents\proyecto awtc\AWTC\backend\models\userprojectban.js">
         <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
         <line num="2" count="5" type="stmt"/>
         <line num="3" count="10" type="stmt"/>

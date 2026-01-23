@@ -23,7 +23,7 @@ describe('Contact - Form Submission & Operations', () => {
         message: 'This is a test message'
       }
     };
-    //const res = mockResponse();
+    const res = mockResponse();
 
     await contactController.create(req, res);
 
